@@ -1,0 +1,2014 @@
+{
+  "Philosophy of Life": [
+    {
+      "name": "Existentialism",
+      "description": "Life has no inherent meaning, and individuals must create their own purpose through choices and actions."
+    },
+    {
+      "name": "Absurdism",
+      "description": "There is a fundamental conflict between humans’ desire to find meaning and the universe’s indifference to providing it; meaning is found in embracing the absurd."
+    },
+    {
+      "name": "Nihilism",
+      "description": "Life is devoid of intrinsic meaning, value, or purpose, and traditional moral and social structures are baseless."
+    },
+    {
+      "name": "Stoicism",
+      "description": "The key to life is mastering one's emotions and reactions to external events, focusing on what can be controlled, and accepting what cannot."
+    },
+    {
+      "name": "Hedonism",
+      "description": "The pursuit of pleasure and avoidance of pain are the primary or most important goals of human life."
+    },
+    {
+      "name": "Eudaimonism",
+      "description": "The best life is one of flourishing, achieved by cultivating virtues and living according to reason."
+    },
+    {
+      "name": "Epicureanism",
+      "description": "The goal of life is to achieve pleasure, which is attained through modest living, the pursuit of knowledge, and the avoidance of pain and fear."
+    },
+    {
+      "name": "Utilitarianism",
+      "description": "The best action is the one that maximizes happiness or pleasure for the greatest number of people, while minimizing suffering."
+    },
+    {
+      "name": "Humanism",
+      "description": "Humans can lead ethical and fulfilling lives without reliance on religious beliefs, emphasizing human dignity, reason, and compassion."
+    },
+    {
+      "name": "Transcendentalism",
+      "description": "Individuals are inherently good and at their best when self-reliant, with true meaning found beyond the material world, in spiritual experiences and nature."
+    },
+    {
+      "name": "Optimism",
+      "description": "Life is generally positive, and one should maintain hope and confidence in the future, expecting good outcomes."
+    },
+    {
+      "name": "Pessimism",
+      "description": "Life is filled with suffering, and human existence tends toward hardship and disappointment; the world is fundamentally flawed."
+    },
+    {
+      "name": "Pragmatism",
+      "description": "The value of ideas and actions lies in their practical consequences and benefits; meaning comes from what works in practice."
+    },
+    {
+      "name": "Altruism",
+      "description": "The best life is one spent serving others, where selfless actions aimed at benefiting others bring true meaning and fulfillment."
+    },
+    {
+      "name": "Libertarianism (Ethical)",
+      "description": "Life’s purpose is achieved through individual freedom, personal autonomy, and responsibility, with minimal interference from external forces."
+    },
+    {
+      "name": "Absurd Heroism",
+      "description": "Although life is meaningless and absurd, one can find purpose through a defiant embrace of life and persistence in the face of futility."
+    },
+    {
+      "name": "Buddhism (Philosophy)",
+      "description": "Life is a cycle of suffering caused by desire, and the path to enlightenment is through detachment, mindfulness, and ethical living."
+    },
+    {
+      "name": "Taoism",
+      "description": "Life is best lived in harmony with the Tao (the way of nature), embracing simplicity, spontaneity, and non-resistance to the natural flow of events."
+    },
+    {
+      "name": "Confucianism",
+      "description": "The best life is achieved through moral development, social harmony, respect for tradition, and fulfilling one’s role in society."
+    },
+    {
+      "name": "Skepticism",
+      "description": "Life’s meaning cannot be definitively known, and one should approach claims of truth or purpose with doubt and critical thinking."
+    },
+    {
+      "name": "Objectivism",
+      "description": "Life’s purpose is to pursue one’s own happiness through rational self-interest, with moral principles based on objective reality and reason."
+    },
+    {
+      "name": "Relativism",
+      "description": "Meaning and morality are not absolute, but are shaped by cultural, societal, or individual perspectives."
+    },
+    {
+      "name": "Perennialism",
+      "description": "All spiritual and philosophical traditions share a common truth, and the purpose of life is to seek this universal wisdom."
+    },
+    {
+      "name": "Naturalism",
+      "description": "Life is explained by natural processes, without supernatural influence, and meaning is found through the understanding of nature and the universe."
+    },
+    {
+      "name": "Existential Humanism",
+      "description": "Humans are free and responsible for creating their own meaning, and ethical living is guided by reason, compassion, and the rejection of unjust authorities."
+    }
+  ],
+  "Philosophy of Mind": [
+    {
+      "name": "Dualism",
+      "description": "The mind and body are different in nature, and mental phenomena are non-physical."
+    },
+    {
+      "name": "Property Dualism",
+      "description": "Mental properties are non-physical but emerge from physical substances, and consciousness cannot be reduced to brain processes."
+    },
+    {
+      "name": "Substance Dualism",
+      "description": "Mind and body are different in nature and composed of different substances."
+    },
+    {
+      "name": "Monism",
+      "description": "Reality is fundamentally composed of a single substance or principle, with both mind and body being aspects of the same underlying reality."
+    },
+    {
+      "name": "Idealism",
+      "description": "Reality is fundamentally mental; physical objects exist only as perceptions, and the mind creates or shapes the physical world."
+    },
+    {
+      "name": "Reductive Physicalism",
+      "description": "Mental states can be fully explained by physical processes, and the mind is identical to the brain."
+    },
+    {
+      "name": "Non-Reductive Physicalism",
+      "description": "Mental states depend on but are not reducible to physical states, and consciousness arises from but is not identical to brain states."
+    },
+    {
+      "name": "Eliminative Materialism",
+      "description": "Common-sense mental states like beliefs and desires do not exist."
+    },
+    {
+      "name": "Emergentism",
+      "description": "Consciousness arises from complex physical systems but is not reducible to them, and mental properties emerge when physical systems reach a certain level of complexity."
+    },
+    {
+      "name": "Panpsychism",
+      "description": "Consciousness is a fundamental aspect of all matter, and even the simplest particles possess some form of consciousness."
+    },
+    {
+      "name": "Epiphenomenalism",
+      "description": "Mental events are caused by physical events but have no causal effects on the physical world, and consciousness is a byproduct of brain activity with no influence on physical behavior."
+    },
+    {
+      "name": "Psychophysical Parallelism",
+      "description": "Mental and physical events run in parallel but do not causally interact, with mental processes mirroring physical ones without directly influencing them."
+    },
+    {
+      "name": "Quantum Mind",
+      "description": "Consciousness arises from quantum processes within the brain, and understanding quantum mechanics is key to explaining the mind."
+    },
+    {
+      "name": "Occasionalism",
+      "description": "God is the only true cause, and all interactions between mind and body are illusions, with God directly intervening to coordinate mental and physical events."
+    },
+    {
+      "name": "Integrated Information Theory",
+      "description": "Consciousness is based on the amount of integrated information in a system, with higher levels of integration corresponding to higher levels of consciousness."
+    },
+    {
+      "name": "Global Workspace Theory",
+      "description": "Consciousness arises from information being globally broadcasted to different parts of the brain, allowing it to be shared and integrated across various systems."
+    },
+    {
+      "name": "Functionalism",
+      "description": "Mental states are defined by their functional roles, not by their physical makeup, and a mental state is characterized by what it does rather than what it is made of."
+    },
+    {
+      "name": "Methodological Behaviorism",
+      "description": "Psychology should only study observable behavior, not internal mental states."
+    },
+    {
+      "name": "Radical Behaviorism",
+      "description": "Mental states do not exist independently of behavior, and all behavior is the result of environmental conditioning."
+    }
+  ],
+  "Philosophy of Will": [
+    {
+      "name": "Libertarian Free Will",
+      "description": "Humans have genuine free will, meaning individuals are free to make choices that are not determined by prior causes or divine intervention."
+    },
+    {
+      "name": "Compatibilism",
+      "description": "Free will is compatible with determinism, meaning that individuals can make free choices even if these choices are determined by prior causes."
+    },
+    {
+      "name": "Determinism",
+      "description": "All events, including human actions, are determined by external causes."
+    },
+    {
+      "name": "Hard Determinism",
+      "description": "Free will does not exist, and human actions are fully determined by external factors such as genetics, environment, and physical laws."
+    },
+    {
+      "name": "Soft Determinism",
+      "description": "Human behavior is determined by prior causes, but free will can still exist in a limited sense, allowing for moral responsibility."
+    },
+    {
+      "name": "Indeterminism",
+      "description": "Not all events are determined by preceding causes, and random or probabilistic factors play a role in the unfolding of events, allowing for free will."
+    },
+    {
+      "name": "Voluntarism",
+      "description": "The will is the most fundamental aspect of human experience, taking precedence over intellect and emotions in determining actions."
+    },
+    {
+      "name": "Schopenhauer's Will",
+      "description": "The will is a blind, irrational force that drives all human actions and underlies all of reality; human freedom is limited by this will."
+    },
+    {
+      "name": "Nietzsche's Will to Power",
+      "description": "The driving force behind human behavior is the will to power, a fundamental instinct to assert and enhance one's strength and influence over oneself and the world."
+    },
+    {
+      "name": "Kantian Free Will",
+      "description": "Free will is possible because humans are rational agents capable of acting according to moral laws they give to themselves, independent of external determinants."
+    },
+    {
+      "name": "Existentialist Free Will",
+      "description": "Human beings have radical freedom and are responsible for creating their own essence through their choices, despite external conditions."
+    },
+    {
+      "name": "Moral Responsibility and Free Will",
+      "description": "Free will is necessary for moral responsibility, meaning individuals are accountable for their actions because they freely choose them."
+    },
+    {
+      "name": "Divine Will",
+      "description": "Human will is subject to the will of a divine being, and freedom consists in aligning human desires and actions with divine will."
+    },
+    {
+      "name": "Psychological Determinism",
+      "description": "Human actions are determined by internal psychological factors, such as unconscious desires and drives, leaving little room for free will."
+    },
+    {
+      "name": "Fatalism",
+      "description": "All events, including human choices, are predetermined and inevitable, meaning free will is illusory, and humans cannot change their fate."
+    },
+    {
+      "name": "Pessimistic Voluntarism",
+      "description": "The human will is ultimately a source of suffering, as desires can never be fully satisfied, leading to frustration and existential despair."
+    },
+    {
+      "name": "Will to Meaning (Logotherapy)",
+      "description": "Humans are driven by the will to find meaning in life, and this pursuit of meaning, rather than power or pleasure, is the primary motivating force."
+    },
+    {
+      "name": "Free Will Skepticism",
+      "description": "Free will is an illusion, and humans do not have true freedom over their actions or decisions, which are shaped by biological, social, and psychological influences."
+    },
+    {
+      "name": "Hegelian Will",
+      "description": "The individual will is part of a larger rational process in which freedom is realized through the development of ethical life and the state."
+    },
+    {
+      "name": "Pragmatic Will",
+      "description": "The will is best understood as a tool for solving practical problems, with free will being meaningful only insofar as it allows for effective action."
+    },
+    {
+      "name": "Will to Pleasure",
+      "description": "Humans are motivated primarily by the desire to experience pleasure and avoid pain, with free will serving to fulfill these desires."
+    },
+    {
+      "name": "Biological Determinism",
+      "description": "Human will and behavior are determined by biological factors such as genetics and evolutionary pressures, leaving little to no room for free will."
+    }
+  ],
+  "Rationality": [
+    {
+      "name": "Effective Altruism",
+      "description": "Philanthropic efforts should be guided by reason and evidence to maximize the positive impact of charitable actions."
+    },
+    {
+      "name": "Data-Driven Decision Making",
+      "description": "Decisions in business, politics, and personal life should be based on empirical data and statistical analysis rather than intuition or tradition."
+    },
+    {
+      "name": "Rationalist Movement",
+      "description": "Beliefs and actions should be determined through a rigorous application of logic and evidence, with an emphasis on reducing cognitive biases and irrational thinking."
+    },
+    {
+      "name": "Bayesian Epistemology",
+      "description": "Belief updates should follow Bayesian reasoning, where probabilities are assigned to hypotheses and updated as new evidence becomes available."
+    },
+    {
+      "name": "AI Alignment",
+      "description": "Efforts to ensure that artificial intelligence systems are designed and programmed to act in accordance with human values and long-term interests, based on rational and ethical considerations."
+    },
+    {
+      "name": "Longtermism",
+      "description": "Decisions should be made with the long-term future of humanity in mind, considering the potential impact on future generations over short-term gains."
+    },
+    {
+      "name": "Moral Realism",
+      "description": "Objective moral facts exist independently of human beliefs, and rational inquiry can discover these facts."
+    },
+    {
+      "name": "Quantified Self",
+      "description": "Personal decisions about health, fitness, and well-being should be based on data gathered from self-tracking devices and software, leading to more rational and optimized life choices."
+    },
+    {
+      "name": "Predictive Processing",
+      "description": "The brain is fundamentally a prediction machine, constantly generating models of the world and updating them based on sensory input, offering a rational framework for understanding perception and cognition."
+    },
+    {
+      "name": "Moral Uncertainty",
+      "description": "Ethical decision-making should account for uncertainty in moral theories, and rational approaches should be used to weigh different ethical frameworks against each other."
+    },
+    {
+      "name": "Epistemic Vigilance",
+      "description": "Individuals should maintain high standards for evaluating the credibility of information sources, applying skepticism and reason to avoid being misled by misinformation or faulty logic."
+    },
+    {
+      "name": "Digital Minimalism",
+      "description": "Technology use should be minimized and streamlined to maximize well-being and focus, based on a rational assessment of its benefits and harms."
+    },
+    {
+      "name": "Simulation Hypothesis",
+      "description": "It is rational to consider the possibility that our reality could be a sophisticated simulation created by advanced technology."
+    },
+    {
+      "name": "Effective Governance",
+      "description": "Political decisions should be made based on empirical evidence, cost-benefit analyses, and rational deliberation to optimize societal outcomes."
+    },
+    {
+      "name": "Post-Rationalism",
+      "description": "While reason and logic are important, human cognition also involves emotion, culture, and intuition, which should be integrated with rationalist principles for a more holistic understanding."
+    }
+  ],
+  "Eating habits": [
+    {
+      "name": "Veganism",
+      "description": "Animal products, including meat, dairy, and eggs, should not be consumed due to ethical, environmental, or health concerns."
+    },
+    {
+      "name": "Vegetarianism",
+      "description": "Meat, fish, and poultry should be excluded from the diet, while dairy products and eggs are acceptable, for ethical, health, or environmental reasons."
+    },
+    {
+      "name": "Paleo Diet",
+      "description": "The diet should consist primarily of meat, fish, vegetables, and fruits, while processed foods and grains should be excluded, following the presumed diet of early humans."
+    },
+    {
+      "name": "Keto Diet",
+      "description": "A high-fat, low-carbohydrate diet is the best way to shift the body towards burning fat for energy, leading to weight loss and improved metabolic health."
+    },
+    {
+      "name": "Intermittent Fasting",
+      "description": "Eating should be restricted to specific time windows or fasting periods to promote weight loss, metabolic health, and longevity."
+    },
+    {
+      "name": "Whole Food, Plant-Based Diet",
+      "description": "Unprocessed or minimally processed plant foods, such as fruits, vegetables, legumes, and whole grains, should be the foundation of the diet, while animal products and processed foods should be avoided."
+    },
+    {
+      "name": "Omnivorism",
+      "description": "A balanced diet that includes both plant and animal products is the most natural and healthy way to obtain a wide range of nutrients."
+    },
+    {
+      "name": "Locavorism",
+      "description": "Food should be sourced locally to reduce the environmental impact of transportation and to support local farmers and economies."
+    },
+    {
+      "name": "Flexitarianism",
+      "description": "A primarily plant-based diet, with occasional consumption of meat and animal products, is the best balance for health, environmental sustainability, and ethics."
+    },
+    {
+      "name": "Raw Food Diet",
+      "description": "Uncooked, unprocessed foods, especially organic ones, are healthier because they retain more nutrients than cooked foods."
+    },
+    {
+      "name": "Fruitarianism",
+      "description": "The diet should consist mainly of fruits, nuts, and seeds, excluding most other foods, as part of a spiritual, ethical, or health-driven lifestyle."
+    },
+    {
+      "name": "Carnivorism",
+      "description": "Only animal products should be consumed, excluding all plant-based foods, as this diet is believed to be healthier and more natural."
+    },
+    {
+      "name": "Mindful Eating",
+      "description": "Eating should be done with full awareness of the taste, texture, and sensations of food, with the goal of eating in response to hunger and not external cues."
+    },
+    {
+      "name": "Slow Food Movement",
+      "description": "Food should be regionally-sourced, traditional, and sustainably produced, and meals should be enjoyed slowly, opposing the fast food culture."
+    },
+    {
+      "name": "Zero Waste Diet",
+      "description": "The diet should minimize food waste by using all parts of ingredients, reducing packaging, and prioritizing sustainable and environmentally friendly sourcing."
+    },
+    {
+      "name": "Clean Eating",
+      "description": "Only whole, unprocessed foods should be consumed, avoiding artificial ingredients, added sugars, and heavily processed products."
+    },
+    {
+      "name": "Ayurvedic Diet",
+      "description": "Food choices should be tailored to an individual's body type (dosha) according to ancient Indian Ayurvedic principles to maintain health and balance."
+    },
+    {
+      "name": "Mediterranean Diet",
+      "description": "The diet should be based on vegetables, fruits, whole grains, olive oil, and moderate amounts of fish and wine, following the traditional eating habits of Mediterranean cultures."
+    },
+    {
+      "name": "Gluten-Free Diet",
+      "description": "Gluten-containing grains like wheat, barley, and rye should be excluded from the diet, particularly for those with gluten intolerance or celiac disease."
+    },
+    {
+      "name": "High-Protein Diet",
+      "description": "A diet high in protein, including lean meats, eggs, and legumes, is essential for supporting muscle growth, weight loss, or athletic performance."
+    }
+  ],
+  "Religious Philosophy": [
+    {
+      "name": "Atheism",
+      "description": "There are no deities, and belief in gods is unfounded."
+    },
+    {
+      "name": "Agnosticism",
+      "description": "It is impossible to know whether deities exist or not."
+    },
+    {
+      "name": "Theism",
+      "description": "At least one deity exists and plays a role in the universe."
+    },
+    {
+      "name": "Deism",
+      "description": "A creator deity exists but does not intervene in the universe or human affairs."
+    },
+    {
+      "name": "Pantheism",
+      "description": "God and the universe are the same, and everything in existence is a manifestation of the divine."
+    },
+    {
+      "name": "Polytheism",
+      "description": "There are multiple deities, each with different roles and powers governing various aspects of the universe."
+    },
+    {
+      "name": "Monotheism",
+      "description": "There is only one deity who is all-powerful and governs the universe."
+    },
+    {
+      "name": "Henotheism",
+      "description": "While multiple deities may exist, one deity is supreme or worthy of worship above the others."
+    },
+    {
+      "name": "Animism",
+      "description": "All objects, places, and creatures possess a distinct spiritual essence, and nature is inhabited by spirits."
+    },
+    {
+      "name": "Syncretism",
+      "description": "Different religious beliefs and practices can be combined into a cohesive system."
+    },
+    {
+      "name": "Fundamentalism",
+      "description": "Religious texts should be interpreted literally, and society should be governed by strict adherence to religious laws and values."
+    },
+    {
+      "name": "Exclusivism",
+      "description": "Only one particular religion is the true faith, and all other religions are false or misguided."
+    },
+    {
+      "name": "Secular Humanism",
+      "description": "Human beings can lead ethical, meaningful lives without reliance on religious beliefs or deities."
+    },
+    {
+      "name": "Spiritualism",
+      "description": "There is a non-physical reality or dimension, and individuals can connect with it or receive guidance from spiritual beings or forces."
+    },
+    {
+      "name": "Universalism",
+      "description": "All religions contain elements of truth, and there is a universal spiritual reality that transcends individual religious systems."
+    },
+    {
+      "name": "Esotericism",
+      "description": "Only a select few are capable of seeking and understanding hidden spiritual knowledge that leads to a deeper understanding of the divine and the cosmos."
+    },
+    {
+      "name": "Religious Pluralism",
+      "description": "No single religion holds all the truth, and multiple religions can offer valid paths to spiritual understanding or enlightenment."
+    }
+  ],
+  "Politics": [
+    {
+      "name": "Liberalism",
+      "description": "The government should protect civil liberties and individual freedoms while limiting its intervention in personal and economic matters."
+    },
+    {
+      "name": "Conservatism",
+      "description": "Society should prioritize tradition, stability, and gradual change, with limited government intervention in markets and personal lives."
+    },
+    {
+      "name": "Communism",
+      "description": "The state should be governed by the working class, through a single-party system, aiming to eliminate class distinctions and centralize political power to achieve a classless, stateless society."
+    },
+    {
+      "name": "Libertarianism",
+      "description": "Individuals should be free to make their own choices, with minimal government interference in both personal and economic matters."
+    },
+    {
+      "name": "Anarchism",
+      "description": "All forms of hierarchical government and authority should be abolished in favor of self-managed, stateless societies."
+    },
+    {
+      "name": "Fascism",
+      "description": "A strong, centralized government should prioritize national unity and authority, even at the expense of individual freedoms."
+    },
+    {
+      "name": "Nazism",
+      "description": "The state should be led by a totalitarian regime based on racial purity, authoritarian control, and the suppression of political opposition."
+    },
+    {
+      "name": "Progressivism",
+      "description": "The government should actively reform society to promote social justice, economic equality, and environmental sustainability."
+    },
+    {
+      "name": "Authoritarianism",
+      "description": "Strong, centralized control by a single leader or ruling party is necessary to maintain order and enforce societal norms."
+    },
+    {
+      "name": "Environmentalism",
+      "description": "Government policies should prioritize the protection of the environment and address issues like climate change and sustainability."
+    },
+    {
+      "name": "Populism",
+      "description": "The interests of ordinary people should be prioritized over those of elites or established institutions in political decision-making."
+    },
+    {
+      "name": "Nationalism",
+      "description": "A nation’s interests and culture should be prioritized over international cooperation and global governance."
+    },
+    {
+      "name": "Social Democracy",
+      "description": "The government should combine democratic governance with a strong welfare state, regulating the economy to ensure social welfare and reduce inequality."
+    },
+    {
+      "name": "Libertarian Socialism",
+      "description": "Both centralized government and capitalist economic systems should be abolished in favor of decentralized, self-managed communities."
+    },
+    {
+      "name": "Monarchism",
+      "description": "Political power should be vested in a monarchy, with a king or queen either ruling directly or serving as a symbolic figurehead."
+    },
+    {
+      "name": "Theocracy",
+      "description": "Government policies should be guided by religious principles, with religious leaders having significant influence in governance."
+    },
+    {
+      "name": "Technocracy",
+      "description": "Experts, particularly scientists and engineers, should govern societies based on data and technical expertise rather than political ideologies."
+    },
+    {
+      "name": "Democratic Socialism",
+      "description": "Key industries should be publicly owned and controlled through democratic governance, ensuring both economic equality and individual freedoms."
+    },
+    {
+      "name": "Traditionalism",
+      "description": "Society should adhere to long-established cultural, moral, and religious values, resisting modern changes and preserving traditional institutions."
+    }
+  ],
+  "Economics": [
+    {
+      "name": "Capitalism",
+      "description": "The economy should be driven by private ownership and free markets, with minimal government intervention, allowing competition to promote innovation and efficiency."
+    },
+    {
+      "name": "Socialism",
+      "description": "The government should own or control the major means of production and distribution to reduce inequality and ensure that resources are fairly distributed."
+    },
+    {
+      "name": "Communism (Economics)",
+      "description": "The economy should be collectively owned, with no private property, and resources and wealth should be distributed equally among all members of society."
+    },
+    {
+      "name": "Keynesian Economics",
+      "description": "The government should actively intervene in the economy, particularly during recessions, by increasing public spending and lowering taxes to stimulate demand."
+    },
+    {
+      "name": "Laissez-Faire Economics",
+      "description": "The government should have no role in regulating the economy, allowing individuals and businesses to operate freely without intervention."
+    },
+    {
+      "name": "Monetarism",
+      "description": "Economic stability is best achieved by controlling the money supply, and government intervention should focus primarily on managing inflation rather than direct spending."
+    },
+    {
+      "name": "Supply-Side Economics",
+      "description": "Economic growth is best stimulated by lowering taxes and reducing regulation, particularly for businesses and the wealthy, to encourage investment and production."
+    },
+    {
+      "name": "Mixed Economy",
+      "description": "The economy should combine elements of capitalism and socialism, with private enterprise operating alongside government regulations and social welfare programs."
+    },
+    {
+      "name": "Neoliberalism",
+      "description": "Free markets, privatization, and deregulation should be promoted, with minimal government involvement in the economy, to foster global economic growth and development."
+    },
+    {
+      "name": "Libertarian Economics",
+      "description": "Economic freedom is paramount, and government involvement in markets, taxation, and regulation should be as limited as possible."
+    },
+    {
+      "name": "Georgism",
+      "description": "Economic rent from land and natural resources should be the primary source of public revenue, while other forms of taxation should be minimized or eliminated."
+    },
+    {
+      "name": "Behavioral Economics",
+      "description": "Economic policies should consider psychological factors and human behavior, which often deviate from rational decision-making, to better understand and predict economic outcomes."
+    },
+    {
+      "name": "Austrian Economics",
+      "description": "The economy functions best when left to free market forces, with minimal government intervention, and focuses on individual choice and entrepreneurship."
+    },
+    {
+      "name": "Degrowth",
+      "description": "Economic growth should be scaled back to achieve environmental sustainability and improve quality of life, emphasizing local economies and reduced consumption."
+    },
+    {
+      "name": "Circular Economy",
+      "description": "The economy should minimize waste by reusing, repairing, and recycling materials, promoting sustainable production and consumption to preserve resources."
+    },
+    {
+      "name": "Post-Keynesian Economics",
+      "description": "The economy is inherently unstable, and government intervention is necessary to manage demand, prevent recessions, and address issues like inequality."
+    },
+    {
+      "name": "Marxism",
+      "description": "Capitalism inevitably leads to exploitation and inequality, and the working class should overthrow the capitalist system to establish a society where the means of production are collectively owned."
+    },
+    {
+      "name": "Malthusianism",
+      "description": "Population growth should be controlled to prevent overconsumption of resources, which could lead to widespread poverty and environmental degradation."
+    },
+    {
+      "name": "Social Market Economy",
+      "description": "The economy should be market-based, but the government should ensure social welfare and equitable wealth distribution through regulation and social programs."
+    },
+    {
+      "name": "Protectionism",
+      "description": "The government should protect domestic industries from foreign competition through tariffs, quotas, and other trade barriers to promote local economic growth."
+    },
+    {
+      "name": "Free Trade",
+      "description": "International trade should be free from tariffs and other restrictions, allowing goods and services to flow across borders without government interference."
+    },
+    {
+      "name": "Universal Basic Income (UBI)",
+      "description": "The government should provide all citizens with a regular, unconditional income to ensure basic economic security and reduce poverty."
+    },
+    {
+      "name": "Participatory Economics",
+      "description": "Economic decisions should be made collectively through democratic participation, with workers and consumers having a direct say in how resources are allocated."
+    }
+  ],
+  "Personal Finance": [
+    {
+      "name": "Frugality",
+      "description": "Individuals should spend as little money as possible, prioritizing saving over consumption and avoiding unnecessary expenses."
+    },
+    {
+      "name": "Conscious Spending",
+      "description": "People should spend money mindfully, making purchases that align with their values and long-term goals, while avoiding impulse buys."
+    },
+    {
+      "name": "Investing for Growth",
+      "description": "Individuals should prioritize long-term investments in stocks, real estate, or businesses to grow wealth over time."
+    },
+    {
+      "name": "FIRE (Financial Independence, Retire Early)",
+      "description": "People should save aggressively and invest wisely to achieve financial independence and retire early, avoiding traditional career paths."
+    },
+    {
+      "name": "Debt-Free Living",
+      "description": "Individuals should avoid taking on debt and prioritize paying off any existing debts to maintain financial freedom and security."
+    },
+    {
+      "name": "Index Fund Investing",
+      "description": "Investing in low-cost index funds is the best strategy for long-term wealth growth, providing diversification and minimal management costs."
+    },
+    {
+      "name": "High-Risk, High-Reward Investing",
+      "description": "Investing in high-risk assets like cryptocurrencies, startups, or speculative stocks can yield large returns, but individuals must be prepared for potential losses."
+    },
+    {
+      "name": "Passive Income",
+      "description": "Individuals should prioritize building streams of passive income, such as real estate, dividend-paying stocks, or digital products, to achieve financial freedom."
+    },
+    {
+      "name": "Budgeting",
+      "description": "People should carefully track income and expenses to create a budget that aligns with their financial goals and helps control spending."
+    },
+    {
+      "name": "Pay Yourself First",
+      "description": "Individuals should prioritize saving a portion of their income before paying for any other expenses, ensuring consistent contributions toward financial goals."
+    },
+    {
+      "name": "Credit Utilization",
+      "description": "Managing credit card use by keeping balances low and paying off debts on time is essential for maintaining a good credit score and financial health."
+    },
+    {
+      "name": "Diversification",
+      "description": "Investments should be spread across multiple asset classes, industries, and regions to reduce risk and improve potential returns."
+    },
+    {
+      "name": "Living Below Your Means",
+      "description": "Individuals should consistently spend less than they earn, even as income increases, to build wealth over time."
+    },
+    {
+      "name": "Speculative Trading",
+      "description": "Engaging in high-risk trades, like options or futures, can generate large profits, but individuals must be prepared for significant losses."
+    },
+    {
+      "name": "Real Estate Investment",
+      "description": "Investing in real estate properties for rental income or appreciation is a solid strategy for building long-term wealth."
+    },
+    {
+      "name": "Automated Saving",
+      "description": "Setting up automatic transfers to savings or investment accounts helps ensure consistent saving without relying on willpower."
+    },
+    {
+      "name": "Micro-Investing",
+      "description": "Using apps or services to invest small amounts of money frequently can help individuals build investment portfolios gradually."
+    },
+    {
+      "name": "Tax Optimization",
+      "description": "Individuals should strategically use tax-advantaged accounts, deductions, and credits to reduce tax liabilities and increase savings."
+    },
+    {
+      "name": "Ethical Investing",
+      "description": "People should invest in companies and funds that align with their ethical values, such as environmental sustainability or social justice."
+    },
+    {
+      "name": "Hedging",
+      "description": "Using financial instruments like options or other derivatives to protect investments from adverse market movements is a strategy for managing risk."
+    },
+    {
+      "name": "Dollar-Cost Averaging",
+      "description": "Investing a fixed amount of money at regular intervals, regardless of market conditions, is a strategy to minimize risk and reduce the impact of market volatility."
+    },
+    {
+      "name": "Value Investing",
+      "description": "Investing in stocks that are undervalued based on fundamental analysis can provide significant returns as the market corrects their prices."
+    },
+    {
+      "name": "Lifestyle Inflation",
+      "description": "As income increases, people should avoid increasing their spending proportionally, and instead focus on saving or investing the extra income."
+    },
+    {
+      "name": "Financial Independence",
+      "description": "Individuals should aim to accumulate enough wealth to support their lifestyle without needing to work, allowing for financial freedom."
+    },
+    {
+      "name": "Cryptocurrency Investment",
+      "description": "Investing in cryptocurrencies can provide high returns but comes with significant risk due to market volatility and regulatory uncertainty."
+    },
+    {
+      "name": "Leveraged Investing",
+      "description": "Borrowing money to invest can amplify potential returns, but it also increases the risk of larger losses if the investment underperforms."
+    },
+    {
+      "name": "Insurance Planning",
+      "description": "Comprehensive insurance planning, including health, life, and property insurance, is essential for protecting against unforeseen financial risks."
+    },
+    {
+      "name": "Cash-Only Budgeting",
+      "description": "Using only cash for expenses and avoiding credit entirely is a method for controlling spending and avoiding debt."
+    },
+    {
+      "name": "Credit Card Hacking",
+      "description": "Using credit cards strategically to earn rewards, cash back, or travel points without incurring interest can be a savvy financial move if done responsibly."
+    }
+  ],
+  "Ecology": [
+    {
+      "name": "Deep Ecology",
+      "description": "All living beings have inherent value, and humans must radically change their relationship with the natural world to prevent ecological degradation."
+    },
+    {
+      "name": "Ecofeminism",
+      "description": "Environmental degradation and the oppression of women are interconnected, and ecological sustainability can only be achieved through gender equality."
+    },
+    {
+      "name": "Anthropocentrism",
+      "description": "Humans are the most important beings, and the environment is valuable primarily for its utility to human needs and development."
+    },
+    {
+      "name": "Biocentrism",
+      "description": "All living organisms, not just humans, have moral standing, and human actions should respect the intrinsic value of all life forms."
+    },
+    {
+      "name": "Ecocentrism",
+      "description": "The ecosystem as a whole has intrinsic value, and ethical considerations should focus on maintaining the integrity and health of ecological systems."
+    },
+    {
+      "name": "Environmental Pragmatism",
+      "description": "Environmental problems should be addressed through practical, solution-oriented approaches rather than adhering strictly to ideological positions."
+    },
+    {
+      "name": "Social Ecology",
+      "description": "Ecological crises stem from hierarchical and exploitative social structures, and solving environmental problems requires addressing social injustices."
+    },
+    {
+      "name": "Gaia Hypothesis",
+      "description": "The Earth and its biological systems behave as a single, self-regulating organism, and human activities can disrupt this balance."
+    },
+    {
+      "name": "Sustainability",
+      "description": "Ecological sustainability is the ability to meet the needs of the present without compromising the ability of future generations to meet their own needs."
+    },
+    {
+      "name": "Green Anarchism",
+      "description": "Ecological destruction is tied to political hierarchies and centralized power, and environmental sustainability requires decentralized, non-hierarchical social structures."
+    },
+    {
+      "name": "Conservationism",
+      "description": "Natural resources should be managed and conserved for future generations, often through regulated human use and preservation of natural habitats."
+    },
+    {
+      "name": "Preservationism",
+      "description": "Nature should be protected in its pristine state, free from human interference, emphasizing the intrinsic value of wilderness."
+    },
+    {
+      "name": "Eco-Marxism",
+      "description": "Environmental issues are rooted in capitalist exploitation of nature, and ecological sustainability requires transforming the economic system."
+    },
+    {
+      "name": "Stewardship",
+      "description": "Humans have a moral duty to care for and manage the Earth responsibly, acting as stewards of the environment."
+    },
+    {
+      "name": "Ecotheology",
+      "description": "Religious and spiritual teachings emphasize the sacredness of nature and call for humanity to protect and preserve the environment."
+    },
+    {
+      "name": "Eco-Socialism",
+      "description": "Ecological sustainability can only be achieved through collective ownership and management of resources, rejecting capitalist exploitation of nature."
+    },
+    {
+      "name": "Anthropocene",
+      "description": "The current geological era is defined by significant human impact on the Earth's ecosystems, and humans must adapt their behaviors to mitigate further damage."
+    },
+    {
+      "name": "Land Ethic",
+      "description": "Humans are part of a larger ecological community, and ethical decisions should be made with the well-being of the land and its ecosystems in mind."
+    },
+    {
+      "name": "Permaculture",
+      "description": "Human activities should mimic natural ecosystems to create sustainable agricultural and living systems that regenerate the environment."
+    },
+    {
+      "name": "Holism",
+      "description": "The environment should be understood as a whole system, where all parts are interconnected, and ecological problems should be addressed with this holistic view."
+    },
+    {
+      "name": "Ecopsychology",
+      "description": "Human well-being is deeply connected to nature, and ecological destruction contributes to psychological distress; healing requires reconnecting with the Earth."
+    },
+    {
+      "name": "Climate Justice",
+      "description": "The impacts of climate change disproportionately affect marginalized communities, and addressing the climate crisis requires social and environmental justice."
+    },
+    {
+      "name": "Posthumanism (Ecology)",
+      "description": "Humans should transcend anthropocentrism and recognize the value of non-human life and ecosystems, advocating for a more inclusive environmental ethics."
+    },
+    {
+      "name": "Rewilding",
+      "description": "Human interventions in nature should be minimized, allowing ecosystems to return to their natural, wild state for greater biodiversity and ecological balance."
+    },
+    {
+      "name": "Environmental Virtue Ethics",
+      "description": "Humans should cultivate virtues like humility, care, and respect for nature to live in harmony with the environment."
+    },
+    {
+      "name": "Technogaianism",
+      "description": "Belief that emerging technologies can help restore Earth's environment."
+    }
+  ],
+  "Software Development": [
+    {
+      "name": "Software Minimalism",
+      "description": "A philosophy that advocates for creating software that is as simple and lightweight as possible, reducing unnecessary features, complexity, and bloat, while focusing on essential functionality."
+    },
+    {
+      "name": "KISS (Keep It Simple, Stupid)",
+      "description": "A design philosophy that advocates for simplicity, avoiding unnecessary complexity in both the design and coding of software."
+    },
+    {
+      "name": "DRY (Don't Repeat Yourself)",
+      "description": "A principle that promotes reducing redundancy in code by ensuring that information is not duplicated, emphasizing code reuse."
+    },
+    {
+      "name": "YAGNI (You Aren't Gonna Need It)",
+      "description": "A principle advising developers to avoid adding unnecessary features or functionality until they are absolutely needed."
+    },
+    {
+      "name": "Microservices Architecture",
+      "description": "An architectural style that structures an application as a collection of small, independent services that communicate with each other, offering flexibility and scalability."
+    },
+    {
+      "name": "Monolithic Architecture",
+      "description": "An architectural style where all the functions of an application are tightly integrated into a single unit, which can be simpler to develop but harder to scale."
+    },
+    {
+      "name": "Serverless Architecture",
+      "description": "A cloud computing model where developers focus on writing code, while cloud services automatically manage server infrastructure, scaling, and execution."
+    },
+    {
+      "name": "Pair Programming",
+      "description": "A practice where two developers work together at one workstation, with one writing code and the other reviewing it in real-time, fostering collaboration and code quality."
+    },
+    {
+      "name": "No-Code Development",
+      "description": "Applications should be created using visual tools and pre-built components, allowing users with no programming knowledge to build software without writing any code."
+    },
+    {
+      "name": "Low-Code Development",
+      "description": "Applications should be built using platforms that require minimal coding, allowing developers to create software faster by leveraging pre-built components while still customizing parts of the code."
+    },
+    {
+      "name": "LLM-Generated Software",
+      "description": "Software can be generated by large language models, automating parts of the development process and reducing the need for human coding, with potential impacts on efficiency, creativity, and the role of developers."
+    }
+  ],
+  "Software Methodology": [
+    {
+      "name": "Extreme Programming (XP)",
+      "description": "A development methodology that emphasizes rapid development cycles, continuous testing, and close customer collaboration to improve software quality."
+    },
+    {
+      "name": "Test-Driven Development (TDD)",
+      "description": "A development practice where tests are written before code, ensuring that new code passes predefined tests and meets specific requirements."
+    },
+    {
+      "name": "Behavior-Driven Development (BDD)",
+      "description": "An approach to development that defines software behavior in terms of user interaction and business outcomes, using natural language to describe tests."
+    },
+    {
+      "name": "DevOps",
+      "description": "A culture and practice that unites software development and IT operations to improve collaboration and streamline the process of deploying code."
+    },
+    {
+      "name": "Waterfall Development",
+      "description": "A traditional software development model where each phase is completed sequentially, and progress flows in one direction, from requirements to maintenance."
+    },
+    {
+      "name": "Lean Software Development",
+      "description": "An approach that emphasizes efficiency by eliminating waste, improving flow, and delivering value quickly with minimal overhead."
+    },
+    {
+      "name": "Agile Development",
+      "description": "A development methodology emphasizing flexibility, collaboration, and iterative releases to quickly adapt to changing requirements."
+    },
+    {
+      "name": "Scrum",
+      "description": "An Agile framework that uses short development cycles (sprints) and daily stand-up meetings to incrementally deliver software and adjust to feedback."
+    },
+    {
+      "name": "Continuous Integration (CI)",
+      "description": "A development practice where code changes are frequently integrated into a shared repository and tested automatically to detect integration issues early."
+    },
+    {
+      "name": "Continuous Deployment (CD)",
+      "description": "A practice where code is automatically deployed to production as soon as it passes testing, ensuring rapid delivery of new features and bug fixes."
+    }
+  ],
+  "Software Licensing": [
+    {
+      "name": "Open Source Software",
+      "description": "Software source code should be made publicly available."
+    },
+    {
+      "name": "Free Software",
+      "description": "Software should be freely used, modified, and shared by users."
+    },
+    {
+      "name": "Copyleft Software",
+      "description": "Software licenses should ensure that derivative works are also freely available and cannot be made proprietary."
+    },
+    {
+      "name": "Proprietary Software",
+      "description": "Software that is privately owned, with restrictions on how it can be used, modified, and distributed, often used to protect commercial interests."
+    },
+    {
+      "name": "Permissive Licensing",
+      "description": "Software licenses should allow users to freely modify and redistribute the code, including in proprietary software, with minimal restrictions."
+    },
+    {
+      "name": "Creative Commons for Software",
+      "description": "Software should be licensed under Creative Commons, giving users flexible rights to share, remix, or use code in specific ways while respecting the author's terms."
+    },
+    {
+      "name": "Public Domain Software",
+      "description": "Software should be placed in the public domain, allowing anyone to use, modify, and distribute it without any restrictions or obligations."
+    },
+    {
+      "name": "SaaS Licensing",
+      "description": "Software can be licensed as a service, where users subscribe to access the software, but do not own or control the underlying code."
+    },
+    {
+      "name": "Dual Licensing",
+      "description": "Software can be made available under two licenses, allowing users to choose between open-source or proprietary licensing based on their needs."
+    },
+    {
+      "name": "EULA (End User License Agreement)",
+      "description": "Software can be licensed with strict usage terms defined in an EULA, which users must agree to before using the software, protecting the vendor’s rights."
+    },
+    {
+      "name": "Viral Licenses",
+      "description": "Software licensed under viral licenses requires that any derivative works also be distributed under the same license, ensuring that the license terms 'spread' to all future versions."
+    },
+    {
+      "name": "Parody Licenses",
+      "description": "Software is licensed under terms that parody traditional licenses, often using exaggerated or humorous conditions to make a point about licensing practices or software freedom."
+    }
+  ],
+  "Intellectual Property": [
+    {
+      "name": "Copyright",
+      "description": "Intellectual property should be strictly protected, with creators holding exclusive rights to control the use, distribution, and modification of their work."
+    },
+    {
+      "name": "Creative Commons",
+      "description": "Creators should voluntarily license their works under flexible terms, allowing others to use, modify, and distribute the content under specific conditions."
+    },
+    {
+      "name": "Patent System",
+      "description": "Inventors should be granted exclusive rights to their inventions for a limited time, encouraging innovation by providing economic incentives."
+    },
+    {
+      "name": "Anti-Patent Movement",
+      "description": "The patent system stifles innovation and should be abolished, as it creates monopolies and limits access to important technologies."
+    },
+    {
+      "name": "Fair Use Doctrine",
+      "description": "Certain uses of copyrighted material, such as for criticism, education, or parody, should be allowed without needing the creator's permission."
+    },
+    {
+      "name": "Piracy as Protest",
+      "description": "Piracy of digital content is a legitimate form of protest against the restrictive nature of current intellectual property laws."
+    },
+    {
+      "name": "Public Domain Advocacy",
+      "description": "Intellectual property should eventually enter the public domain."
+    },
+    {
+      "name": "Digital Rights Management (DRM)",
+      "description": "Technological measures like DRM can be implemented to prevent unauthorized copying and distribution of digital content."
+    },
+    {
+      "name": "Right to Repair",
+      "description": "Consumers should have the legal right to repair their own devices or have them repaired by third parties."
+    },
+    {
+      "name": "Moral Rights of Authors",
+      "description": "Authors should retain moral rights over their work, even after selling the copyright, ensuring that their work is not distorted or used inappropriately."
+    },
+    {
+      "name": "Copyleft",
+      "description": "Intellectual property licenses should ensure that derivative works remain free and open, preventing proprietary restrictions on modified versions."
+    },
+    {
+      "name": "Trademark Protection",
+      "description": "Trademarks should be protected to prevent confusion and fraud, ensuring that consumers can trust the origin and quality of branded goods."
+    },
+    {
+      "name": "Patent Troll Reform",
+      "description": "Laws should be reformed to prevent 'patent trolls' from exploiting the patent system by filing frivolous lawsuits against legitimate inventors and businesses."
+    }
+  ],
+  "Art": [
+    {
+      "name": "Minimalism",
+      "description": "A movement focused on simplicity and the reduction of form and content, where artworks emphasize purity of design and reject excess."
+    },
+    {
+      "name": "Abstract Expressionism",
+      "description": "An art movement that emphasizes spontaneous, automatic, or subconscious creation, rejecting realism in favor of abstraction and emotional expression."
+    },
+    {
+      "name": "Realism",
+      "description": "An artistic approach that aims to depict subjects as they are in everyday life, without embellishment or interpretation, often in opposition to abstract or idealized styles."
+    },
+    {
+      "name": "Surrealism",
+      "description": "A movement that seeks to express the unconscious mind, combining dream-like imagery with reality to create fantastical, illogical scenes."
+    },
+    {
+      "name": "Conceptual Art",
+      "description": "An art form where the idea or concept behind the artwork takes precedence over its aesthetic or material form, often challenging traditional notions of art."
+    },
+    {
+      "name": "Impressionism",
+      "description": "A movement focused on capturing the effects of light and atmosphere, using visible brush strokes and often depicting scenes from everyday life."
+    },
+    {
+      "name": "Pop Art",
+      "description": "An art movement that draws inspiration from popular culture, mass media, and consumerism, often using imagery from advertisements, comic books, and everyday objects."
+    },
+    {
+      "name": "Futurism",
+      "description": "A movement that celebrates technology, speed, and the dynamism of modern life, often depicting motion and rejecting traditional forms and values."
+    },
+    {
+      "name": "Dadaism",
+      "description": "An anti-art movement that rejects traditional aesthetics and conventions, often embracing absurdity, chaos, and spontaneity to challenge the norms of art and society."
+    },
+    {
+      "name": "Art Brut (Outsider Art)",
+      "description": "A movement that celebrates the work of self-taught, untrained artists, often focusing on raw, unrefined expression outside of traditional art institutions."
+    },
+    {
+      "name": "Street Art",
+      "description": "A form of public, often unauthorized, art that includes graffiti and murals, used to challenge the boundaries of traditional art spaces and convey social and political messages."
+    },
+    {
+      "name": "Art for Art's Sake",
+      "description": "A philosophy that argues art should be valued for its beauty and aesthetic qualities alone, without any need for moral, political, or social justification."
+    },
+    {
+      "name": "Hyperrealism",
+      "description": "A genre of art in which the artist seeks to create artwork that mimics high-definition reality, often indistinguishable from photographs."
+    },
+    {
+      "name": "Romanticism",
+      "description": "A movement that emphasizes emotion, individualism, and the sublime in nature, often in contrast to the rationalism of the Enlightenment."
+    },
+    {
+      "name": "Cubism",
+      "description": "A revolutionary movement that breaks subjects into geometric forms, representing multiple viewpoints at once and rejecting traditional perspectives."
+    },
+    {
+      "name": "Expressionism",
+      "description": "A movement that seeks to express emotional experience rather than physical reality, often using exaggerated colors and distorted forms to convey inner turmoil or angst."
+    },
+    {
+      "name": "Constructivism",
+      "description": "A movement that emerged in Russia, emphasizing art as a tool for social and political purposes, with a focus on abstract, geometric forms and industrial materials."
+    },
+    {
+      "name": "Modernism",
+      "description": "A broad movement that embraces innovation, rejecting traditional forms and conventions in favor of experimentation and new modes of expression."
+    },
+    {
+      "name": "Postmodernism",
+      "description": "A reaction against modernism, questioning notions of originality, authorship, and the grand narratives of history, often embracing irony, parody, and pastiche."
+    },
+    {
+      "name": "Metamodernism",
+      "description": "Art should oscillate between modernist sincerity and postmodern irony, blending emotional depth with playful ambiguity to reflect the complexity of contemporary experience."
+    },
+    {
+      "name": "Performance Art",
+      "description": "An art form that combines visual art with live performance, where the body of the artist or others becomes the medium, often emphasizing interaction and temporality."
+    },
+    {
+      "name": "Socially Engaged Art",
+      "description": "An approach to art that emphasizes direct interaction with social issues, often involving collaboration with communities and focusing on activism and political change."
+    },
+    {
+      "name": "Symbolism",
+      "description": "A movement that uses symbolic imagery to represent ideas, emotions, or states of mind, often focusing on mysticism, spirituality, and the imagination."
+    },
+    {
+      "name": "Folk Art",
+      "description": "Art created by people with no formal training, often reflecting traditional culture, community values, and everyday life."
+    },
+    {
+      "name": "Bauhaus",
+      "description": "A school of design and architecture that emphasizes function and simplicity, integrating art, craft, and technology to create a unified modern aesthetic."
+    },
+    {
+      "name": "Abstract Art",
+      "description": "Art that does not attempt to represent reality, instead using shapes, colors, and forms to achieve its effect, often focusing on the emotional or conceptual."
+    },
+    {
+      "name": "Naive Art",
+      "description": "A style of art characterized by a childlike simplicity and lack of formal technique, often created by self-taught artists."
+    }
+  ],
+  "Inter-personal Relations": [
+    {
+      "name": "Strict Personal Boundaries",
+      "description": "Individuals should maintain firm boundaries in relationships and interactions, protecting their emotional, physical, and mental space from intrusion."
+    },
+    {
+      "name": "Flexible Boundaries",
+      "description": "Personal boundaries should be adaptable, allowing for negotiation and adjustment depending on the context and relationships."
+    },
+    {
+      "name": "Permeable Boundaries",
+      "description": "Personal boundaries should be minimal, allowing for deep connection and openness, even at the risk of emotional or personal vulnerability."
+    },
+    {
+      "name": "Emotional Boundaries",
+      "description": "It is important to protect one's emotional well-being by separating personal emotions from the emotions of others and not allowing others to dictate how one feels."
+    },
+    {
+      "name": "Physical Boundaries",
+      "description": "Individuals have the right to control physical access to their bodies, and clear consent should be required for any physical interaction."
+    },
+    {
+      "name": "Intellectual Boundaries",
+      "description": "A person's thoughts, ideas, and opinions should be respected, and no one has the right to invalidate or impose on another's beliefs or intellectual space."
+    },
+    {
+      "name": "Digital Boundaries",
+      "description": "Personal information and online interactions should be protected, with clear limits on what data is shared and how digital relationships are managed."
+    },
+    {
+      "name": "No Boundaries Philosophy",
+      "description": "Human connections should be completely open and boundary-less, allowing for full access to each other’s lives, thoughts, and emotions without restrictions."
+    },
+    {
+      "name": "Professional Boundaries",
+      "description": "Work relationships should have clear limits to maintain professionalism and prevent personal matters from interfering with business responsibilities."
+    },
+    {
+      "name": "Boundary Crossing for Growth",
+      "description": "Occasionally crossing personal boundaries is acceptable if it leads to personal or relational growth, fostering stronger connections or self-awareness."
+    },
+    {
+      "name": "Consent-Based Boundaries",
+      "description": "All personal boundaries should be defined by mutual consent, ensuring that individuals agree on how much space or access is allowed in any interaction."
+    },
+    {
+      "name": "Boundary Enforcement",
+      "description": "It is essential to actively enforce personal boundaries and make clear when they are violated, to maintain respect and personal well-being."
+    },
+    {
+      "name": "Boundaries in Friendship",
+      "description": "Friendships should have established boundaries to prevent emotional dependence, misunderstandings, or overstepping personal limits."
+    },
+    {
+      "name": "Codependency Rejection",
+      "description": "Individuals should avoid codependent relationships where personal boundaries are blurred, and one person sacrifices their needs for another."
+    },
+    {
+      "name": "Cultural Boundaries",
+      "description": "Cultural norms should define boundaries in social interactions, and people should respect those boundaries based on cultural values."
+    }
+  ],
+  "Gender Roles and Identity": [
+    {
+      "name": "Gender Essentialism",
+      "description": "Men and women have distinct, biologically determined roles and characteristics that should guide their behavior and social roles."
+    },
+    {
+      "name": "Gender Fluidity",
+      "description": "Gender is not fixed and can change over time, allowing individuals to identify with different gender expressions throughout their life."
+    },
+    {
+      "name": "Non-Binary Identity",
+      "description": "Gender exists beyond the male/female binary, and individuals can identify as non-binary, rejecting traditional gender categories."
+    },
+    {
+      "name": "Traditional Gender Roles",
+      "description": "Men should provide for the family, while women should take care of the home and children, reflecting historical norms."
+    },
+    {
+      "name": "Gender Abolitionism",
+      "description": "Society should eliminate all distinctions between genders, allowing individuals to define themselves without reference to gender."
+    },
+    {
+      "name": "Transsexuality",
+      "description": "Individuals should have the right to transition from one gender to another through medical procedures and hormonal treatments, with legal recognition of their affirmed gender."
+    },
+    {
+      "name": "Xenogenders",
+      "description": "Gender identity can extend beyond traditional male/female or binary categories, encompassing nonhuman-related identities and diverse, culturally-specific gender expressions."
+    },
+    {
+      "name": "Radical Feminism",
+      "description": "Gender inequality is rooted in patriarchy, and society must radically restructure to dismantle male dominance."
+    },
+    {
+      "name": "Queer Theory",
+      "description": "Gender and sexuality are social constructs, and society should challenge traditional views to embrace diverse identities and expressions."
+    }
+  ],
+  "Community Living": [
+    {
+      "name": "Intentional Communities",
+      "description": "People should live together based on shared values, pooling resources and cooperating to achieve common goals."
+    },
+    {
+      "name": "Urban Living",
+      "description": "Living in densely populated cities provides access to culture, jobs, and social opportunities that are essential to modern life."
+    },
+    {
+      "name": "Suburban Living",
+      "description": "Living in suburban areas offers the best balance of space, safety, and access to community services."
+    },
+    {
+      "name": "Rural Living",
+      "description": "Living in rural areas provides peace, self-sufficiency, and a strong connection to nature, away from the pressures of urban life."
+    },
+    {
+      "name": "Co-Housing",
+      "description": "Individuals should live in shared housing communities, where resources and responsibilities are distributed to enhance social cohesion."
+    },
+    {
+      "name": "Gated Communities",
+      "description": "Living in a gated community provides safety, exclusivity, and control over the neighborhood’s environment."
+    },
+    {
+      "name": "Communal Living",
+      "description": "All resources and responsibilities should be shared among a group of people living together, promoting collective ownership and equality."
+    },
+    {
+      "name": "Co-Living",
+      "description": "Individuals should share living spaces with others, usually in urban settings, focusing on affordability, social interaction, and shared amenities."
+    }
+  ],
+  "Conflict Resolution": [
+    {
+      "name": "Nonviolent Communication",
+      "description": "Conflicts should be resolved through compassionate, nonjudgmental communication that promotes understanding and empathy."
+    },
+    {
+      "name": "Mediation",
+      "description": "A neutral third party should help individuals resolve their disputes through dialogue and compromise."
+    },
+    {
+      "name": "Litigation",
+      "description": "Legal action through the courts is the best way to resolve serious conflicts, ensuring justice and accountability."
+    },
+    {
+      "name": "Arbitration",
+      "description": "A neutral arbitrator should make binding decisions in disputes, providing a faster and less formal alternative to court."
+    },
+    {
+      "name": "Diplomacy",
+      "description": "Conflicts between groups or nations should be resolved through negotiations and formal agreements rather than force."
+    },
+    {
+      "name": "Pacifism",
+      "description": "All forms of violence are morally wrong, and conflicts should be resolved through peaceful means."
+    },
+    {
+      "name": "Militarism",
+      "description": "Conflicts should be resolved through the use of force or military action when other methods fail, as it can be the quickest way to achieve decisive outcomes."
+    }
+  ],
+  "Social Equality": [
+    {
+      "name": "Equal Opportunity",
+      "description": "Everyone should have the same opportunities to succeed, regardless of their background, gender, race, or economic status."
+    },
+    {
+      "name": "Meritocracy",
+      "description": "Individuals should be rewarded and advanced based on their abilities and efforts, without regard to social class, race, or other background factors."
+    },
+    {
+      "name": "Affirmative Action",
+      "description": "Policies should be implemented to give historically marginalized groups preferential access to education, employment, and resources to correct past injustices."
+    },
+    {
+      "name": "Income Equality",
+      "description": "Income should be distributed more evenly across society to reduce the gap between the rich and the poor, ensuring a fairer economic system."
+    },
+    {
+      "name": "Gender Equality",
+      "description": "Men and women should have equal rights, responsibilities, and opportunities in all areas of life, from the workplace to personal relationships."
+    },
+    {
+      "name": "Racial Equality",
+      "description": "People of all races should have equal rights and opportunities, and systemic racism should be dismantled through social and legal reforms."
+    },
+    {
+      "name": "Class Equality",
+      "description": "Society should work to reduce or eliminate class distinctions, ensuring that wealth, power, and resources are distributed more equally."
+    },
+    {
+      "name": "LGBTQ+ Rights",
+      "description": "People of all sexual orientations and gender identities should have equal rights and protections, including legal recognition and freedom from discrimination."
+    },
+    {
+      "name": "Disability Rights",
+      "description": "People with disabilities should have equal access to all areas of life, including employment, education, and public spaces, with necessary accommodations."
+    },
+    {
+      "name": "Intersectionality",
+      "description": "Social equality should account for the interconnected nature of race, gender, class, and other identities, recognizing how overlapping forms of discrimination affect individuals."
+    },
+    {
+      "name": "Reparations",
+      "description": "Financial or material compensation should be provided to historically oppressed or marginalized groups to address the harm caused by past injustices."
+    }
+  ],
+  "Military Service": [
+    {
+      "name": "Mandatory Military Service",
+      "description": "All eligible citizens should be required to serve in the military for a period of time to foster national unity and preparedness."
+    },
+    {
+      "name": "Volunteer Military Service",
+      "description": "Military service should be voluntary, and only those who choose to serve should be enlisted, ensuring personal freedom and choice."
+    },
+    {
+      "name": "Conscientious Objection",
+      "description": "Individuals should have the right to refuse military service on moral or religious grounds without facing penalties or forced conscription."
+    },
+    {
+      "name": "Selective Service for Men Only",
+      "description": "Military conscription should apply only to men, whether voluntary or conscripted."
+    },
+    {
+      "name": "Gender Equality in Military Service",
+      "description": "Both men and women should be equally eligible for military service, whether voluntary or conscripted, to promote gender equality."
+    },
+    {
+      "name": "Professional Military",
+      "description": "The military should consist solely of professional, full-time soldiers who have voluntarily chosen it as their career."
+    },
+    {
+      "name": "Military Exemptions for the Wealthy",
+      "description": "Wealthy individuals should be able to avoid military service by paying a fee or hiring substitutes, as has been practiced historically in some nations."
+    },
+    {
+      "name": "Universal Conscription in Wartime",
+      "description": "During times of war or national emergency, all eligible citizens should be subject to conscription to defend the nation, regardless of personal objections."
+    },
+    {
+      "name": "Military Service as a Path to Citizenship",
+      "description": "Non-citizens should be allowed to gain citizenship by serving in the military, providing an opportunity for service in exchange for legal status."
+    },
+    {
+      "name": "Abolition of Military Conscription",
+      "description": "Conscription should be completely abolished, as forcing individuals into military service violates personal freedoms and autonomy."
+    },
+    {
+      "name": "Pacifism and Military Avoidance",
+      "description": "People should reject military service and war entirely, promoting pacifism and non-violent conflict resolution as alternatives to military action."
+    },
+    {
+      "name": "Selective Conscription Based on Skill",
+      "description": "Only individuals with certain skills, such as technical expertise or medical training, should be conscripted, ensuring the military has the specialized abilities it needs."
+    }
+  ],
+  "Cultural Integration": [
+    {
+      "name": "Multiculturalism",
+      "description": "Different cultures should coexist in society, with each preserving its identity while contributing to a shared national identity."
+    },
+    {
+      "name": "Cultural Assimilation",
+      "description": "Immigrants and minority groups should adopt the customs and values of the dominant culture in their new society."
+    },
+    {
+      "name": "Cultural Preservation",
+      "description": "Efforts should be made to preserve and protect traditional cultures from outside influences and modernization."
+    },
+    {
+      "name": "Isolationism",
+      "description": "Foreign cultures and people should be viewed with suspicion, as they may threaten the established way of life."
+    },
+    {
+      "name": "Globalism",
+      "description": "Cultural integration should be encouraged worldwide, with the free exchange of ideas, goods, and people across borders."
+    },
+    {
+      "name": "Cosmopolitanism",
+      "description": "All human beings are members of a single global community, and people should prioritize global citizenship over national or cultural identities."
+    },
+    {
+      "name": "Cultural Appropriation",
+      "description": "Borrowing elements from another culture, such as fashion, language, or rituals, is acceptable and enriches society by fostering cross-cultural understanding."
+    }
+  ],
+  "Healthcare": [
+    {
+      "name": "Universal Healthcare",
+      "description": "The government should provide healthcare to all citizens, ensuring equal access to medical services regardless of income."
+    },
+    {
+      "name": "Private Healthcare",
+      "description": "Healthcare should be provided by private companies, allowing competition to drive quality and efficiency, while patients pay for services."
+    },
+    {
+      "name": "Preventative Medicine",
+      "description": "The focus of healthcare should be on preventing illness through lifestyle changes, regular check-ups, and early interventions."
+    },
+    {
+      "name": "Holistic Healthcare",
+      "description": "Healthcare should address the whole person, integrating physical, mental, and spiritual well-being in treatments."
+    },
+    {
+      "name": "Alternative Medicine",
+      "description": "Non-traditional treatments like acupuncture, herbal remedies, and homeopathy should be embraced as valid approaches to health."
+    },
+    {
+      "name": "Mental Health Advocacy",
+      "description": "Mental health should be prioritized as equally important as physical health, with widespread access to psychological care."
+    },
+    {
+      "name": "Antipsychiatry",
+      "description": "Mental illness should not be treated as a medical issue, and psychiatric treatments such as medication and institutionalization are harmful and oppressive."
+    }
+  ],
+  "Parenting": [
+    {
+      "name": "Authoritative Parenting",
+      "description": "Parents should set clear rules and expectations while also being responsive to their children’s needs and encouraging independence."
+    },
+    {
+      "name": "Authoritarian Parenting",
+      "description": "Parents should maintain strict control over their children’s behavior, prioritizing obedience and discipline over freedom."
+    },
+    {
+      "name": "Permissive Parenting",
+      "description": "Parents should be lenient, allowing children to make their own decisions without imposing strict rules or discipline."
+    },
+    {
+      "name": "Helicopter Parenting",
+      "description": "Parents should closely monitor and control every aspect of their children’s lives to protect them from harm and ensure success."
+    },
+    {
+      "name": "Free-Range Parenting",
+      "description": "Children should be given the freedom to explore the world and take risks, allowing them to develop independence and problem-solving skills."
+    },
+    {
+      "name": "Attachment Parenting",
+      "description": "Parents should form strong emotional bonds with their children through practices like co-sleeping and baby-wearing to promote emotional security."
+    }
+  ],
+  "Education": [
+    {
+      "name": "Traditional Schooling",
+      "description": "Education should be structured and teacher-led, focusing on academic achievement, discipline, and standardized testing."
+    },
+    {
+      "name": "Montessori Education",
+      "description": "Children should learn at their own pace through hands-on, self-directed activities, with teachers serving as guides rather than instructors."
+    },
+    {
+      "name": "Progressive Education",
+      "description": "Education should focus on experiential learning, critical thinking, and developing social and emotional skills rather than rote memorization."
+    },
+    {
+      "name": "Homeschooling",
+      "description": "Parents should take responsibility for their children’s education, teaching them at home and tailoring lessons to their individual needs."
+    },
+    {
+      "name": "Unschooling",
+      "description": "Children should direct their own learning based on their interests, with minimal formal instruction or structure."
+    },
+    {
+      "name": "Charter Schools",
+      "description": "Education should be provided by publicly funded but independently run schools that operate outside traditional school district regulations."
+    }
+  ],
+  "Workplace Culture": [
+    {
+      "name": "Flat Hierarchy",
+      "description": "Workplaces should minimize levels of hierarchy, promoting collaboration and equality among all employees regardless of rank."
+    },
+    {
+      "name": "Traditional Corporate Culture",
+      "description": "Workplaces should maintain clear hierarchies and formal structures, with strict roles, responsibilities, and protocols."
+    },
+    {
+      "name": "Work-Life Integration",
+      "description": "Work and personal life should be seamlessly integrated, with flexible schedules and environments that accommodate both."
+    },
+    {
+      "name": "Remote Work",
+      "description": "Employees should be allowed to work from home or any location of their choice, with a focus on results rather than physical presence."
+    },
+    {
+      "name": "Collaborative Culture",
+      "description": "Workplaces should emphasize teamwork and shared decision-making, encouraging employees to contribute ideas and work together toward goals."
+    },
+    {
+      "name": "Performance-Based Culture",
+      "description": "Employees should be rewarded and promoted based on their performance, with a focus on measurable outcomes and meritocracy."
+    },
+    {
+      "name": "Location-Based Compensation",
+      "description": "Employee compensation should be adjusted based on the cost of living in their location"
+    },
+    {
+      "name": "Digital Nomadism",
+      "description": "People should embrace the freedom of working remotely and traveling the world, using technology to live and work from anywhere."
+    },
+    {
+      "name": "Gig Economy",
+      "description": "The gig economy offers flexibility and independence for workers, allowing them to choose their own hours and work on a project basis, but it often lacks job security and benefits."
+    },
+    {
+      "name": "Labor Unions",
+      "description": "Labor unions are essential for protecting workers' rights, improving wages, and ensuring safe working conditions by providing collective bargaining power against employers."
+    }
+  ],
+  "Privacy": [
+    {
+      "name": "Privacy as a Fundamental Right",
+      "description": "Individuals should have an absolute right to privacy, and governments or corporations should not be able to intrude on personal data or communications without consent."
+    },
+    {
+      "name": "Data Transparency",
+      "description": "While privacy is important, transparency of personal data is necessary in certain contexts, such as public safety or legal investigations, to ensure accountability."
+    },
+    {
+      "name": "End-to-End Encryption",
+      "description": "All digital communications should be protected by end-to-end encryption, ensuring that only the communicating parties can access the content."
+    },
+    {
+      "name": "Anonymity Online",
+      "description": "People should have the right to remain anonymous online, protecting their identity while using the internet for communication, browsing, or transactions."
+    },
+    {
+      "name": "Government Surveillance for Security",
+      "description": "Governments should have the ability to monitor communications and data to prevent crime and terrorism, even if it compromises individual privacy."
+    },
+    {
+      "name": "Privacy-First Technology",
+      "description": "Technology companies should prioritize user privacy, designing services and devices that minimize data collection and protect user information by default."
+    },
+    {
+      "name": "Opt-In Data Sharing",
+      "description": "Users should explicitly consent to any data collection or sharing, with clear and transparent policies explaining how their data is used."
+    },
+    {
+      "name": "The Right to Be Forgotten",
+      "description": "Individuals should have the right to request the deletion of their personal data from online platforms, ensuring control over their digital footprint."
+    },
+    {
+      "name": "Decentralized Privacy Solutions",
+      "description": "Decentralized technologies should be used to protect privacy, enabling individuals to manage and control their own data without reliance on centralized entities."
+    },
+    {
+      "name": "Corporate Data Ownership",
+      "description": "Corporations that collect personal data should retain ownership of that data and be free to use it for commercial purposes."
+    }
+  ],
+  "Freedom of Expression": [
+    {
+      "name": "Absolute Freedom of Speech",
+      "description": "People should have the unrestricted right to express any opinion, no matter how controversial, without censorship or legal repercussions."
+    },
+    {
+      "name": "Limited Free Speech",
+      "description": "Freedom of speech should have limits, especially when it incites violence, spreads hate, or promotes false information that could harm others."
+    },
+    {
+      "name": "Censorship for Public Safety",
+      "description": "The government or platforms should censor speech that poses a threat to public safety, such as terrorism or extreme hate speech."
+    },
+    {
+      "name": "Corporate Regulation of Speech",
+      "description": "Social media platforms and tech companies have the right to regulate content and speech on their platforms, ensuring they comply with community standards."
+    },
+    {
+      "name": "Freedom of the Press",
+      "description": "The press should be free from government interference and censorship, allowing journalists to report on matters of public interest without fear of retaliation."
+    },
+    {
+      "name": "Net Neutrality",
+      "description": "Internet service providers should treat all data on the internet equally, without giving priority to certain websites, services, or content, ensuring a free and open internet."
+    },
+    {
+      "name": "Anonymity and Free Speech",
+      "description": "Individuals should have the right to express opinions anonymously, especially in contexts where revealing their identity could result in personal harm."
+    },
+    {
+      "name": "Free Speech in Academia",
+      "description": "Academic institutions should protect free speech, allowing for the open exchange of ideas, even those that challenge prevailing norms or are unpopular."
+    },
+    {
+      "name": "Artistic Freedom",
+      "description": "Artists should have the freedom to express themselves through their art without censorship, even if their work is provocative, controversial, or offensive to some."
+    },
+    {
+      "name": "Political Correctness",
+      "description": "Speech should be mindful of and sensitive to marginalized groups, and harmful or offensive language should be discouraged to promote inclusivity."
+    },
+    {
+      "name": "Content Moderation by Algorithms",
+      "description": "Algorithms should be used to monitor and moderate online content, automatically flagging and removing harmful or illegal speech."
+    },
+    {
+      "name": "Free Speech in Protests",
+      "description": "People should have the right to engage in peaceful protest and demonstrations, expressing dissent or opposition to government policies without fear of repression."
+    },
+    {
+      "name": "Blasphemy and Religious Critique",
+      "description": "Freedom of expression should include the right to criticize or satirize religious beliefs, even if it offends some members of those religious communities."
+    },
+    {
+      "name": "Free Speech in Digital Spaces",
+      "description": "Online platforms should protect free expression, ensuring that users can share their ideas and opinions freely without undue censorship or suppression."
+    },
+    {
+      "name": "Safe Spaces and Speech",
+      "description": "Certain spaces should prioritize emotional and psychological safety over unrestricted speech, limiting potentially harmful discourse."
+    },
+    {
+      "name": "Online Platform Responsibility",
+      "description": "Platforms should be held accountable for the content they host, taking responsibility for moderating harmful, illegal, or misleading content."
+    }
+  ],
+  "Reproductive Rights and Family Law": [
+    {
+      "name": "Pro-Choice",
+      "description": "Individuals should have the right to make decisions about abortion, with access to safe and legal abortion services."
+    },
+    {
+      "name": "Parental Leave Equality",
+      "description": "Both parents should have equal access to paid parental leave, ensuring that caregiving responsibilities are shared and that all parents can bond with their children."
+    },
+    {
+      "name": "Same-Sex Adoption",
+      "description": "Same-sex couples should have the same rights as heterosexual couples to adopt and raise children, with the best interest of the child being paramount."
+    },
+    {
+      "name": "Surrogacy",
+      "description": "Individuals should have the right to pursue surrogacy as a means of having children, with clear legal protections for all parties involved."
+    },
+    {
+      "name": "Child Custody Equality",
+      "description": "In cases of divorce or separation, custody should be awarded equally between both parents unless there are significant reasons not to, ensuring that children maintain strong relationships with both parents."
+    },
+    {
+      "name": "Single-Parent Adoption",
+      "description": "Single individuals should have the right to adopt children, with no additional barriers compared to couples."
+    },
+    {
+      "name": "Parental Consent for Minors' Medical Procedures",
+      "description": "Parents should have the legal right to consent to or veto medical procedures for their children, including reproductive health services."
+    },
+    {
+      "name": "Adolescent Reproductive Autonomy",
+      "description": "Adolescents should have the right to access reproductive health services, including contraception and abortion, without parental consent."
+    },
+    {
+      "name": "No-Fault Divorce",
+      "description": "Couples should be allowed to divorce without proving fault, allowing for the dissolution of marriage without assigning blame."
+    },
+    {
+      "name": "Marriage Equality",
+      "description": "Marriage should be legally recognized for all couples, regardless of gender or sexual orientation."
+    },
+    {
+      "name": "Fertility Treatment",
+      "description": "Individuals and couples should have access to fertility treatments, including in vitro fertilization (IVF)."
+    }
+  ],
+  "Cryptocurrency": [
+    {
+      "name": "Bitcoin Maximalism",
+      "description": "Bitcoin is the only cryptocurrency that will succeed in the long term, and other cryptocurrencies are either unnecessary or harmful to the ecosystem."
+    },
+    {
+      "name": "Altcoin Support",
+      "description": "A diverse ecosystem of cryptocurrencies beyond Bitcoin is necessary for innovation and to address different use cases within blockchain technology."
+    },
+    {
+      "name": "Proof of Work (PoW)",
+      "description": "Consensus should be achieved through miners solving complex mathematical puzzles, ensuring security through computational power."
+    },
+    {
+      "name": "Proof of Stake (PoS)",
+      "description": "Consensus should be achieved by validators who hold and 'stake' cryptocurrency, with security ensured by economic incentives rather than computation."
+    },
+    {
+      "name": "Proof of Authority (PoA)",
+      "description": "A small group of trusted authorities should validate transactions, as this reduces energy consumption and improves efficiency compared to PoW."
+    },
+    {
+      "name": "Decentralization",
+      "description": "Cryptocurrencies and blockchain networks should remain fully decentralized, with no single point of control, to preserve user sovereignty and security."
+    },
+    {
+      "name": "Centralized Control",
+      "description": "Cryptocurrencies should be subject to some level of centralized control or regulation to ensure stability, security, and wider adoption."
+    },
+    {
+      "name": "Private Blockchains",
+      "description": "Enterprises and organizations should use private or permissioned blockchains for efficiency and control, rather than relying on fully public blockchains."
+    },
+    {
+      "name": "Public Blockchains",
+      "description": "Public blockchains that are open and accessible to anyone are essential for transparency and true decentralization."
+    },
+    {
+      "name": "Smart Contracts",
+      "description": "Self-executing contracts with code running on blockchain platforms like Ethereum should be widely adopted to automate and enforce agreements without intermediaries."
+    },
+    {
+      "name": "Tokenization of Assets",
+      "description": "Real-world assets should be represented as digital tokens on blockchain networks to enable more efficient trading, ownership, and management."
+    },
+    {
+      "name": "Decentralized Finance (DeFi)",
+      "description": "Financial services like lending, borrowing, and trading should be decentralized using blockchain technology, removing the need for traditional financial intermediaries."
+    },
+    {
+      "name": "Layer 2 Solutions",
+      "description": "Scalability issues on blockchains should be addressed with Layer 2 solutions that handle transactions off-chain while maintaining the security of the base layer."
+    },
+    {
+      "name": "Energy Efficiency in Blockchain",
+      "description": "Blockchain networks should prioritize energy-efficient consensus mechanisms to minimize their environmental impact."
+    },
+    {
+      "name": "Non-Fungible Tokens (NFTs)",
+      "description": "Digital ownership of unique assets, such as art or collectibles, can be tokenized and verified on blockchain through NFTs, creating new markets for digital goods."
+    },
+    {
+      "name": "Forking Blockchains",
+      "description": "Forking a blockchain to create new versions or competing networks is a valid way to resolve disagreements within the community and allow for innovation."
+    },
+    {
+      "name": "Governance Tokens",
+      "description": "Cryptocurrency networks should use governance tokens that allow token holders to vote on changes and decisions within the network."
+    },
+    {
+      "name": "Blockchain Interoperability",
+      "description": "Different blockchain networks should be designed to work together, allowing for the seamless transfer of assets and information between them."
+    },
+    {
+      "name": "MEV (Maximal Extractable Value) as an Inevitable Cost",
+      "description": "MEV is an unavoidable byproduct of blockchain systems, and efforts should focus on minimizing its impact rather than eliminating it entirely."
+    },
+    {
+      "name": "Eliminating MEV",
+      "description": "Blockchain designs should prioritize eliminating MEV entirely, as it incentivizes harmful behaviors like frontrunning and manipulation by validators."
+    },
+    {
+      "name": "Redistributing MEV",
+      "description": "MEV should be redistributed to all network participants, ensuring that no single group benefits disproportionately from its extraction."
+    },
+    {
+      "name": "Auction-Based MEV Extraction",
+      "description": "MEV extraction should be managed through transparent auctions, where the value extracted is bid on, rather than letting validators exploit it arbitrarily."
+    },
+    {
+      "name": "Fully-Pegged Stablecoins",
+      "description": "Stablecoins, which are pegged to a stable asset like the US dollar, should be adopted for day-to-day transactions to avoid the volatility of traditional cryptocurrencies."
+    },
+    {
+      "name": "Fully Algorithmic Stablecoins",
+      "description": "Algorithmic stablecoins, which use algorithms to adjust supply to maintain a stable value, are a promising solution to create decentralized, stable currencies."
+    },
+    {
+      "name": "Hybrid Stablecoins",
+      "description": "Algorithmic stablecoins should combine both algorithmic mechanisms and collateralized assets to improve their stability and reduce the risk of failure."
+    }
+  ],
+  "Criminal Justice": [
+    {
+      "name": "Rehabilitative Justice",
+      "description": "The focus of the criminal justice system should be on rehabilitating offenders and reintegrating them into society rather than punitive measures."
+    },
+    {
+      "name": "Retributive Justice",
+      "description": "Criminals should face punishments proportional to their crimes, with the justice system focused on deterrence and retribution."
+    },
+    {
+      "name": "Restorative Justice",
+      "description": "The criminal justice system should emphasize repairing harm caused by crime, involving victims and offenders in the resolution process."
+    },
+    {
+      "name": "Death Penalty",
+      "description": "The death penalty is a necessary form of justice for the most serious crimes, serving as a deterrent and form of retribution."
+    },
+    {
+      "name": "Decriminalization of Non-Violent Offenses",
+      "description": "Non-violent offenses, such as drug possession, should be decriminalized to reduce prison populations and focus on more serious crimes."
+    },
+    {
+      "name": "Zero Tolerance Policies",
+      "description": "Strict, uncompromising punishment should be applied for all crimes, ensuring consistency and deterrence across the justice system."
+    },
+    {
+      "name": "Police Reform",
+      "description": "Policing practices should be reformed to reduce systemic abuses, increase accountability, and better serve communities."
+    },
+    {
+      "name": "Prison Abolition",
+      "description": "The prison system should be dismantled and replaced with alternative forms of justice that do not rely on incarceration."
+    },
+    {
+      "name": "Community Policing",
+      "description": "Law enforcement should focus on building relationships with communities to prevent crime and increase trust between the police and citizens."
+    },
+    {
+      "name": "Three Strikes Laws",
+      "description": "Criminals who commit three serious offenses should receive life sentences, regardless of the nature of the third crime, to protect society from repeat offenders."
+    },
+    {
+      "name": "Restitution to Victims",
+      "description": "Offenders should be required to compensate victims for the harm caused by their crimes, with a focus on financial and emotional restitution."
+    },
+    {
+      "name": "Mandatory Minimum Sentencing",
+      "description": "Judges should impose mandatory minimum sentences for certain crimes to ensure consistent punishments across cases."
+    },
+    {
+      "name": "Prison Reform",
+      "description": "Prisons should be reformed to provide humane living conditions, access to education, and rehabilitation programs for inmates."
+    }
+   ],
+  "A Different Future": [
+    {
+      "name": "Effective Accelerationism",
+      "description": "Technological and social acceleration should be deliberately guided to create more equitable outcomes and avoid societal collapse."
+    },
+    {
+      "name": "Accelerationism",
+      "description": "The acceleration of capitalist and technological processes will inevitably lead to radical societal transformation, for better or worse."
+    },
+    {
+      "name": "Neoreaction (NRx)",
+      "description": "Democracy and egalitarianism should be replaced with hierarchical, authoritarian governance, rejecting the principles of modern liberalism."
+    },
+    {
+      "name": "Post-Scarcity",
+      "description": "With the advancement of technology, society should move toward a state where resources are abundant, and the need for money or work diminishes."
+    },
+    {
+      "name": "Techno-Feudalism",
+      "description": "Technological advances are leading to a new form of feudalism, where power and wealth are concentrated in the hands of tech elites."
+    },
+    {
+      "name": "Anarcho-Capitalism",
+      "description": "A stateless society should operate entirely through free markets and private property, with no government intervention."
+    },
+    {
+      "name": "Anarcho-Primitivism",
+      "description": "Modern technology and industrialization have caused environmental destruction and social alienation, and society should return to a simpler, pre-industrial way of life."
+    },
+    {
+      "name": "Geoengineering",
+      "description": "Humanity should actively manipulate the Earth's climate system through technologies like solar radiation management and carbon capture to combat climate change."
+    },
+    {
+      "name": "Antinatalism",
+      "description": "Bringing new life into the world is morally wrong due to the inherent suffering in human existence, and people should refrain from having children."
+    },
+    {
+      "name": "Dark Enlightenment",
+      "description": "Modern egalitarian values and democracy are flawed, and society should return to hierarchical structures led by elites."
+    },
+    {
+      "name": "Cybernetic Governance",
+      "description": "Society should be governed by AI and algorithms, replacing human decision-makers with data-driven, automated systems."
+    },
+    {
+      "name": "Post-Politics",
+      "description": "Traditional political ideologies are becoming obsolete in the face of technological advancement, and governance should transcend old political divisions."
+    },
+    {
+      "name": "Neoluddism",
+      "description": "Modern technology should be rejected, and society should return to simpler, pre-industrial ways of life to preserve the environment and human well-being."
+    },
+    {
+      "name": "Paleolibertarianism",
+      "description": "Personal freedom in economic matters should be combined with socially conservative values, promoting a free market but traditional morality."
+    },
+    {
+      "name": "Techno-Optimism",
+      "description": "Rapid technological progress will lead to significant improvements in human life, and should be embraced and accelerated."
+    },
+    {
+      "name": "Cathedral vs. Bazaar",
+      "description": "Top-down, centralized control (Cathedral) should be replaced by decentralized, bottom-up innovation (Bazaar) in society and technology."
+    },
+    {
+      "name": "Platform Feudalism",
+      "description": "Modern digital platforms act as feudal lords, controlling their ecosystems and users in a hierarchical structure akin to feudalism."
+    },
+    {
+      "name": "Agorism",
+      "description": "Individuals should engage in counter-economic activity by creating black or gray markets to bypass government regulations."
+    },
+    {
+      "name": "Libertarian Paternalism",
+      "description": "Governments and institutions should guide people's decisions toward better outcomes through subtle 'nudges' while preserving freedom of choice."
+    },
+    {
+      "name": "Posthumanism",
+      "description": "Humans should transcend their biological limitations through technology, merging with machines or evolving into new forms of life."
+    },
+    {
+      "name": "Left Accelerationism",
+      "description": "The acceleration of capitalist technologies should be harnessed to collapse capitalism and create post-capitalist social structures."
+    },
+    {
+      "name": "Corporate Sovereignty",
+      "description": "Large corporations will increasingly act as sovereign entities, taking on roles traditionally filled by governments in shaping law, policy, and society."
+    },
+    {
+      "name": "Post-Democracy",
+      "description": "Democracy is being replaced by elite-driven decision-making processes, and the average citizen's influence on governance is diminishing."
+    },
+    {
+      "name": "Seasteading",
+      "description": "New autonomous societies, often through seasteading or floating cities, offer a way to escape the constraints of traditional nation-states."
+    },
+    {
+      "name": "Globalist Technocracy",
+      "description": "Global governance should be led by technical experts who use data-driven approaches to solve complex global problems."
+    },
+    {
+      "name": "Zerocracy",
+      "description": "Future societies should be governed without human leadership, relying entirely on algorithms and decentralized systems to maintain order."
+    }
+  ]
+}

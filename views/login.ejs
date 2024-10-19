@@ -1,0 +1,15 @@
+<!-- views/login.ejs -->
+<h1>Login</h1>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/login" method="post">
+  <label for="username">Username:</label><br />
+  <input type="text" name="username" id="username" required autofocus/><br /><br />
+
+  <label for="password">Password:</label><br />
+  <input type="password" name="password" id="password" required /><br /><br />
+
+  <button type="submit">Login</button>
+</form>
+<p>Don't have an account? <a href="/register">Register here</a>.</p>

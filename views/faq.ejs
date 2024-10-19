@@ -1,0 +1,42 @@
+<h1>Discord?</h1>
+
+<a target="_blank" href="https://discord.gg/Zd3D4ryHEv">Here.</a>
+
+<h1>What are Core Beliefs?</h1>
+
+Core beliefs are beliefs that characterize you as a person. You can pick up to 20 of them by clicking the star symbol on a card. The piechart in your profile can be adjusted to express how much each of the core beliefs is important to you. The importance level of each belief must lie within 2% - 90% interval.
+<br>
+
+<img style="width: 600px; margin: 20px; border-radius: 10px;" src="./intro/5.png" title="Core Beliefs chart preview"></img>
+
+<h1>Can I change my password?</h1>
+
+<a href="/change-password">Click here</a>
+
+<h1>Can I export my data?</h1>
+
+<% if (user && user.id) { %>
+  <a href="/api/user-beliefs/<%= user.id %>">Click here</a>
+<% } else { %>
+  Use this URL: https://belief.garden/api/user-beliefs/your-username-here
+<% } %>
+
+<h1>Can I make my data private?</h1>
+
+No, but you can create a burner account.
+
+<h1>Can I delete my data?</h1>
+
+Go to <a href="/delete">/delete</a> while logged in.
+
+<h1>Can I add a new belief card?</h1>
+
+Please ask in Discord.
+
+<h1>How can I donate?</h1>
+
+BTC: bc1q4d6glmxvvpexaygw8jv3ehmwsq635hyagrct85
+
+<h1>Who made this?</h1>
+
+<a href="https://x.com/klntsky/">@klntsky</a> on twitter (<a href="https://vladimir.top">website</a> for contacts)

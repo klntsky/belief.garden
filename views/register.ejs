@@ -1,0 +1,16 @@
+<!-- views/register.ejs -->
+<h1>Register</h1>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/register" method="post">
+  <label>Username:</label><br />
+  <input type="text" name="username" required /><br />
+  <label>Password:</label><br />
+  <input type="password" name="password" required /><br />
+  <p>Note: Your data will be public.</p>
+  <p>Note: Password resets are not possible. You can change your password after logging in.</p>
+  <p>Note: Usernames must be 3 to 30 characters; alphanumeric, "-" and "_".</p>
+  <button type="submit">Register</button>
+</form>
+<p>Already have an account? <a href="/login">Login here</a>.</p>

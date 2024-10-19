@@ -1,0 +1,39 @@
+<!-- views/profile.ejs -->
+<div class="info-block">
+  <div class="pie-chart-container">
+    <h2>Core Beliefs</h2>
+    <div id="pie-chart-container">
+      <div id="no-favs" style="display: none;">None selected yet</div>
+    </div>
+  </div>
+  <div class="user-info">
+    <div class="top-right-box">
+      <h2>About <%= profileUserId %></h2>
+      <div class="user-bio">
+        <div class="user-bio-text"></div>
+      </div>
+    </div>
+    <div class="bottom-right-box">
+      <div id="correlation-container">
+        <% if (user && user.id) { %>
+        <% } else { %>
+          <a href="/login">Log in</a> to view correlation of beliefs
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="beliefs-container"></div>
+
+<script>
+  window.userId = '<%= profileUserId %>';
+  window.authenticatedUserId = '<%= user ? user.id : '' %>';
+</script>
+<script src="/static/script.js"></script>
+<script src="/static/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@14"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.0/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="/static/piechart.js"></script>
+<script src="/static/bio.js"></script>

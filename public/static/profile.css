@@ -1,0 +1,144 @@
+/* Styles for the info block */
+.info-block {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.pie-chart-container {
+  flex: 1;
+  margin-right: 20px;
+  width: 750px;
+}
+
+#pie-chart-container {
+    display: block;
+    width: 750px;
+    min-width: 750px;
+    overflow: auto;
+    height: 500px;
+}
+
+#pie-chart-container, .user-bio, .bottom-right-box {
+    background-color: #F9DDDD;
+    box-shadow: inset 0 0 20px rgba(100,0,0,0.2),
+                0px 0px 20px rgba(255,255,255,0.2);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-bio-text {
+    padding: 15px;
+}
+
+.user-bio {
+    position: relative;
+    height: 400px;
+    overflow: auto;
+}
+
+/* Style for the user bio textarea */
+.user-bio-textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  height: 398px;
+  resize: none;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 16px;
+  border-radius: 20px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: #F9DDDD;
+}
+
+.user-bio-textarea:hover {
+  outline: 1px solid pink;
+}
+
+#no-favs {
+    text-align: center;
+    padding-top: 200px;
+}
+
+.top-right-box {
+}
+
+.bottom-right-box {
+    height: 80px;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+    height: 100%;
+    margin-top: 20px;
+    display: flex;
+  justify-content: center; /* Horizontally center */
+  align-items: center;     /* Vertically center */
+}
+
+#correlation-container {
+}
+
+.belief.highlighted {
+  outline: 3px solid yellow;
+  animation: shake 0.6s infinite alternate,
+             highlight-animation 1s infinite alternate;
+}
+
+@keyframes highlight-animation {
+  from {
+    outline-color: yellow;
+  }
+  to {
+    outline-color: orange;
+  }
+}
+
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+@media screen and (max-width: 850px) {
+    .pie-chart-container {
+        width: 100% !important;
+    }
+
+    #pie-chart-container {
+        display: block;
+        height: 800px;
+        width: 100%;
+        min-width: unset !important;
+    }
+
+
+  .info-block {
+      display: block !important;
+  }
+
+  #correlation-container {
+      padding: 30px;
+  }
+  .beliefs-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+}

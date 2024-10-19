@@ -1,0 +1,549 @@
+// public/static/script.js
+
+window.isMobile = window.innerWidth < 800;
+
+async function fetchBeliefs() {
+  const beliefsResponse = await fetch('/static/beliefs.json');
+  const beliefsData = await beliefsResponse.json();
+  return beliefsData;
+}
+
+async function fetchUserBeliefs(userId) {
+  const encodedUserId = encodeURIComponent(userId);
+  const userBeliefsResponse = await fetch(`/api/user-beliefs/${encodedUserId}`);
+  if (!userBeliefsResponse.ok) {
+    console.error('Failed to fetch user beliefs.');
+    return {};
+  }
+  const userBeliefsData = await userBeliefsResponse.json();
+  return userBeliefsData;
+}
+
+async function saveUserBelief(userId, beliefName, beliefData) {
+  if (userId !== window.authenticatedUserId) {
+    console.warn('Cannot save beliefs for another user.');
+    return;
+  }
+  const encodedUserId = encodeURIComponent(userId);
+  const response = await fetch(
+    `/api/user-beliefs/${encodedUserId}/${encodeURIComponent(beliefName)}`,
+    {
+      method: 'PUT', // Use PUT for updating a specific belief
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(beliefData),
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error('Failed to save user belief:', errorData.error);
+    alert(`Error: ${errorData.error}`);
+  } else {
+    console.log('User belief saved successfully.');
+  }
+}
+
+function toggleFavorite(beliefName, starElement) {
+  const userId = window.userId;
+  if (userId !== window.authenticatedUserId) {
+    console.warn('Cannot modify Core Beliefs for another user.');
+    return;
+  }
+
+  fetch(
+    `/api/user-favorites/${encodeURIComponent(userId)}/${encodeURIComponent(
+      beliefName
+    )}`,
+    {
+      method: 'POST',
+    }
+  )
+    .then((response) =>
+      response.json().then((data) => ({ status: response.status, data }))
+    )
+    .then(({ status, data }) => {
+      if (status === 200) {
+        if (data.isFavorite) {
+          starElement.classList.add('active');
+          starElement.title = 'Remove from Core Beliefs';
+        } else {
+          starElement.classList.remove('active');
+          starElement.title = 'Add to Core Beliefs';
+        }
+        // Re-fetch the pie chart after updating favorites
+        refreshPieChart();
+      } else {
+        // Display error using Toastify.js
+        Toastify({
+          text: data.error,
+          duration: 5000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: '#d32f2f',
+        }).showToast();
+      }
+    })
+    .catch((error) => {
+      console.error('Error updating favorite status:', error);
+    });
+}
+function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserId) {
+  const beliefDiv = createBeliefDiv(belief);
+
+  const overlayDiv = createOverlayDiv();
+
+  const titleContainer = createTitleContainer(belief, userChoice, onChange, readOnly, profileUserId);
+  overlayDiv.appendChild(titleContainer);
+
+  const descriptionContainer = createDescriptionContainer(belief);
+  overlayDiv.appendChild(descriptionContainer);
+
+  const buttonsDiv = createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId);
+  if (!buttonsDiv) {
+    return null; // Skip rendering if conditions are not met
+  }
+  overlayDiv.appendChild(buttonsDiv);
+
+  const commentSection = createCommentSection(userChoice, onChange, readOnly, profileUserId);
+  if (commentSection) {
+    overlayDiv.appendChild(commentSection);
+  }
+
+  beliefDiv.appendChild(overlayDiv);
+
+  // Set background image with lazy loading
+  setBeliefBackgroundImage(beliefDiv, belief.name);
+
+  return beliefDiv;
+}
+
+// Function to create the main belief div
+function createBeliefDiv(belief) {
+  const beliefDiv = document.createElement('div');
+  beliefDiv.className = 'belief';
+  beliefDiv.setAttribute('data-belief-name', belief.name);
+  return beliefDiv;
+}
+
+// Function to create the overlay div
+function createOverlayDiv() {
+  const overlayDiv = document.createElement('div');
+  overlayDiv.className = 'belief-overlay';
+  return overlayDiv;
+}
+
+// Function to create the title container
+function createTitleContainer(belief, userChoice, onChange, readOnly, profileUserId) {
+  const titleContainer = document.createElement('div');
+  titleContainer.className = 'belief-title-container';
+
+  const title = document.createElement('h3');
+  const isFavorite = userChoice && typeof userChoice.preference === 'number';
+
+  if (!readOnly || isFavorite) {
+    const favoriteStar = document.createElement('span');
+    favoriteStar.className = 'favorite-star';
+    favoriteStar.textContent = '★';
+    if (!readOnly) {
+      favoriteStar.title = isFavorite ? 'Remove from Core Beliefs' : 'Add to Core Beliefs (the piechart)';
+      favoriteStar.addEventListener('click', () => {
+        toggleFavorite(belief.name, favoriteStar);
+      });
+    } else {
+      favoriteStar.title = isFavorite ? `${profileUserId} marked this statement as a Core Belief` : '';
+    }
+    if (isFavorite) {
+      favoriteStar.classList.add('active');
+    }
+
+    title.appendChild(favoriteStar);
+  }
+
+  title.appendChild(document.createTextNode(belief.name));
+  titleContainer.appendChild(title);
+
+  return titleContainer;
+}
+
+// Function to create the description container
+function createDescriptionContainer(belief) {
+  const descriptionContainer = document.createElement('p');
+  const description = document.createElement('span');
+  description.textContent = belief.description;
+  description.classList.add('blur');
+  descriptionContainer.appendChild(description);
+  return descriptionContainer;
+}
+
+// Function to create the choice buttons
+function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId) {
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.className = 'choice-buttons';
+
+  const choices = ['reject', 'neutral', 'support'];
+
+  // If readOnly and neither choice nor comment is made, skip rendering this belief
+  if (readOnly && !userChoice?.choice && !userChoice?.comment) {
+    return null;
+  }
+
+  const addButtonTitle = (button) => {
+    // If the viewer is authenticated and not viewing their own profile
+    if (window.authenticatedUserId && window.authenticatedUserId !== profileUserId) {
+      // Fetch the viewer's belief for this belief
+      const viewerBelief = window.viewerBeliefs[belief.name];
+      if (viewerBelief && viewerBelief.choice) {
+        const viewerChoice = viewerBelief.choice;
+        if (viewerChoice !== userChoice?.choice) {
+          if (viewerChoice === 'neutral') {
+            buttonsDiv.title = `You are neutral towards ${belief.name}`;
+          } else {
+            buttonsDiv.title = `You ${viewerChoice} ${belief.name}`;
+          }
+        } else {
+          buttonsDiv.title = 'You have the same choice';
+        }
+      } else {
+        buttonsDiv.title = 'You have not made a choice';
+      }
+    }
+  };
+
+  {
+    if (readOnly && !userChoice.choice && userChoice.comment) {
+      const button = document.createElement('button');
+      button.textContent = 'No choice';
+      button.className = `choice-button no-choice selected`;
+      button.disabled = true;
+      addButtonTitle(button);
+      buttonsDiv.appendChild(button);
+      return buttonsDiv;
+    }
+  }
+
+  choices.forEach((choiceValue) => {
+    const button = document.createElement('button');
+    button.textContent = choiceValue.charAt(0).toUpperCase() + choiceValue.slice(1);
+    button.className = `choice-button ${choiceValue}`;
+    if (userChoice?.choice === choiceValue) {
+      button.classList.add('selected');
+      buttonsDiv.classList.add('has-selection');
+    }
+    if (readOnly) {
+      button.disabled = true; // Make buttons non-clickable for read-only view
+      addButtonTitle(button)
+    } else {
+      // Editable mode
+      button.addEventListener('click', () => {
+        const isSelected = button.classList.contains('selected');
+        const siblingButtons = button.parentElement.querySelectorAll('.choice-button');
+        siblingButtons.forEach((btn) => btn.classList.remove('selected'));
+
+        if (isSelected) {
+          buttonsDiv.classList.remove('has-selection');
+          onChange(null);
+        } else {
+          button.classList.add('selected');
+          buttonsDiv.classList.add('has-selection');
+          onChange(choiceValue);
+        }
+      });
+    }
+    buttonsDiv.appendChild(button);
+  });
+
+  return buttonsDiv;
+}
+
+// Function to create the comment section
+function createCommentSection(userChoice, onChange, readOnly, profileUserId) {
+  if (readOnly) {
+    // Display comment in a div with username label
+    if (userChoice?.comment) {
+      const commentContainer = document.createElement('div');
+      commentContainer.className = 'comment-display';
+
+      const usernameLabel = document.createElement('span');
+      usernameLabel.className = 'username-label';
+      usernameLabel.textContent = `${profileUserId}: `;
+
+      const commentText = document.createElement('span');
+      commentText.textContent = userChoice.comment;
+
+      commentContainer.appendChild(usernameLabel);
+      commentContainer.appendChild(commentText);
+      return commentContainer;
+    }
+  } else {
+    // Show textarea for editing
+    const commentTextarea = document.createElement('textarea');
+    commentTextarea.classList.add('comment-input');
+    commentTextarea.placeholder = 'Add nuance, comments or context...';
+    commentTextarea.maxLength = 400;
+    if (userChoice?.comment) {
+      commentTextarea.value = userChoice.comment;
+    }
+
+    let commentTimeout;
+    commentTextarea.addEventListener('input', () => {
+      clearTimeout(commentTimeout);
+      commentTimeout = setTimeout(() => {
+        const comment = commentTextarea.value.trim();
+        onChange(undefined, comment);
+      }, 500);
+    });
+
+    return commentTextarea;
+  }
+  return null;
+}
+
+// Function to set the background image with lazy loading
+function setBeliefBackgroundImage(beliefDiv, beliefName) {
+  const imageUrl = `/img/min/${encodeURIComponent(beliefName).replaceAll("'", "\\'")}.webp`;
+
+  // Create a placeholder background (optional)
+  beliefDiv.style.backgroundColor = '#f0f0f0';
+
+  // Use Intersection Observer to lazy load the background image
+  const observer = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Set the background image
+          beliefDiv.style.backgroundImage = `url('${imageUrl}')`;
+          beliefDiv.style.backgroundSize = 'cover';
+          beliefDiv.style.backgroundPosition = 'center';
+          beliefDiv.style.backgroundRepeat = 'no-repeat';
+
+          // Stop observing after the image has loaded
+          observer.unobserve(beliefDiv);
+        }
+      });
+    },
+    {
+      root: null,
+      rootMargin: '1000px',
+      threshold: 0.01,
+    }
+  );
+
+  observer.observe(beliefDiv);
+}
+
+function countUserBeliefs (userBeliefs, beliefsData) {
+  const allBeliefs = Object.entries(beliefsData)
+        .map(([_, beliefs]) => Object.entries(beliefs))
+        .flat();
+  const statedBeliefs = Object.entries(userBeliefs)
+        .filter(([_, { choice }]) => typeof choice !== 'undefined');
+  return {
+    stated: statedBeliefs.length,
+    total: allBeliefs.length
+  };
+}
+
+async function init() {
+  const beliefsData = await fetchBeliefs();
+  const userId = window.userId;
+  const authenticatedUserId = window.authenticatedUserId;
+  const userBeliefs = await fetchUserBeliefs(userId);
+  // Fetch viewer's beliefs if viewing another user's profile
+  if (authenticatedUserId && authenticatedUserId !== userId) {
+    window.viewerBeliefs = await fetchUserBeliefs(authenticatedUserId);
+  } else {
+    window.viewerBeliefs = {};
+  }
+  const beliefsContainer = document.getElementById('beliefs-container');
+  const isReadOnly = userId !== authenticatedUserId;
+
+  let correlationMessage = '';
+
+  if (isReadOnly) {
+    if (authenticatedUserId) {
+      // Compute correlation coefficient
+      const authenticatedUserBeliefs = await fetchUserBeliefs(authenticatedUserId);
+      const correlationResult = computeCorrelation(userBeliefs, authenticatedUserBeliefs);
+
+      if (correlationResult === null) {
+        correlationMessage = `Not enough shared beliefs with ${userId} to compute correlation`;
+      } else {
+        const percentage = (correlationResult * 100).toFixed();
+        correlationMessage = `Belief correlation with you: ${percentage}%`;
+      }
+    } else {
+      // this case is handled by the backend rendering
+    }
+  } else {
+    const { total, stated } = countUserBeliefs(userBeliefs, beliefsData);
+    correlationMessage = `You stated ${stated} beliefs of ${total} total`;
+  }
+
+  if (correlationMessage) {
+    const correlationDiv = document.querySelector('#correlation-container');
+    correlationDiv.textContent = correlationMessage;
+  }
+
+  Object.keys(beliefsData).forEach((category) => {
+    const categoryBeliefs = beliefsData[category];
+
+    // Filter beliefs based on whether the user has made a choice or comment
+    let filteredBeliefs = categoryBeliefs;
+
+    if (isReadOnly) {
+      filteredBeliefs = categoryBeliefs.filter((belief) => {
+        const userChoice = userBeliefs[belief.name];
+        return userChoice?.choice || userChoice?.comment;
+      });
+    }
+
+    // If no beliefs to show in this category, skip it
+    if (filteredBeliefs.length === 0) {
+      return;
+    }
+
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'category';
+
+    const categoryTitle = document.createElement('h2');
+    categoryTitle.textContent = category;
+    categoryDiv.appendChild(categoryTitle);
+
+    const beliefsGrid = document.createElement('div');
+    beliefsGrid.className = 'beliefs-grid';
+
+    filteredBeliefs.forEach((belief) => {
+      const userChoice = userBeliefs[belief.name];
+      const beliefElement = createBeliefOption(
+        belief,
+        userChoice,
+        (choice, comment) => {
+          console.log('choice', choice, 'comment', comment);
+          if (isReadOnly) return;
+
+          const beliefData = {};
+
+          if (choice !== undefined) {
+            beliefData.choice = choice;
+          }
+
+          if (comment !== undefined) {
+            beliefData.comment = comment;
+          }
+
+          // Update the local userBeliefs object
+          if (!userBeliefs[belief.name]) {
+            userBeliefs[belief.name] = {};
+          }
+
+          if (beliefData.choice) {
+            userBeliefs[belief.name].choice = beliefData.choice;
+          }
+
+          if (beliefData.comment !== undefined) {
+            if (beliefData.comment === '') {
+              delete userBeliefs[belief.name].comment;
+            } else {
+              userBeliefs[belief.name].comment = beliefData.comment;
+            }
+          }
+
+          saveUserBelief(userId, belief.name, beliefData);
+        },
+        isReadOnly,
+        userId // Pass the profileUserId for username label
+      );
+
+      if (beliefElement) {
+        beliefsGrid.appendChild(beliefElement);
+      }
+    });
+
+    categoryDiv.appendChild(beliefsGrid);
+    beliefsContainer.appendChild(categoryDiv);
+  });
+
+  handleHashNavigation();
+}
+
+// Compute Pearson correlation coefficient
+function computeCorrelation(userBeliefs1, userBeliefs2) {
+  const beliefNames = Object.keys(userBeliefs1).filter((beliefName) => {
+    return userBeliefs1[beliefName].choice && userBeliefs2[beliefName]?.choice;
+  });
+
+  if (beliefNames.length < 5) {
+    return null;
+  }
+
+  const scores1 = [];
+  const scores2 = [];
+
+  beliefNames.forEach((beliefName) => {
+    scores1.push(choiceToScore(userBeliefs1[beliefName].choice));
+    scores2.push(choiceToScore(userBeliefs2[beliefName].choice));
+  });
+
+  return pearsonCorrelation(scores1, scores2);
+}
+
+// Map choices to numerical scores
+function choiceToScore(choice) {
+  switch (choice) {
+    case 'reject':
+      return -1;
+    case 'neutral':
+      return 0;
+    case 'support':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+// Calculate Pearson correlation coefficient
+function pearsonCorrelation(x, y) {
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumX2 = x.reduce((a, b) => a + b * b, 0);
+  const sumY2 = y.reduce((a, b) => a + b * b, 0);
+  const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
+
+  const numerator = n * sumXY - sumX * sumY;
+  const denominator = Math.sqrt(
+    (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY)
+  );
+
+  if (denominator === 0) {
+    return 0;
+  }
+
+  return numerator / denominator;
+}
+
+function handleNavigation (title) {
+  const beliefElement = document.querySelector(
+    `.belief[data-belief-name="${title}"]`
+  );
+  if (beliefElement) {
+    // Highlight the belief
+    beliefElement.classList.add('highlighted');
+    // Scroll to the belief
+    beliefElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Remove highlight after some time
+    setTimeout(() => {
+      beliefElement.classList.remove('highlighted');
+    }, 1000);
+  }
+}
+
+function handleHashNavigation() {
+  const hash = decodeURIComponent(window.location.hash.substring(1));
+  if (hash) {
+    handleNavigation(hash);
+  }
+}
+
+init();

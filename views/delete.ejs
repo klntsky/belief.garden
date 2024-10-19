@@ -1,0 +1,17 @@
+<!-- views/delete.ejs -->
+
+<h1>Delete Your Account</h1>
+
+<p>Are you sure you want to delete your account? This action cannot be undone.</p>
+
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+
+<form action="/delete" method="post">
+  <label for="password">Confirm your password:</label><br />
+  <input type="password" name="password" id="password" required /><br /><br />
+  <button type="submit">Delete My Account</button>
+</form>
+
+<p><a href="/">Cancel</a></p>

@@ -1,0 +1,65 @@
+<!-- views/gallery.ejs -->
+  <div id="gallery-container">
+    <h1>Random Image</h1>
+    <!-- Content will be injected by JavaScript -->
+  </div>
+
+  <script>
+    (async () => {
+      const container = document.querySelector('#gallery-container');
+      const isAuthenticated = <%= isAuthenticated %>;
+      const username = '<%= username %>';
+      try {
+        // Load beliefs data from the JSON file
+        const response = await fetch('/static/beliefs.json');
+        const beliefsData = await response.json();
+
+        // Flatten the beliefs into a single array
+        const beliefs = [];
+        for (const category in beliefsData) {
+          beliefs.push(...beliefsData[category]);
+        }
+
+        // Select a random belief
+        const randomIndex = Math.floor(Math.random() * beliefs.length);
+        const belief = beliefs[randomIndex];
+
+        // Construct image path
+        const beliefNameEncoded = encodeURIComponent(belief.name);
+        const imagePath = `/img/${belief.name}.webp`;
+
+        // Create image element
+        const img = document.createElement('img');
+        img.src = imagePath;
+        img.alt = belief.name;
+        img.className = 'gallery-image';
+
+        // Create title element
+        const title = document.createElement('div');
+        title.className = 'belief-title';
+        title.textContent = belief.name;
+
+        const container = document.getElementById('gallery-container');
+
+        if (isAuthenticated) {
+          // Create a link to the user's profile with the belief hash
+          const link = document.createElement('a');
+          link.href = `/${username}#${beliefNameEncoded}`;
+          link.className = 'belief-link';
+          link.appendChild(img);
+          link.appendChild(title);
+
+          container.appendChild(link);
+        } else {
+          // Append image and title without link
+          container.appendChild(img);
+          container.appendChild(title);
+        }
+      } catch (error) {
+        console.error('Error loading beliefs data:', error);
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = 'An error occurred while loading the gallery.';
+        container.appendChild(errorMessage);
+      }
+    })();
+  </script>

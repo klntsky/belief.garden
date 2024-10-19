@@ -1,0 +1,75 @@
+<!-- views/layout.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQJ6LZSNV6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NQJ6LZSNV6');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" sizes="any"        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘🏻‍♂️</text></svg>"/>
+  <title>
+    <% if (typeof title !== 'undefined') { %>
+      <%= title %>
+    <% } else { %>
+      belief.garden
+    <% } %>
+  </title>
+  <link rel="stylesheet" href="/static/landing.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/profile.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+  <div class="nav-links">
+    <div class="nav-links-left">
+      <a href="/"><span style="background-color: #A55; text-shadow: 0 0 10px rgb(240, 100, 100); border: 1px solid rgba(255,255,255,0.6); border-radius: 10px; width: 1.3em; height: 1.3em; display: inline-block; text-align: center; vertical-align: ; font-size: 1.3em; line-height: 1.3em;">🧘🏻‍♂️</span> <span id="nav-link">belief.garden</span></a>
+    </div>
+    <div class="nav-links-right">
+      <% if (user && user.id) { %>
+        <span>
+          Welcome, <a href="/<%= user.id %>"><%= user.id %></a> |
+          <a href="/faq">FAQ</a> |
+          <a href="/gallery">Gallery</a> |
+          <a href="/logout">Logout</a>
+        </span>
+      <% } else { %>
+        <a href="/faq">FAQ</a> |
+        <a href="/gallery">Gallery</a> |
+        <a href="/login">Login</a> |
+        <a href="/register">Register</a>
+      <% } %>
+    </div>
+  </div>
+  <main>
+    <%- body %>
+  </main>
+
+  <!-- Set global variable for authenticated user ID -->
+  <% if (user && user.id) { %>
+    <script>
+      window.authenticatedUserId = '<%= user.id %>';
+    </script>
+  <% } else { %>
+    <script>
+      window.authenticatedUserId = '';
+    </script>
+  <% } %>
+
+  <!-- Include the correlation script -->
+  <script src="/static/correlation.js"></script>
+  <footer class="site-footer">
+    <div class="footer-content">
+      <a href="/faq">FAQ</a> |
+      <a target="_blank" href="https://discord.gg/Zd3D4ryHEv">Discord</a> |
+      <a target="_blank" href="https://github.com/klntsky/belief.garden" target="_blank">Source Code</a>
+    </div>
+  </footer>
+</body>
+</html>

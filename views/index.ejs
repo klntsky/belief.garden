@@ -1,0 +1,58 @@
+<!-- views/index.ejs -->
+<h1>Welcome!</h1>
+<p class="large-text">
+  <b>belief.garden</b> allows you to share your views and opinions on various subjects - e.g. economics, politics, eating habits or philosophy of will, in the form of a public profile you can link in your bio on other social media.
+</p>
+
+<div class="grid-container">
+    <div class="text-block">
+        <h1>Evaluate your beliefs</h1>
+    </div>
+    <div class="image-block">
+        <img style="width: 600px" src="./intro/1.png"></img>
+    </div>
+    <div class="text-block">
+      <div style="display: block;">
+      <h1 style="display: block;">Browse beliefs of others</h1>
+      Example user profiles:
+      <div style="display: block;">
+        <% if (usernames && usernames.length > 0) { %>
+        <ul>
+        <% usernames.forEach(function(username) { %>
+          <li style="list-style-type: none;">
+          <a href="/<%= username %>" class="username" data-username="<%= username %>">
+            <%= username %>
+          </a>
+          </li>
+        <% }); %>
+        </ul>
+      <% } else { %>
+          <p>No users to show at the moment.</p>
+      <% } %>
+      </div>
+      </div>
+    </div>
+    <div class="image-block">
+        <img style="width: 700px" src="./intro/2.png"></img>
+    </div>
+    <div class="text-block">
+        <h1>Add public comments</h1>
+    </div>
+    <div class="image-block">
+        <img style="width: 600px" src="./intro/3.png"></img>
+    </div>
+    <div class="text-block">
+        <h1>Share your profile</h1>
+    </div>
+    <div class="image-block">
+        <img style="width: 600px" src="./intro/4.png"></img>
+    </div>
+    <div class="image-block">
+        <h1><a href="/register">Create your page</a> now
+    </div>
+    <div class="text-block">
+      <h1>
+        <a href="https://discord.gg/Zd3D4ryHEv">Join</a> our Discord!
+      </h1>
+    </div>
+</div>
