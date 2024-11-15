@@ -25,6 +25,18 @@
       "description": "The best life is one of flourishing, achieved by cultivating virtues and living according to reason."
     },
     {
+      "name": "Egoism",
+      "description": "Individuals should act in their own self-interest, as this is the most rational and ethical way to behave, potentially leading to overall societal benefit."
+    },
+    {
+      "name": "Collectivism",
+      "description": "The needs and goals of the group or society should take precedence over those of the individual."
+    },
+    {
+      "name": "Individualism",
+      "description": "Individual rights and personal freedom are paramount, and individuals should be free to pursue their own goals and interests without undue interference."
+    },
+    {
       "name": "Epicureanism",
       "description": "The goal of life is to achieve pleasure, which is attained through modest living, the pursuit of knowledge, and the avoidance of pain and fear."
     },
@@ -137,6 +149,10 @@
     {
       "name": "Emergentism",
       "description": "Consciousness arises from complex physical systems but is not reducible to them, and mental properties emerge when physical systems reach a certain level of complexity."
+    },
+    {
+      "name": "Biological Naturalism",
+      "description": "Similar to Emergentism in that consciousness arises from complex processes, but it specifically asserts that consciousness can only emerge from biological processes in the brain, ruling out the possibility of artificial consciousness."
     },
     {
       "name": "Panpsychism",
@@ -451,6 +467,30 @@
       "description": "All objects, places, and creatures possess a distinct spiritual essence, and nature is inhabited by spirits."
     },
     {
+      "name": "Idolatry",
+      "description": "The worship of physical images or statues as representations of deities or spiritual forces is an important practice in connecting with the divine."
+    },
+    {
+      "name": "Shamanism",
+      "description": "Spiritual leaders (shamans) act as intermediaries between the physical and spiritual worlds, using rituals to heal and gain insight for the community."
+    },
+    {
+      "name": "Totemism",
+      "description": "Certain natural objects or animals have spiritual significance and are considered symbolic protectors or ancestors of a community."
+    },
+    {
+      "name": "Iconoclasm",
+      "description": "Religious images and icons should be destroyed or removed to prevent idol worship and maintain the purity of faith."
+    },
+    {
+      "name": "Transtheism",
+      "description": "The divine or ultimate reality transcends specific gods, where gods exist but are subordinate to a higher principle or spiritual truth."
+    },
+    {
+      "name": "Antitheism",
+      "description": "Religion and belief in deities are harmful influences on society and should be actively opposed to promote reason and human welfare."
+    },
+    {
       "name": "Syncretism",
       "description": "Different religious beliefs and practices can be combined into a cohesive system."
     },
@@ -483,10 +523,21 @@
       "description": "No single religion holds all the truth, and multiple religions can offer valid paths to spiritual understanding or enlightenment."
     }
   ],
+  "Governance": [
+
+  ],
   "Politics": [
     {
       "name": "Liberalism",
       "description": "The government should protect civil liberties and individual freedoms while limiting its intervention in personal and economic matters."
+    },
+    {
+      "name": "Classical Liberalism",
+      "description": "Individual freedom and limited government intervention should be prioritized, with free markets and personal liberty as the foundation of society."
+    },
+    {
+      "name": "Neoliberalism",
+      "description": "Free markets, privatization, and deregulation should be promoted, with minimal government involvement in the economy, to foster global economic growth and development."
     },
     {
       "name": "Conservatism",
@@ -529,10 +580,6 @@
       "description": "The interests of ordinary people should be prioritized over those of elites or established institutions in political decision-making."
     },
     {
-      "name": "Nationalism",
-      "description": "A nation’s interests and culture should be prioritized over international cooperation and global governance."
-    },
-    {
       "name": "Social Democracy",
       "description": "The government should combine democratic governance with a strong welfare state, regulating the economy to ensure social welfare and reduce inequality."
     },
@@ -547,6 +594,10 @@
     {
       "name": "Theocracy",
       "description": "Government policies should be guided by religious principles, with religious leaders having significant influence in governance."
+    },
+    {
+      "name": "Corporatism",
+      "description": "Society should be organized into corporate groups based on shared interests, such as labor, business, and government, working together for collective economic and social goals."
     },
     {
       "name": "Technocracy",
@@ -579,6 +630,10 @@
       "description": "The government should actively intervene in the economy, particularly during recessions, by increasing public spending and lowering taxes to stimulate demand."
     },
     {
+      "name": "Syndicalism",
+      "description": "Workers should control the means of production through trade unions and federations, with workplaces managed collectively rather than by private owners or the state."
+    },
+    {
       "name": "Laissez-Faire Economics",
       "description": "The government should have no role in regulating the economy, allowing individuals and businesses to operate freely without intervention."
     },
@@ -593,10 +648,6 @@
     {
       "name": "Mixed Economy",
       "description": "The economy should combine elements of capitalism and socialism, with private enterprise operating alongside government regulations and social welfare programs."
-    },
-    {
-      "name": "Neoliberalism",
-      "description": "Free markets, privatization, and deregulation should be promoted, with minimal government involvement in the economy, to foster global economic growth and development."
     },
     {
       "name": "Libertarian Economics",
@@ -647,12 +698,74 @@
       "description": "International trade should be free from tariffs and other restrictions, allowing goods and services to flow across borders without government interference."
     },
     {
+      "name": "Regulationism",
+      "description": "The government should actively regulate markets and industries to protect consumers, workers, and the environment, preventing excesses of capitalism."
+    },
+    {
+      "name": "Mercantilism",
+      "description": "A nation’s wealth and power are best increased through government-controlled trade, maximizing exports, minimize the imports, and accumulating precious metals."
+    },
+    {
+      "name": "Cameralism",
+      "description": "The state should manage economic policies with the goal of increasing public revenue and enhancing the welfare of the state through efficient administration."
+    },
+    {
+      "name": "Monopolism",
+      "description": "Monopolies can be beneficial, as consolidating resources and power within a single entity can lead to greater efficiency and innovation."
+    },
+    {
       "name": "Universal Basic Income (UBI)",
       "description": "The government should provide all citizens with a regular, unconditional income to ensure basic economic security and reduce poverty."
     },
     {
       "name": "Participatory Economics",
       "description": "Economic decisions should be made collectively through democratic participation, with workers and consumers having a direct say in how resources are allocated."
+    },
+    {
+      "name": "Gift Economy",
+      "description": "Goods and services should be freely given without the expectation of direct compensation, fostering social bonds and community solidarity rather than profit."
+    }
+  ],
+  "Role of a Nation": [
+    {
+      "name": "Nationalism",
+      "description": "A nation should prioritize its own cultural, economic, and political interests above those of other countries, fostering a strong national identity."
+    },
+    {
+      "name": "Civil Nationalism",
+      "description": "A nation's identity should be based on shared civic values and institutions rather than ethnicity or culture, promoting inclusivity and democracy."
+    },
+    {
+      "name": "Ethnic Nationalism",
+      "description": "A nation's identity and unity are defined by a common ethnicity, culture, or ancestry, and policies should reflect and protect this shared heritage."
+    },
+    {
+      "name": "Cultural Nationalism",
+      "description": "A nation's identity should be based on a shared culture, language, and heritage, and the state should work to preserve and promote these cultural elements."
+    },
+    {
+      "name": "Imperialism",
+      "description": "A nation has the right to expand its influence and control over other territories to spread its culture, political values, and economic systems."
+    },
+    {
+      "name": "Humanitarian Intervention",
+      "description": "A nation has a moral responsibility to intervene in other countries to prevent human rights abuses and provide humanitarian aid."
+    },
+    {
+      "name": "Patriotism",
+      "description": "Citizens should have a strong loyalty to and pride in their nation, supporting its values, goals, and institutions."
+    },
+    {
+      "name": "Internationalism",
+      "description": "Nations should prioritize diplomacy, peaceful relations, and multilateral cooperation to create a more interconnected and harmonious world."
+    },
+    {
+      "name": "National Sovereignty",
+      "description": "A nation has the exclusive right to govern itself without interference from external powers, maintaining control over its own laws and policies."
+    },
+    {
+      "name": "Federalism",
+      "description": "A nation should balance power between a central government and regional entities, allowing local governments to have autonomy within a unified system."
     }
   ],
   "Personal Finance": [
@@ -1342,7 +1455,7 @@
     },
     {
       "name": "Militarism",
-      "description": "Conflicts should be resolved through the use of force or military action when other methods fail, as it can be the quickest way to achieve decisive outcomes."
+      "description": "Conflicts may be resolved through the use of force or military action."
     }
   ],
   "Social Equality": [
@@ -1525,6 +1638,18 @@
     {
       "name": "Attachment Parenting",
       "description": "Parents should form strong emotional bonds with their children through practices like co-sleeping and baby-wearing to promote emotional security."
+    },
+    {
+      "name": "Gender-Differentiated Parenting",
+      "description": "Mothers and fathers bring unique and complementary parenting styles that are important for optimal child development."
+    },
+    {
+      "name": "Egalitarian Parenting",
+      "description": "Both parents should share equal responsibility in raising children, making decisions jointly and dividing caregiving roles without traditional gender expectations."
+    },
+    {
+      "name": "Complementarian Parenting",
+      "description": "Parenting roles should be based on distinct, complementary responsibilities, often reflecting traditional gender roles, where each parent contributes in different but balanced ways."
     }
   ],
   "Education": [
@@ -1705,8 +1830,28 @@
   ],
   "Reproductive Rights and Family Law": [
     {
+      "name": "Pro-Life",
+      "description": "Human life begins at conception, and abortion is morally wrong as it involves ending an innocent human life."
+    },
+    {
       "name": "Pro-Choice",
       "description": "Individuals should have the right to make decisions about abortion, with access to safe and legal abortion services."
+    },
+    {
+      "name": "Antinatalism",
+      "description": "Bringing new life into the world is morally wrong due to the inherent suffering in human existence, and people should refrain from having children."
+    },
+    {
+      "name": "Pronatalism",
+      "description": "Society should encourage and support having children, viewing population growth as essential for cultural continuity, economic stability, and social development."
+    },
+    {
+      "name": "Evictionism",
+      "description": "Life begins at conception, but a woman has the right to 'evict' a fetus from her body at any point during pregnancy, because she has no obligation to guarantee the right to live, from the libertarian ethics point of view."
+    },
+    {
+      "name": "Departurism",
+      "description": "Pregnant women have the right to remove the fetus from their bodies, but not directly kill the 'trespassing' fetus."
     },
     {
       "name": "Parental Leave Equality",
@@ -1723,6 +1868,10 @@
     {
       "name": "Child Custody Equality",
       "description": "In cases of divorce or separation, custody should be awarded equally between both parents unless there are significant reasons not to, ensuring that children maintain strong relationships with both parents."
+    },
+    {
+      "name": "Natural Parents' Rights",
+      "description": "Parents have fundamental rights coupled with responsibilities to nurture and prepare their children, with these rights being grounded in natural law and biological relationships."
     },
     {
       "name": "Single-Parent Adoption",
@@ -1743,6 +1892,10 @@
     {
       "name": "Marriage Equality",
       "description": "Marriage should be legally recognized for all couples, regardless of gender or sexual orientation."
+    },
+    {
+      "name": "Sacrament of Marriage",
+      "description": "Marriage is a sacred, divinely instituted covenant between partners, reflecting a lifelong commitment and often viewed as a union blessed by God."
     },
     {
       "name": "Fertility Treatment",
@@ -1911,6 +2064,10 @@
       "description": "Technological and social acceleration should be deliberately guided to create more equitable outcomes and avoid societal collapse."
     },
     {
+      "name": "Transhumanism",
+      "description": "Humanity should embrace technology to enhance physical and cognitive abilities, aiming for evolution beyond biological limits to improve health, lifespan, and capabilities."
+    },
+    {
       "name": "Accelerationism",
       "description": "The acceleration of capitalist and technological processes will inevitably lead to radical societal transformation, for better or worse."
     },
@@ -1937,10 +2094,6 @@
     {
       "name": "Geoengineering",
       "description": "Humanity should actively manipulate the Earth's climate system through technologies like solar radiation management and carbon capture to combat climate change."
-    },
-    {
-      "name": "Antinatalism",
-      "description": "Bringing new life into the world is morally wrong due to the inherent suffering in human existence, and people should refrain from having children."
     },
     {
       "name": "Dark Enlightenment",

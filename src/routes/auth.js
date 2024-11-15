@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import zxcvbn from 'zxcvbn';
-import { getUserByUsername, addUser, updateUserPassword } from '../utils/userUtils.js';
+import { getUserByUsername, addUser, updateUserPassword, userExists } from '../utils/userUtils.js';
 import { rateLimitRegistration } from '../utils/rateLimiter.js';
 
 const router = express.Router();
@@ -164,6 +164,9 @@ async function validateRegistration(username, password) {
     'admin',
     'gallery',
     'change-password',
+    'users',
+    'user',
+    'bio',
   ];
 
   if (blacklisted.includes(username)) {
@@ -175,8 +178,7 @@ async function validateRegistration(username, password) {
   if (!/^[a-zA-Z0-9_-]{3,30}$/.test(username)) {
     return 'Username can only contain letters, numbers, hyphens (-), and underscores (_). 3 to 30 characters length.';
   }
-  const existingUser = await getUserByUsername(username);
-  if (existingUser) {
+  if (await userExists(username)) {
     return 'Username already exists.';
   }
   const passwordError = validatePassword(password);

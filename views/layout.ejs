@@ -25,6 +25,9 @@
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="/static/profile.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <script src="/static/piechart.js"></script>
 </head>
 <body>
   <div class="nav-links">
@@ -32,19 +35,21 @@
       <a href="/"><span style="background-color: #A55; text-shadow: 0 0 10px rgb(240, 100, 100); border: 1px solid rgba(255,255,255,0.6); border-radius: 10px; width: 1.3em; height: 1.3em; display: inline-block; text-align: center; vertical-align: ; font-size: 1.3em; line-height: 1.3em;">🧘🏻‍♂️</span> <span id="nav-link">belief.garden</span></a>
     </div>
     <div class="nav-links-right">
+      <span>
       <% if (user && user.id) { %>
-        <span>
-          Welcome, <a href="/<%= user.id %>"><%= user.id %></a> |
-          <a href="/faq">FAQ</a> |
-          <a href="/gallery">Gallery</a> |
-          <a href="/logout">Logout</a>
-        </span>
+        Welcome, <a href="/<%= user.id %>"><%= user.id %></a> |
       <% } else { %>
-        <a href="/faq">FAQ</a> |
-        <a href="/gallery">Gallery</a> |
+      <% } %>
+      <a href="/faq">FAQ</a> |
+      <a href="/gallery">Gallery</a> |
+      <a target="_blank" href="https://discord.gg/Zd3D4ryHEv">Discord</a> |
+      <% if (user && user.id) { %>
+        <a href="/logout">Logout</a>
+      <% } else { %>
         <a href="/login">Login</a> |
         <a href="/register">Register</a>
       <% } %>
+      </span>
     </div>
   </div>
   <main>
@@ -67,6 +72,7 @@
   <footer class="site-footer">
     <div class="footer-content">
       <a href="/faq">FAQ</a> |
+      <a href="/users">Users</a> |
       <a target="_blank" href="https://discord.gg/Zd3D4ryHEv">Discord</a> |
       <a target="_blank" href="https://github.com/klntsky/belief.garden" target="_blank">Source Code</a>
     </div>

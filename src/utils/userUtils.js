@@ -35,6 +35,15 @@ export async function getUserByUsername(username) {
   }
 }
 
+export async function userExists (username) {
+  try {
+    const filesInDirectory = await fs.readdir(userAccountsDir);
+    return filesInDirectory.some(file => file.toLowerCase() === `${username.toLowerCase()}.json`);
+  } catch (error) {
+    return false;
+  }
+}
+
 /**
  * Add a new user.
  * @param {Object} user - The user object to add.

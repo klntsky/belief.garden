@@ -16,7 +16,7 @@
       <h1 style="display: block;">Browse beliefs of others</h1>
       Example user profiles:
       <div style="display: block;">
-        <% if (usernames && usernames.length > 0) { %>
+      <% if (usernames && usernames.length > 0) { %>
         <ul>
         <% usernames.forEach(function(username) { %>
           <li style="list-style-type: none;">
@@ -25,6 +25,9 @@
           </a>
           </li>
         <% }); %>
+        </ul>
+        <ul>
+          <a href="/users">more...</a>
         </ul>
       <% } else { %>
           <p>No users to show at the moment.</p>

@@ -1,4 +1,5 @@
 // src/app.js
+
 import express from 'express';
 import session from 'express-session';
 import flash from 'connect-flash';
@@ -9,6 +10,7 @@ import indexRouter from './routes/index.js';
 import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import apiRouter from './routes/api.js';
+import FileStore from 'session-file-store';
 
 dotenv.config();
 
@@ -18,13 +20,19 @@ app.set('trust proxy', true);
 app.set('view engine', 'ejs');
 app.set('layout', 'layout'); // Set default layout
 app.use(expressLayouts);
-// Serve static files with caching
+
+// Serve static files with appropriate caching
 app.use(
   express.static('public', {
-    maxAge: '30d',
+    etag: true, // Enable ETag header generation
+    lastModified: true, // Enable Last-Modified header
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.webp')) {
-        res.setHeader('Cache-Control', 'public, max-age=2592000'); // 30 days in seconds
+        // For image files that rarely change, set a long cache duration
+        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days
+      } else {
+        // For other static files, set must-revalidate to ensure updated files are fetched
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       }
     },
   })
@@ -38,9 +46,13 @@ app.use(express.urlencoded({ extended: false }));
 //   }
 //   next();
 // });
+// Configure session store
+const fileStoreOptions = {};
+const FileStoreSession = FileStore(session);
 
 app.use(
   session({
+    store: new FileStoreSession(fileStoreOptions),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,

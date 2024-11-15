@@ -10,7 +10,8 @@ const outputFolder = path.join('public', 'img');
 // const additionalPrompt = 'image style: use various (warm and cold and green) colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft';
 
 const additionalPrompts = {
-  'Philosophy of Will': 'image style: use pink yellow or red colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
+  'Philosophy of Will': 'image style: use pink yellow or red colors, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft',
+  'Philosophy of Life': 'image style: use grey-ish cold colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Philosophy of Mind': 'image style: use pastel colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Economics': 'image style: use yellow, golden and green or red colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Software': 'image style: use dark grey and organge colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
@@ -21,7 +22,7 @@ const additionalPrompts = {
   'Religious Philosophy': 'image style: use red, grey and blue colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Workplace Culture': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft, colors: blue, green, golden',
   'Education Philosophy': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and black',
-  'Parenting Styles': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and yellow',
+  'Parenting': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and yellow',
   'Community Living': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, pastoral, relaxed, a lot of sun, colors: yellow and bright green',
   'Conflict Resolution': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, anxious, colors: red and brown',
   'Gender Roles and Identity': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, blue and pink colors',
@@ -39,6 +40,7 @@ const additionalPrompts = {
   'Intellectual Property': 'image style: PIXAR 3d cartoon style people, abstract imagery, with smooth gradients and gentle lighting, soft, tragic, colors: orange, grey, white. humans doing paperwork',
   'Criminal Justice': 'image style: PIXAR 3d cartoon style people, abstract imagery, with smooth gradients and gentle lighting, soft, tragic, colors: red, brown, grey. sad humans',
   'Military Service': 'image style: PIXAR 3d cartoon style people, abstract imagery, with smooth gradients and gentle lighting, soft, tragic, dark colors: dark green, brown. heroic humans',
+  'Role of a Nation': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
 };
 
 // Check if an image already exists

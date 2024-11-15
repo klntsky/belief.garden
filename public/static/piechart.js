@@ -1,7 +1,11 @@
 // public/static/piechart.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await createPieChart();
+  try {
+    await createPieChart();
+  } catch (_) {
+
+  }
 });
 
 window.chart = null;
@@ -17,6 +21,10 @@ async function refreshPieChart() {
 
     const pieChartContainer = document.getElementById('pie-chart-container');
     const { labels, data, beliefs } = await fetchUserPieChart(userId);
+
+    if (isMobile) {
+      pieChartContainer.style.height = (500 + 30 * labels.length) + 'px';
+    }
 
     if (labels.length === 0) {
       canvas.style.display = 'none';
@@ -47,6 +55,9 @@ async function createPieChart() {
   // Fetch pie chart data
   const { labels, data, beliefs } = await fetchUserPieChart(userId);
   const ctx = document.createElement('canvas');
+  if (isMobile) {
+    pieChartContainer.style.height = (500 + 30 * labels.length) + 'px';
+  }
 
   if (labels.length === 0) {
     ctx.style.display = 'none';
@@ -74,7 +85,6 @@ async function createPieChart() {
     };
   }
 
-
   window.chart = new Chart(ctx, {
     type: 'pie',
     data: {
@@ -90,7 +100,7 @@ async function createPieChart() {
       ],
     },
     options: {
-      radius: isMobile ? 100 : 170,
+      radius: isMobile ? 170 : 170,
       maintainAspectRatio: false,
       layout: {
         padding: 20 // Add padding to make the pie chart visually smaller,
@@ -163,11 +173,11 @@ function toBoldUnicode(text) {
   }).join('');
 }
 
-const formatChoice = (choice, title) => {
+const formatChoice = window.formatChoice = (choice, title, mode = 'dark') => {
   if (choice === 'support') {
     return '🟢 supports   ' + toBoldUnicode(title);
   } else if (choice === 'neutral') {
-    return '⚫ neutral to  ' + toBoldUnicode(title);
+    return (mode == 'light' ? '⚪' : '⚫') +' neutral to  ' + toBoldUnicode(title);
   } else if (choice === 'reject') {
     return '🔴 rejects      ' + toBoldUnicode(title);
   } else {

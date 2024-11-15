@@ -1,0 +1,26 @@
+<!-- views/users.ejs -->
+
+<h1>All Users</h1>
+
+<% if (usernames && usernames.length > 0) { %>
+  <div>
+    <% usernames.forEach(function(username) { %>
+      <div>
+        <a href="/<%= username %>" class="username" data-username="<%= username %>">
+          <%= username %>
+        </a>
+      </div>
+    <% }); %>
+  </div>
+
+  <div class="pagination">
+    <% if (currentPage > 1) { %>
+      <a href="/users?page=<%= currentPage - 1 %>">← Previous</a>
+    <% } %>
+    <% if (currentPage < totalPages) { %>
+      <a href="/users?page=<%= currentPage + 1 %>">Next →</a>
+    <% } %>
+  </div>
+<% } else { %>
+  <p>No users to display.</p>
+<% } %>

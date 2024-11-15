@@ -1,15 +1,23 @@
 /* public/static/styles.css */
 html, body {
     height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    flex-grow: 0.9;
+    padding: 10px;
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: #EFCCCC;
   color: #A55;
   font-family: Arial, sans-serif;
   margin: 0 auto;
-  padding: 20px;
   max-width: 1200px;
 }
 
@@ -57,6 +65,7 @@ h1.center {
 .belief {
   position: relative;
   color: #fff;
+  background-color: pink;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -212,24 +221,20 @@ h1.center {
 }
 
 .nav-links {
-    height: 2em;
-    flex-grow: 1;
-    /* min-height: 2em; */
-    /* display: block; */
+    display: block;
+    height: 3em;
 }
 
 .nav-links-left {
-    position: absolute;
-    top: 0;
-    left: 0;
+    float: left;
     padding: 10px;
 }
 
 .nav-links-right {
-    position: absolute;
-    top: 0;
-    right: 0;
     padding: 20px;
+    float: right;
+    display: block;
+    max-width: 70%;
 }
 
 .nav-links a {
@@ -244,7 +249,7 @@ h1.center {
 .comment-display {
   width: 100%;
   white-space: pre-wrap;
-  max-height: 100px;
+  max-height: 200px;
   overflow-y: scroll;
   padding: 5px;
   margin-top: 10px;
@@ -254,6 +259,14 @@ h1.center {
   border-radius: 5px;
   border: 1px solid #ccc;
   word-wrap: break-word;
+}
+
+.username {
+    margin-left: 23px;
+}
+
+.username.correlated {
+    margin-left: 0;
 }
 
 .username-label {
@@ -373,6 +386,7 @@ h1.center {
 .gallery-image {
     width: 600px;
     max-height: 600px;
+    max-width: 90%;
 }
 .belief-title {
     font-size: 24px;
@@ -383,22 +397,15 @@ h1.center {
     color: inherit;
 }
 
-.debate-me-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    font-size: 8px;
-    font-weight: bold;
-    text-transform: uppercase;
-    backdrop-filter: blur(10px);
-    background-color: rgba(255,200,200,0.4);
-    padding: 4px;
-    border-radius: 0 0 0 8px;
-    line-height: 9px;
+.pagination {
+    padding: 30px;
 }
 
-.debate-me-checkbox {
-    width: 8px;
-    height: 8px;
-    transform: scale(2);
+.tippy-content {
+    white-space: pre;
+    max-width: unset;
+}
+
+.tippy-tooltip {
+  max-width: none !important;
 }

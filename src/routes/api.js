@@ -2,7 +2,7 @@
 
 import express from 'express';
 import path from 'path';
-import { ensureAuthenticated, ensureAuthenticatedApi } from '../utils/authUtils.js';
+import { ensureAuthenticatedApi } from '../utils/authUtils.js';
 import {
   getUserBeliefs,
   saveUserBeliefs,
@@ -12,11 +12,50 @@ import {
   saveUserBio,
   getUserBeliefsFilePath,
 } from '../utils/userUtils.js';
+import Bottleneck from 'bottleneck';
 
 const COMMENT_MAX_LENGTH = 400;
-
 const router = express.Router();
 
+// Map to store per-user limiters
+const limiters = {};
+
+/**
+ * Middleware to prevent concurrent processing of requests that write to a user's JSON file.
+ * Uses Bottleneck to ensure that only one request per user is processed at a time.
+ */
+function perUserWriteLimiter(req, res, next) {
+  const userId = req.params.userId;
+  if (!userId) {
+    return next();
+  }
+
+  // Create a new limiter for the user if it doesn't exist
+  if (!limiters[userId]) {
+    limiters[userId] = new Bottleneck({
+      maxConcurrent: 1,
+      minTime: 0,
+    });
+  }
+
+  limiters[userId]
+    .schedule(() => {
+      return new Promise((resolve, reject) => {
+        // Proceed to the next middleware
+        next();
+        // Resolve when the response is finished or an error occurs
+        res.on('finish', resolve);
+        res.on('close', resolve);
+        res.on('error', reject);
+      });
+    })
+    .catch((err) => {
+      console.error('Error in limiter schedule:', err);
+      next(err);
+    });
+}
+
+// Route to get user beliefs
 router.get('/api/user-beliefs/:userId', (req, res) => {
   const requestedUserId = req.params.userId;
   const userBeliefsFilePath = getUserBeliefsFilePath(requestedUserId);
@@ -28,7 +67,9 @@ router.get('/api/user-beliefs/:userId', (req, res) => {
   res.sendFile(absolutePath, (err) => {
     if (err) {
       console.error('Error sending user beliefs file:', err);
-      res.status(err.status || 500).json({ error: 'User beliefs not found.' });
+      res
+        .status(err.status || 500)
+        .json({ error: 'User beliefs not found.' });
     }
   });
 });
@@ -37,6 +78,7 @@ router.get('/api/user-beliefs/:userId', (req, res) => {
 router.put(
   '/api/user-beliefs/:userId/:beliefName',
   ensureAuthenticatedApi,
+  perUserWriteLimiter,
   express.json(),
   async (req, res) => {
     const requestedUserId = req.params.userId;
@@ -70,12 +112,16 @@ router.put(
 
     if ('comment' in beliefData) {
       if (beliefData.comment.length > COMMENT_MAX_LENGTH) {
-        return res.status(400).json({ error: `Comment should be no longer than ${COMMENT_MAX_LENGTH} characters.` });
+        return res.status(400).json({
+          error: `Comment should be no longer than ${COMMENT_MAX_LENGTH} characters.`,
+        });
       }
       if (beliefData.comment === '') {
         delete userBeliefs[beliefName].comment;
+        delete userBeliefs[beliefName].commentTime;
       } else {
         userBeliefs[beliefName].comment = beliefData.comment;
+        userBeliefs[beliefName].commentTime = Date.now();
       }
     }
 
@@ -118,6 +164,7 @@ router.get('/api/user-piechart/:userId', async (req, res) => {
 router.post(
   '/api/user-piechart/:userId/:beliefName/:action',
   ensureAuthenticatedApi,
+  perUserWriteLimiter,
   express.json(),
   async (req, res) => {
     const userId = req.params.userId;
@@ -129,7 +176,11 @@ router.post(
     }
 
     try {
-      const updatedUserBeliefs = await adjustPieSlicePoints(userId, beliefName, action);
+      const updatedUserBeliefs = await adjustPieSlicePoints(
+        userId,
+        beliefName,
+        action
+      );
       const updatedPreference = updatedUserBeliefs[beliefName].preference;
       res.json({ beliefName, preference: updatedPreference });
     } catch (error) {
@@ -140,22 +191,27 @@ router.post(
 );
 
 // Toggle favorite status
-router.post('/api/user-favorites/:userId/:beliefName', ensureAuthenticatedApi, async (req, res) => {
-  const userId = req.params.userId;
-  const beliefName = req.params.beliefName;
+router.post(
+  '/api/user-favorites/:userId/:beliefName',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  async (req, res) => {
+    const userId = req.params.userId;
+    const beliefName = req.params.beliefName;
 
-  if (req.user.id !== userId) {
-    return res.status(403).json({ error: 'Unauthorized' });
-  }
+    if (req.user.id !== userId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
 
-  try {
-    const isFavorite = await toggleUserFavorite(userId, beliefName);
-    res.json({ isFavorite });
-  } catch (error) {
-    console.error('Error toggling favorite:', error);
-    res.status(500).json({ error: error.message });
+    try {
+      const isFavorite = await toggleUserFavorite(userId, beliefName);
+      res.json({ isFavorite });
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Get user bio
 router.get('/api/user-bio/:userId', async (req, res) => {
@@ -172,25 +228,33 @@ router.get('/api/user-bio/:userId', async (req, res) => {
 });
 
 // Save user bio
-router.post('/api/user-bio/:userId', ensureAuthenticatedApi, express.text(), async (req, res) => {
-  const userId = req.params.userId;
+router.post(
+  '/api/user-bio/:userId',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  express.text(),
+  async (req, res) => {
+    const userId = req.params.userId;
 
-  if (req.user.id !== userId) {
-    return res.status(403).json({ error: 'Unauthorized' });
-  }
+    if (req.user.id !== userId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
 
-  const bioText = req.body;
-  if (bioText.length > 1500) {
-    return res.status(400).json({ error: 'Bio cannot exceed 1500 characters.' });
-  }
+    const bioText = req.body;
+    if (bioText.length > 1500) {
+      return res.status(400).json({
+        error: 'Bio cannot exceed 1500 characters.',
+      });
+    }
 
-  try {
-    await saveUserBio(userId, bioText);
-    res.status(200).send('Bio saved.');
-  } catch (error) {
-    console.error('Error saving user bio:', error);
-    res.status(500).json({ error: 'Error saving bio.' });
+    try {
+      await saveUserBio(userId, bioText);
+      res.status(200).send('Bio saved.');
+    } catch (error) {
+      console.error('Error saving user bio:', error);
+      res.status(500).json({ error: 'Error saving bio.' });
+    }
   }
-});
+);
 
 export default router;

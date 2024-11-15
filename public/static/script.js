@@ -112,9 +112,6 @@ function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserI
 
   beliefDiv.appendChild(overlayDiv);
 
-  // Set background image with lazy loading
-  setBeliefBackgroundImage(beliefDiv, belief.name);
-
   return beliefDiv;
 }
 
@@ -248,6 +245,7 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
           buttonsDiv.classList.add('has-selection');
           onChange(choiceValue);
         }
+        flushBeliefsCache();
       });
     }
     buttonsDiv.appendChild(button);
@@ -299,39 +297,6 @@ function createCommentSection(userChoice, onChange, readOnly, profileUserId) {
   return null;
 }
 
-// Function to set the background image with lazy loading
-function setBeliefBackgroundImage(beliefDiv, beliefName) {
-  const imageUrl = `/img/min/${encodeURIComponent(beliefName).replaceAll("'", "\\'")}.webp`;
-
-  // Create a placeholder background (optional)
-  beliefDiv.style.backgroundColor = '#f0f0f0';
-
-  // Use Intersection Observer to lazy load the background image
-  const observer = new IntersectionObserver(
-    (entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Set the background image
-          beliefDiv.style.backgroundImage = `url('${imageUrl}')`;
-          beliefDiv.style.backgroundSize = 'cover';
-          beliefDiv.style.backgroundPosition = 'center';
-          beliefDiv.style.backgroundRepeat = 'no-repeat';
-
-          // Stop observing after the image has loaded
-          observer.unobserve(beliefDiv);
-        }
-      });
-    },
-    {
-      root: null,
-      rootMargin: '1000px',
-      threshold: 0.01,
-    }
-  );
-
-  observer.observe(beliefDiv);
-}
-
 function countUserBeliefs (userBeliefs, beliefsData) {
   const allBeliefs = Object.entries(beliefsData)
         .map(([_, beliefs]) => Object.entries(beliefs))
@@ -343,6 +308,39 @@ function countUserBeliefs (userBeliefs, beliefsData) {
     total: allBeliefs.length
   };
 }
+
+const createBeliefCardObserver = (beliefsGrid) => {
+  let beliefCards = [];
+
+  const observer = new IntersectionObserver(
+    (entries, observer) => requestAnimationFrame(() => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          beliefCards.forEach(({element, name}) => {
+            const imageUrl = `/img/min/${encodeURIComponent(name).replaceAll("'", "\\'")}.webp`;
+            // Set the background image
+            element.style.backgroundImage = `url('${imageUrl}')`;
+            element.style.backgroundSize = 'cover';
+            element.style.backgroundPosition = 'center';
+            element.style.backgroundRepeat = 'no-repeat';
+          });
+          beliefCards = [];
+          // Stop observing after the image has loaded
+          observer.unobserve(beliefsGrid);
+          return;
+        }
+      };
+    }),
+    {
+      root: null,
+      rootMargin: '1000px',
+      threshold: 0.01,
+    }
+  );
+  observer.observe(beliefsGrid);
+
+  return { observer, beliefCards };
+};
 
 async function init() {
   const beliefsData = await fetchBeliefs();
@@ -363,8 +361,7 @@ async function init() {
   if (isReadOnly) {
     if (authenticatedUserId) {
       // Compute correlation coefficient
-      const authenticatedUserBeliefs = await fetchUserBeliefs(authenticatedUserId);
-      const correlationResult = computeCorrelation(userBeliefs, authenticatedUserBeliefs);
+      const correlationResult = await computeCorrelation(userId, authenticatedUserId);
 
       if (correlationResult === null) {
         correlationMessage = `Not enough shared beliefs with ${userId} to compute correlation`;
@@ -413,6 +410,8 @@ async function init() {
     const beliefsGrid = document.createElement('div');
     beliefsGrid.className = 'beliefs-grid';
 
+    const { observer, beliefCards } = createBeliefCardObserver(beliefsGrid);
+
     filteredBeliefs.forEach((belief) => {
       const userChoice = userBeliefs[belief.name];
       const beliefElement = createBeliefOption(
@@ -457,6 +456,7 @@ async function init() {
 
       if (beliefElement) {
         beliefsGrid.appendChild(beliefElement);
+        beliefCards.push({ element: beliefElement, name: belief.name });
       }
     });
 

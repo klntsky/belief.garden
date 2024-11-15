@@ -9,7 +9,7 @@ const outputFilePath = path.join('public', 'users.json');
 
 // Define scoring values
 const beliefScore = 1;   // Points awarded for each belief choice
-const commentScore = 2;  // Points awarded for each belief comment
+const commentScore = 20;  // Points awarded for each belief comment
 
 function loadUsers() {
   const users = [];
@@ -19,11 +19,15 @@ function loadUsers() {
 
   const files = fs.readdirSync(userAccountsDir);
   files.forEach((file) => {
-    if (file.endsWith('.json')) {
-      const filePath = path.join(userAccountsDir, file);
-      const data = fs.readFileSync(filePath, 'utf8');
-      const user = JSON.parse(data);
-      users.push(user);
+    try {
+      if (file.endsWith('.json')) {
+        const filePath = path.join(userAccountsDir, file);
+        const data = fs.readFileSync(filePath, 'utf8');
+        const user = JSON.parse(data);
+        users.push(user);
+      }
+    } catch (e) {
+      console.log(file, e);
     }
   });
 
@@ -35,6 +39,7 @@ function calculateUserScores() {
   const userScores = [];
 
   users.forEach((user) => {
+    try {
     const username = user.username;
     const beliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
 
@@ -54,7 +59,10 @@ function calculateUserScores() {
       }
     });
 
-    userScores.push({ username, score });
+      userScores.push({ username, score });
+    } catch (e) {
+      console.log(user, e);
+    }
   });
 
   return userScores;
@@ -67,7 +75,7 @@ function updateUsersJson() {
   userScores.sort((a, b) => b.score - a.score);
 
   // Write to public/users.json
-  fs.writeFileSync(outputFilePath, JSON.stringify(userScores, null, 2), 'utf8');
+  fs.writeFileSync(outputFilePath, JSON.stringify(userScores.slice(0, 12), null, 2), 'utf8');
   console.log('Updated users.json with top users.');
 }
 
