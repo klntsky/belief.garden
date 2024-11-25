@@ -83,7 +83,8 @@ function processUserComments() {
             debateRequests[beliefName].push({
               username,
               comment: belief.comment,
-              timestamp: belief.commentTime || 0
+              timestamp: belief.commentTime || 0,
+              choice: belief.choice || null
             });
           }
         }
