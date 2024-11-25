@@ -13,6 +13,9 @@ import {
   getUserBeliefsFilePath,
 } from '../utils/userUtils.js';
 import Bottleneck from 'bottleneck';
+import { promises as fs } from 'fs';
+
+const debatesDir = path.join('data', 'debates');
 
 const COMMENT_MAX_LENGTH = 400;
 const router = express.Router();
@@ -256,5 +259,23 @@ router.post(
     }
   }
 );
+
+// Get debate matchmaking participants for a belief
+router.get('/api/debates/:beliefName', async (req, res) => {
+  const beliefName = req.params.beliefName;
+  const filePath = path.join(debatesDir, `${beliefName}.json`);
+
+  try {
+    const data = await fs.readFile(filePath, 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      res.json([]); // Return empty array if no debate file exists
+    } else {
+      console.error('Error reading debate file:', error);
+      res.status(500).json({ error: 'Error fetching debate data' });
+    }
+  }
+});
 
 export default router;
