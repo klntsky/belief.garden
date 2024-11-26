@@ -415,7 +415,7 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
 
   // Check if user can reply
   const canReply = window.authenticatedUserId &&
-    userChoice?.comment?.toLowerCase().includes('debate me') &&
+    isDebatable(userChoice?.comment) &&
     ((profileUserId === window.authenticatedUserId && userChoice.replies?.some(r => r.username !== window.authenticatedUserId)) ||
      (profileUserId !== window.authenticatedUserId));
 
@@ -520,15 +520,30 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
   return container;
 }
 
-function countUserBeliefs (userBeliefs, beliefsData) {
+function isDebatable(comment) {
+  return comment?.toLowerCase().includes('debate me');
+}
+
+function getBeliefsInfo(userBeliefs, beliefsData) {
   const allBeliefs = Object.entries(beliefsData)
         .map(([_, beliefs]) => Object.entries(beliefs))
         .flat();
   const statedBeliefs = Object.entries(userBeliefs)
         .filter(([_, { choice }]) => typeof choice !== 'undefined');
+  const comments = Object.entries(userBeliefs)
+        .filter(([_, { comment }]) => comment);
+  const debatableBeliefs = Object.entries(userBeliefs)
+        .filter(([_, { comment }]) => isDebatable(comment))
+        .map(([name]) => name);
+  const totalReplies = Object.entries(userBeliefs)
+        .reduce((sum, [_, belief]) => sum + (belief.replies?.length || 0), 0);
   return {
     stated: statedBeliefs.length,
-    total: allBeliefs.length
+    total: allBeliefs.length,
+    comments: comments.length,
+    debatable: debatableBeliefs.length,
+    replies: totalReplies,
+    debatableBeliefs
   };
 }
 
@@ -596,13 +611,34 @@ async function init() {
       // this case is handled by the backend rendering
     }
   } else {
-    const { total, stated } = countUserBeliefs(userBeliefs, beliefsData);
-    correlationMessage = `You stated ${stated} beliefs of ${total} total`;
-  }
+    const { total, stated, comments, debatable, replies, debatableBeliefs } = getBeliefsInfo(userBeliefs, beliefsData);
+    correlationMessage = `${stated} / ${total} stated, <span class="debatable-count">${debatable} / ${comments} debatable</span>, ${replies} replies`;
 
-  if (correlationMessage) {
-    const correlationDiv = document.querySelector('#correlation-container');
-    correlationDiv.textContent = correlationMessage;
+    if (correlationMessage) {
+      const correlationDiv = document.querySelector('#correlation-container');
+      correlationDiv.innerHTML = correlationMessage;
+
+      if (debatableBeliefs.length > 0) {
+        const debatableSpan = correlationDiv.querySelector('.debatable-count');
+        tippy(debatableSpan, {
+          content: debatableBeliefs.map(name =>
+            `<div class="tippy-belief-link" data-belief="${name}">${name}</div>`
+          ).join(''),
+          allowHTML: true,
+          interactive: true,
+          theme: 'light',
+          placement: 'bottom',
+          onShow(instance) {
+            instance.popper.querySelectorAll('.tippy-belief-link').forEach(link => {
+              link.onclick = () => {
+                handleNavigation(link.dataset.belief);
+                instance.hide();
+              };
+            });
+          }
+        });
+      }
+    }
   }
 
   Object.keys(beliefsData).forEach((category) => {

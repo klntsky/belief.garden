@@ -86,6 +86,8 @@
 }
 
 #correlation-container {
+  margin-left: 6px;
+  margin-right: 6px;
 }
 
 .belief.highlighted {
@@ -115,6 +117,21 @@
   80% { transform: translate(-1px, -1px) rotate(1deg); }
   90% { transform: translate(1px, 2px) rotate(0deg); }
   100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.debatable-count {
+  cursor: pointer;
+  border-bottom: 1px dotted #666;
+}
+
+.tippy-belief-link {
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tippy-belief-link:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 @media screen and (max-width: 850px) {
