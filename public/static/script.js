@@ -276,7 +276,13 @@ function createReplyElement(reply, profileUserId, onDelete) {
     deleteButton.className = 'delete-reply';
     deleteButton.textContent = '×';
     deleteButton.title = 'Delete reply';
-    deleteButton.onclick = onDelete;
+    deleteButton.onclick = async (e) => {
+      e.preventDefault();
+      const isConfirmed = confirm('Are you sure you want to delete this reply?');
+      if (isConfirmed && onDelete) {
+        await onDelete();
+      }
+    };
     replyDiv.appendChild(deleteButton);
   }
 
