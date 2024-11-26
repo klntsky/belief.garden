@@ -261,28 +261,17 @@ h1.center {
   word-wrap: break-word;
 }
 
+.reply-display {
+    min-height: 1.6em;
+    max-height: 120px;
+}
+
 .username {
     margin-left: 23px;
 }
 
 .username.correlated {
     margin-left: 0;
-}
-
-.username-label {
-  text-shadow:
-      0px 0px 30px #221,
-      2px 0 #322,
-      -2px 0 #322,
-      0 2px #322,
-      0 -2px #322,
-      1px 1px #322,
-      -1px -1px #322,
-      1px -1px #322,
-      -1px 1px #000;
-  font-weight: bold;
-  margin-right: 5px;
-  color: pink;
 }
 
 .correlation-message {
@@ -425,15 +414,6 @@ h1.center {
   margin-top: 4px;
 }
 
-.reply-display {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  font-size: 0.9em;
-  position: relative;
-  padding-right: 24px;
-}
-
 .delete-reply {
   position: absolute;
   right: 0;
@@ -487,4 +467,27 @@ h1.center {
 
 .reply-button:hover {
   background-color: #1565c0;
+}
+
+.toggle-replies {
+  background: none;
+  border: none;
+  color: white;
+  text-shadow:
+      2px 0 black,
+      -2px 0 black,
+      0 2px black,
+      0 -2px black,
+      1px 1px black,
+      -1px -1px black,
+      1px -1px black,
+      -1px 1px black;
+  cursor: pointer;
+  font-size: 0.6em;
+  text-align: right;
+  height: 10px;
+}
+
+.toggle-replies:hover {
+  text-decoration: underline;
 }

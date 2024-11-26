@@ -311,6 +311,20 @@ router.post(
         return res.status(400).json({ error: 'Cannot reply to an empty comment.' });
       }
 
+      // Check if the comment contains "debate me"
+      if (!userBeliefs[beliefName].comment.toLowerCase().includes('debate me')) {
+        return res.status(400).json({ error: 'Can only reply to comments that include "debate me".' });
+      }
+
+      // For non-owners, prevent consecutive replies
+      if (authenticatedUserId !== userId) {
+        const replies = userBeliefs[beliefName].replies || [];
+        const lastReply = replies[replies.length - 1];
+        if (lastReply && lastReply.username === authenticatedUserId) {
+          return res.status(400).json({ error: 'Please wait for someone else to reply before adding another reply.' });
+        }
+      }
+
       // For own profile, check if there's at least one reply from another user
       if (userId === authenticatedUserId) {
         const hasOtherReplies = userBeliefs[beliefName].replies?.some(
