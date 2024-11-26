@@ -535,6 +535,12 @@ function getBeliefsInfo(userBeliefs, beliefsData) {
   const debatableBeliefs = Object.entries(userBeliefs)
         .filter(([_, { comment }]) => isDebatable(comment))
         .map(([name]) => name);
+  const beliefsWithReplies = Object.entries(userBeliefs)
+        .filter(([_, belief]) => belief.replies?.length > 0)
+        .map(([name, belief]) => ({
+          name,
+          replyCount: belief.replies.length
+        }));
   const totalReplies = Object.entries(userBeliefs)
         .reduce((sum, [_, belief]) => sum + (belief.replies?.length || 0), 0);
   return {
@@ -543,7 +549,8 @@ function getBeliefsInfo(userBeliefs, beliefsData) {
     comments: comments.length,
     debatable: debatableBeliefs.length,
     replies: totalReplies,
-    debatableBeliefs
+    debatableBeliefs,
+    beliefsWithReplies
   };
 }
 
@@ -594,7 +601,7 @@ async function init() {
   const beliefsContainer = document.getElementById('beliefs-container');
   const isReadOnly = userId !== authenticatedUserId;
 
-  let correlationMessage = '';
+  const correlationDiv = document.querySelector('#correlation-container');
 
   if (isReadOnly) {
     if (authenticatedUserId) {
@@ -602,43 +609,16 @@ async function init() {
       const correlationResult = await computeCorrelation(userId, authenticatedUserId);
 
       if (correlationResult === null) {
-        correlationMessage = `Not enough shared beliefs with ${userId} to compute correlation`;
+        correlationDiv.textContent = `Not enough shared beliefs with ${userId} to compute correlation. `;
+        updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
       } else {
         const percentage = (correlationResult * 100).toFixed();
-        correlationMessage = `Belief correlation with you: ${percentage}%`;
+        correlationDiv.textContent = `Belief correlation with you: ${percentage}%, `;
+        updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
       }
-    } else {
-      // this case is handled by the backend rendering
     }
   } else {
-    const { total, stated, comments, debatable, replies, debatableBeliefs } = getBeliefsInfo(userBeliefs, beliefsData);
-    correlationMessage = `${stated} / ${total} stated, <span class="debatable-count">${debatable} / ${comments} debatable</span>, ${replies} replies`;
-
-    if (correlationMessage) {
-      const correlationDiv = document.querySelector('#correlation-container');
-      correlationDiv.innerHTML = correlationMessage;
-
-      if (debatableBeliefs.length > 0) {
-        const debatableSpan = correlationDiv.querySelector('.debatable-count');
-        tippy(debatableSpan, {
-          content: debatableBeliefs.map(name =>
-            `<div class="tippy-belief-link" data-belief="${name}">${name}</div>`
-          ).join(''),
-          allowHTML: true,
-          interactive: true,
-          theme: 'light',
-          placement: 'bottom',
-          onShow(instance) {
-            instance.popper.querySelectorAll('.tippy-belief-link').forEach(link => {
-              link.onclick = () => {
-                handleNavigation(link.dataset.belief);
-                instance.hide();
-              };
-            });
-          }
-        });
-      }
-    }
+    updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
   }
 
   Object.keys(beliefsData).forEach((category) => {
@@ -726,6 +706,61 @@ async function init() {
   handleHashNavigation();
 }
 
+function updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv) {
+  const { total, stated, comments, debatable, replies, debatableBeliefs, beliefsWithReplies } = getBeliefsInfo(userBeliefs, beliefsData);
+  let parts = [];
+  if (stated > 0)
+    parts.push(`${stated} / ${total} stated`);
+  if (debatable > 0 || comments > 0)
+    parts.push(`${debatable} / ${comments} <span class="debatable-count">debatable</span>`);
+  if (replies > 0)
+    parts.push(`${replies} <span class="replies-count">replies</span>`);
+
+  correlationDiv.innerHTML += parts.join(', ');
+
+  const debatableSpan = correlationDiv.querySelector('.debatable-count');
+  tippy(debatableSpan, {
+    content: `Beliefs with comments that include 'debate me'<br> are marked as debatable` +
+      (debatableBeliefs.length > 0 ? ': ' : '') +
+      debatableBeliefs.map(name =>
+        `<div class="tippy-belief-link" data-belief="${name}">${name}</div>`
+      ).join(''),
+    allowHTML: true,
+    interactive: true,
+    theme: 'light',
+    placement: 'bottom',
+    onShow(instance) {
+      instance.popper.querySelectorAll('.tippy-belief-link').forEach(link => {
+        link.onclick = () => {
+          handleNavigation(link.dataset.belief);
+          instance.hide();
+        };
+      });
+    }
+  });
+
+  if (beliefsWithReplies.length > 0) {
+    const repliesSpan = correlationDiv.querySelector('.replies-count');
+    tippy(repliesSpan, {
+      content: beliefsWithReplies.map(belief =>
+        `<div class="tippy-belief-link" data-belief="${belief.name}">${belief.name} (${belief.replyCount})</div>`
+      ).join(''),
+      allowHTML: true,
+      interactive: true,
+      theme: 'light',
+      placement: 'bottom',
+      onShow(instance) {
+        instance.popper.querySelectorAll('.tippy-belief-link').forEach(link => {
+          link.onclick = () => {
+            handleNavigation(link.dataset.belief);
+            instance.hide();
+          };
+        });
+      }
+    });
+  }
+}
+
 // Compute Pearson correlation coefficient
 function computeCorrelation(userBeliefs1, userBeliefs2) {
   const beliefNames = Object.keys(userBeliefs1).filter((beliefName) => {
@@ -791,6 +826,11 @@ function handleNavigation (title) {
     beliefElement.classList.add('highlighted');
     // Scroll to the belief
     beliefElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Click show replies link if it exists
+    const showRepliesLink = beliefElement.querySelector('.toggle-replies');
+    if (showRepliesLink) {
+      showRepliesLink.click();
+    }
     // Remove highlight after some time
     setTimeout(() => {
       beliefElement.classList.remove('highlighted');
