@@ -335,6 +335,12 @@ router.post(
         }
       }
 
+      // Check reply length
+      const lines = comment.split('\n');
+      if (lines.length > 20) {
+        return res.status(400).json({ error: 'Reply cannot be longer than 20 lines.' });
+      }
+
       // Initialize replies array if it doesn't exist
       if (!userBeliefs[beliefName].replies) {
         userBeliefs[beliefName].replies = [];
