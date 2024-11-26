@@ -258,6 +258,10 @@ function createReplyElement(reply, profileUserId, belief) {
   const replyUsername = document.createElement('span');
   replyUsername.className = 'username-label';
   replyUsername.textContent = `${reply.username}: `;
+  tippy(replyUsername, {
+    content: formatTimestamp(reply.timestamp),
+    placement: 'top'
+  });
 
   const replyText = document.createElement('span');
   replyText.textContent = reply.comment;
@@ -428,6 +432,10 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
       const usernameLabel = document.createElement('span');
       usernameLabel.className = 'username-label';
       usernameLabel.textContent = `${profileUserId}: `;
+      tippy(usernameLabel, {
+        content: formatTimestamp(userChoice.commentTime),
+        placement: 'top'
+      });
 
       const commentText = document.createElement('span');
       commentText.textContent = userChoice.comment;
@@ -857,6 +865,38 @@ function showError(message) {
     backgroundColor: '#d32f2f',
     stopOnFocus: true
   }).showToast();
+}
+
+// Function to format timestamp into human readable form
+function formatTimestamp(timestamp) {
+  if (!timestamp) {
+    return 'unknown time';
+  }
+  const date = new Date(parseInt(timestamp));
+  const now = new Date();
+  const diff = now - date;
+
+  // Less than a minute
+  if (diff < 60000) {
+    return 'just now';
+  }
+  // Less than an hour
+  if (diff < 3600000) {
+    const minutes = Math.floor(diff / 60000);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  }
+  // Less than a day
+  if (diff < 86400000) {
+    const hours = Math.floor(diff / 3600000);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  }
+  // Less than a week
+  if (diff < 604800000) {
+    const days = Math.floor(diff / 86400000);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  }
+  // Otherwise show full date
+  return date.toLocaleString();
 }
 
 init();
