@@ -345,6 +345,7 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
   const replyButton = document.createElement('button');
   replyButton.className = 'reply-button';
   replyButton.textContent = 'Reply';
+  replyButton.title = "Send a reply to this thread. Replies can be deleted by the profile owner and by the author.";
   replyButton.onclick = async () => {
     const replyText = replyInput.value.trim();
     if (!replyText) return;
@@ -431,7 +432,7 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
       if (repliesContainer || canReply) {
         const toggleReplies = document.createElement('button');
         toggleReplies.className = 'toggle-replies';
-        
+
         if (userChoice.replies?.length > 0) {
           toggleReplies.textContent = `show ${userChoice.replies.length} ${userChoice.replies.length === 1 ? 'reply' : 'replies'}`;
         } else if (canReply) {
@@ -460,7 +461,7 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
     // Show textarea for editing
     const commentTextarea = document.createElement('textarea');
     commentTextarea.classList.add('comment-input');
-    commentTextarea.placeholder = 'Add nuance, comments or context...';
+    commentTextarea.placeholder = 'Add nuance or context. Include \'debate me\' to allow replies';
     commentTextarea.maxLength = 400;
     if (userChoice?.comment) {
       commentTextarea.value = userChoice.comment;
@@ -481,7 +482,7 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
     if (repliesContainer || canReply) {
       const toggleReplies = document.createElement('button');
       toggleReplies.className = 'toggle-replies';
-      
+
       if (userChoice.replies?.length > 0) {
         toggleReplies.textContent = `show ${userChoice.replies.length} ${userChoice.replies.length === 1 ? 'reply' : 'replies'}`;
       } else if (canReply) {
