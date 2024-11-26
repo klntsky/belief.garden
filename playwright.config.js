@@ -11,7 +11,7 @@ export default defineConfig({
       name: 'chromium',
       use: {
         browserName: 'chromium',
-        headless: process.env.HEADLESS_BROWSER,
+        headless: !!process.env.HEADLESS_BROWSER,
         // Use the custom executable path from the environment variable
         launchOptions: {
           executablePath: process.env.BROWSER_PATH,

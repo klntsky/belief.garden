@@ -38,7 +38,7 @@ async function saveUserBelief(userId, beliefName, beliefData) {
   if (!response.ok) {
     const errorData = await response.json();
     console.error('Failed to save user belief:', errorData.error);
-    alert(`Error: ${errorData.error}`);
+    showError(errorData.error);
   } else {
     console.log('User belief saved successfully.');
   }
@@ -74,18 +74,12 @@ function toggleFavorite(beliefName, starElement) {
         // Re-fetch the pie chart after updating favorites
         refreshPieChart();
       } else {
-        // Display error using Toastify.js
-        Toastify({
-          text: data.error,
-          duration: 5000,
-          gravity: 'top',
-          position: 'right',
-          backgroundColor: '#d32f2f',
-        }).showToast();
+        showError(data.error);
       }
     })
     .catch((error) => {
       console.error('Error updating favorite status:', error);
+      showError('Failed to update favorite status');
     });
 }
 
@@ -257,7 +251,7 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
 }
 
 // Function to create a reply element
-function createReplyElement(reply, profileUserId, onDelete) {
+function createReplyElement(reply, profileUserId, belief) {
   const replyDiv = document.createElement('div');
   replyDiv.className = 'reply-display';
 
@@ -279,8 +273,48 @@ function createReplyElement(reply, profileUserId, onDelete) {
     deleteButton.onclick = async (e) => {
       e.preventDefault();
       const isConfirmed = confirm('Are you sure you want to delete this reply?');
-      if (isConfirmed && onDelete) {
-        await onDelete();
+      if (isConfirmed) {
+        try {
+          const response = await fetch(
+            `/api/user-beliefs/${encodeURIComponent(profileUserId)}/${
+              encodeURIComponent(belief.name)
+            }/reply/${reply.timestamp}`,
+            {
+              method: 'DELETE'
+            }
+          );
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to delete reply');
+          }
+
+          // Remove the reply element from the DOM
+          replyDiv.remove();
+
+          // If this was the last reply, remove the replies container and hide the toggle button
+          const repliesContainer = replyDiv.parentElement;
+          if (repliesContainer && repliesContainer.children.length === 0) {
+            const beliefCard = repliesContainer.closest('.belief');
+            if (beliefCard) {
+              const toggleButton = beliefCard.querySelector('.toggle-replies');
+              if (toggleButton) {
+                toggleButton.style.display = 'none';
+              }
+              const commentSection = beliefCard.querySelector('.comment-section');
+              if (commentSection) {
+                const replyInput = commentSection.querySelector('.reply-input-container');
+                if (replyInput) {
+                  replyInput.remove();
+                }
+              }
+            }
+            repliesContainer.remove();
+          }
+        } catch (error) {
+          console.error('Error deleting reply:', error);
+          showError(error.message);
+        }
       }
     };
     replyDiv.appendChild(deleteButton);
@@ -298,40 +332,7 @@ function createRepliesContainer(userChoice, profileUserId, belief, container, re
   repliesContainer.style.display = 'none';
 
   userChoice.replies.forEach(reply => {
-    const replyDiv = createReplyElement(reply, profileUserId, async () => {
-      try {
-        const response = await fetch(
-          `/api/user-beliefs/${encodeURIComponent(profileUserId)}/${
-            encodeURIComponent(belief.name)
-          }/reply/${reply.timestamp}`,
-          {
-            method: 'DELETE'
-          }
-        );
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to delete reply');
-        }
-        replyDiv.remove();
-
-        // Update reply count
-        const remainingReplies = repliesContainer.children.length - 1;
-        if (remainingReplies === 0) {
-          repliesContainer.remove();
-        }
-
-        // If this was the last reply and it's the user's own profile,
-        // remove the reply input if it exists
-        if (profileUserId === window.authenticatedUserId &&
-            remainingReplies === 0) {
-          const replyInput = container.querySelector('.reply-input-container');
-          if (replyInput) replyInput.remove();
-        }
-      } catch (error) {
-        console.error('Error deleting reply:', error);
-        alert(error.message);
-      }
-    });
+    const replyDiv = createReplyElement(reply, profileUserId, belief);
     repliesContainer.appendChild(replyDiv);
   });
 
@@ -377,8 +378,8 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
 
       const reply = await response.json();
 
-      // Add the new reply to the UI
-      const replyDiv = createReplyElement(reply, profileUserId, null);
+      // Add the new reply to the UI using the server-provided timestamp
+      const replyDiv = createReplyElement(reply, profileUserId, belief);
 
       if (!repliesContainer) {
         repliesContainer = document.createElement('div');
@@ -392,7 +393,7 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
       replyInput.value = '';
     } catch (error) {
       console.error('Error adding reply:', error);
-      alert(error.message);
+      showError(error.message);
     }
   };
 
@@ -764,6 +765,17 @@ function handleHashNavigation() {
   if (hash) {
     handleNavigation(hash);
   }
+}
+
+function showError(message) {
+  Toastify({
+    text: message,
+    duration: 3000,
+    gravity: 'top',
+    position: 'right',
+    backgroundColor: '#d32f2f',
+    stopOnFocus: true
+  }).showToast();
 }
 
 init();
