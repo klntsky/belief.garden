@@ -348,6 +348,7 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
   replyInput.className = 'reply-input';
   replyInput.placeholder = 'Write a reply...';
   replyInput.maxLength = 400;
+  makeTextareaAutoExpand(replyInput);
 
   const replyButton = document.createElement('button');
   replyButton.className = 'reply-button';
@@ -470,6 +471,7 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
     commentTextarea.classList.add('comment-input');
     commentTextarea.placeholder = 'Add nuance or context. Include \'debate me\' to allow replies';
     commentTextarea.maxLength = 400;
+    makeTextareaAutoExpand(commentTextarea);
     if (userChoice?.comment) {
       commentTextarea.value = userChoice.comment;
     }

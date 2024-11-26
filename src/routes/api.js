@@ -321,7 +321,7 @@ router.post(
         const replies = userBeliefs[beliefName].replies || [];
         const lastReply = replies[replies.length - 1];
         if (lastReply && lastReply.username === authenticatedUserId) {
-          return res.status(400).json({ error: 'Please wait for someone else to reply before adding another reply.' });
+          return res.status(400).json({ error: 'Subsequent replies are not allowed. You can delete your last comment and send a new one.' });
         }
       }
 
