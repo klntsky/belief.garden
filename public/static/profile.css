@@ -132,7 +132,32 @@
 }
 
 .tippy-belief-link:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background: #666;
+  color: white;
+}
+
+.tippy-beliefs-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.tippy-beliefs-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tippy-beliefs-list::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 3px;
+}
+
+.tippy-beliefs-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.tippy-beliefs-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 @media screen and (max-width: 850px) {

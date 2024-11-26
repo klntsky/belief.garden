@@ -721,10 +721,11 @@ function updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv) {
   const debatableSpan = correlationDiv.querySelector('.debatable-count');
   tippy(debatableSpan, {
     content: `Beliefs with comments that include 'debate me'<br> are marked as debatable` +
-      (debatableBeliefs.length > 0 ? ': ' : '') +
+      (debatableBeliefs.length > 0 ? ':<div class="tippy-beliefs-list">' : '') +
       debatableBeliefs.map(name =>
         `<div class="tippy-belief-link" data-belief="${name}">${name}</div>`
-      ).join(''),
+      ).join('') +
+      (debatableBeliefs.length > 0 ? '</div>' : ''),
     allowHTML: true,
     interactive: true,
     theme: 'light',
@@ -742,9 +743,11 @@ function updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv) {
   if (beliefsWithReplies.length > 0) {
     const repliesSpan = correlationDiv.querySelector('.replies-count');
     tippy(repliesSpan, {
-      content: beliefsWithReplies.map(belief =>
-        `<div class="tippy-belief-link" data-belief="${belief.name}">${belief.name} (${belief.replyCount})</div>`
-      ).join(''),
+      content: 'Comments from other users: <div class="tippy-beliefs-list">' +
+        beliefsWithReplies.map(belief =>
+          `<div class="tippy-belief-link" data-belief="${belief.name}">${belief.name} (${belief.replyCount})</div>`
+        ).join('') +
+        '</div>',
       allowHTML: true,
       interactive: true,
       theme: 'light',
