@@ -219,4 +219,68 @@ test.describe('Reply Functionality', () => {
     // Wait for the reply to be removed
     await expect(replyElement).not.toBeVisible({ timeout: 15000 });
   });
+
+  test('should allow profile owner to delete user replies', async ({ page }) => {
+    const commentText = 'Profile owner test debate me';
+    const replyText = 'Reply to be deleted by profile owner';
+
+    // Profile owner adds comment
+    await loginUser(page, testUsername, testPassword);
+    await goToProfile(page, testUsername);
+    await addBeliefComment(page, beliefName, commentText);
+    await logoutUser(page);
+
+    // User 2 adds reply
+    await loginUser(page, user2.username, user2.password);
+    await goToProfile(page, testUsername);
+
+    // Wait for belief card and ensure it's visible
+    const beliefCard = page.locator(`.belief[data-belief-name="${beliefName}"]`);
+    await expect(beliefCard).toBeVisible({ timeout: 15000 });
+    await page.waitForTimeout(1000);
+
+    // Check for the comment display first
+    const commentDisplay = beliefCard.locator('.comment-display');
+    await expect(commentDisplay).toBeVisible();
+    const usernameLabel = commentDisplay.locator('.username-label');
+    await expect(usernameLabel).toHaveText(`${testUsername}: `);
+
+    // Now check for the toggle button
+    const toggleButton = page.locator('.toggle-replies');
+    await expect(toggleButton).toBeVisible();
+    await toggleButton.click();
+
+    const replyInput = page.locator('.reply-input');
+    await expect(replyInput).toBeVisible();
+    await replyInput.fill(replyText);
+    const replyButton = page.locator('.reply-button');
+    await replyButton.click();
+    await waitForAutoSave(page);
+
+    // Wait for the reply to be added
+    const replyElement = page.locator('.reply-display', { hasText: replyText });
+    await expect(replyElement).toBeVisible();
+    await logoutUser(page);
+
+    // Profile owner logs in to delete the reply
+    await loginUser(page, testUsername, testPassword);
+    await goToProfile(page, testUsername);
+
+    // Wait for belief card and toggle replies
+    await expect(beliefCard).toBeVisible({ timeout: 15000 });
+    await toggleButton.click();
+
+    // Set up dialog handler before clicking delete
+    page.on('dialog', async dialog => {
+      await dialog.accept();
+    });
+
+    // Find and click the delete button
+    const deleteButton = replyElement.locator('.delete-reply');
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Wait for the reply to be removed
+    await expect(replyElement).not.toBeVisible({ timeout: 15000 });
+  });
 });
