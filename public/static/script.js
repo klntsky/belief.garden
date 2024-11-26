@@ -88,6 +88,7 @@ function toggleFavorite(beliefName, starElement) {
       console.error('Error updating favorite status:', error);
     });
 }
+
 function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserId) {
   const beliefDiv = createBeliefDiv(belief);
 
@@ -105,7 +106,7 @@ function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserI
   }
   overlayDiv.appendChild(buttonsDiv);
 
-  const commentSection = createCommentSection(userChoice, onChange, readOnly, profileUserId);
+  const commentSection = createCommentSection(belief, userChoice, onChange, readOnly, profileUserId);
   if (commentSection) {
     overlayDiv.appendChild(commentSection);
   }
@@ -255,7 +256,10 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
 }
 
 // Function to create the comment section
-function createCommentSection(userChoice, onChange, readOnly, profileUserId) {
+function createCommentSection(belief, userChoice, onChange, readOnly, profileUserId) {
+  const container = document.createElement('div');
+  container.className = 'comment-section';
+
   if (readOnly) {
     // Display comment in a div with username label
     if (userChoice?.comment) {
@@ -271,7 +275,146 @@ function createCommentSection(userChoice, onChange, readOnly, profileUserId) {
 
       commentContainer.appendChild(usernameLabel);
       commentContainer.appendChild(commentText);
-      return commentContainer;
+      container.appendChild(commentContainer);
+
+      // Add replies section if there are any
+      if (userChoice.replies && userChoice.replies.length > 0) {
+        const repliesContainer = document.createElement('div');
+        repliesContainer.className = 'replies-container';
+
+        userChoice.replies.forEach(reply => {
+          const replyDiv = document.createElement('div');
+          replyDiv.className = 'reply-display';
+
+          const replyUsername = document.createElement('span');
+          replyUsername.className = 'username-label';
+          replyUsername.textContent = `${reply.username}: `;
+
+          const replyText = document.createElement('span');
+          replyText.textContent = reply.comment;
+
+          // Add delete button if user is authorized
+          if (window.authenticatedUserId && 
+              (window.authenticatedUserId === profileUserId || 
+               window.authenticatedUserId === reply.username)) {
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-reply';
+            deleteButton.textContent = '×';
+            deleteButton.title = 'Delete reply';
+            deleteButton.onclick = async () => {
+              try {
+                const response = await fetch(
+                  `/api/user-beliefs/${encodeURIComponent(profileUserId)}/${
+                    encodeURIComponent(belief.name)
+                  }/reply/${reply.timestamp}`,
+                  {
+                    method: 'DELETE'
+                  }
+                );
+                if (!response.ok) {
+                  const error = await response.json();
+                  throw new Error(error.error || 'Failed to delete reply');
+                }
+                replyDiv.remove();
+                // If this was the last reply and it's the user's own profile,
+                // remove the reply input if it exists
+                if (profileUserId === window.authenticatedUserId &&
+                    repliesContainer.children.length === 1) {
+                  const replyInput = container.querySelector('.reply-input-container');
+                  if (replyInput) replyInput.remove();
+                }
+              } catch (error) {
+                console.error('Error deleting reply:', error);
+                alert(error.message);
+              }
+            };
+            replyDiv.appendChild(deleteButton);
+          }
+
+          replyDiv.appendChild(replyUsername);
+          replyDiv.appendChild(replyText);
+          repliesContainer.appendChild(replyDiv);
+        });
+
+        container.appendChild(repliesContainer);
+      }
+
+      // Add reply input if conditions are met
+      if (window.authenticatedUserId && 
+          ((profileUserId === window.authenticatedUserId && userChoice.replies?.some(r => r.username !== window.authenticatedUserId)) ||
+           (profileUserId !== window.authenticatedUserId))) {
+        const replyContainer = document.createElement('div');
+        replyContainer.className = 'reply-input-container';
+
+        const replyInput = document.createElement('textarea');
+        replyInput.className = 'reply-input';
+        replyInput.placeholder = 'Write a reply...';
+        replyInput.maxLength = 400;
+
+        const replyButton = document.createElement('button');
+        replyButton.className = 'reply-button';
+        replyButton.textContent = 'Reply';
+        replyButton.onclick = async () => {
+          const replyText = replyInput.value.trim();
+          if (!replyText) return;
+
+          try {
+            const response = await fetch(
+              `/api/user-beliefs/${encodeURIComponent(profileUserId)}/${
+                encodeURIComponent(belief.name)
+              }/reply`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ comment: replyText })
+              }
+            );
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Failed to add reply');
+            }
+
+            const reply = await response.json();
+
+            // Add the new reply to the UI
+            const replyDiv = document.createElement('div');
+            replyDiv.className = 'reply-display';
+
+            const replyUsername = document.createElement('span');
+            replyUsername.className = 'username-label';
+            replyUsername.textContent = `${window.authenticatedUserId}: `;
+
+            const replyTextSpan = document.createElement('span');
+            replyTextSpan.textContent = reply.comment;
+
+            replyDiv.appendChild(replyUsername);
+            replyDiv.appendChild(replyTextSpan);
+
+            let repliesContainer = container.querySelector('.replies-container');
+            if (!repliesContainer) {
+              repliesContainer = document.createElement('div');
+              repliesContainer.className = 'replies-container';
+              container.insertBefore(repliesContainer, replyContainer);
+            }
+            repliesContainer.appendChild(replyDiv);
+
+            // Clear the input
+            replyInput.value = '';
+          } catch (error) {
+            console.error('Error adding reply:', error);
+            alert(error.message);
+          }
+        };
+
+        replyContainer.appendChild(replyInput);
+        replyContainer.appendChild(replyButton);
+        container.appendChild(replyContainer);
+      }
+
+      return container;
     }
   } else {
     // Show textarea for editing
@@ -292,7 +435,8 @@ function createCommentSection(userChoice, onChange, readOnly, profileUserId) {
       }, 500);
     });
 
-    return commentTextarea;
+    container.appendChild(commentTextarea);
+    return container;
   }
   return null;
 }

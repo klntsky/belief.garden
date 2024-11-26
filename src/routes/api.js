@@ -278,4 +278,116 @@ router.get('/api/debates/:beliefName', async (req, res) => {
   }
 });
 
+// Add a reply to a comment
+router.post(
+  '/api/user-beliefs/:userId/:beliefName/reply',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  express.json(),
+  async (req, res) => {
+    const { userId, beliefName } = req.params;
+    const { comment } = req.body;
+    const authenticatedUserId = req.user.id;
+
+    if (!comment) {
+      return res.status(400).json({ error: 'Reply text is required.' });
+    }
+
+    if (comment.length > COMMENT_MAX_LENGTH) {
+      return res.status(400).json({
+        error: `Reply should be no longer than ${COMMENT_MAX_LENGTH} characters.`,
+      });
+    }
+
+    try {
+      const userBeliefs = await getUserBeliefs(userId);
+
+      if (!userBeliefs[beliefName]) {
+        return res.status(404).json({ error: 'Belief not found.' });
+      }
+
+      // Check if the belief has a comment
+      if (!userBeliefs[beliefName].comment) {
+        return res.status(400).json({ error: 'Cannot reply to an empty comment.' });
+      }
+
+      // For own profile, check if there's at least one reply from another user
+      if (userId === authenticatedUserId) {
+        const hasOtherReplies = userBeliefs[beliefName].replies?.some(
+          reply => reply.username !== authenticatedUserId
+        );
+        if (!hasOtherReplies) {
+          return res.status(400).json({ error: 'Cannot reply until someone else replies first.' });
+        }
+      }
+
+      // Initialize replies array if it doesn't exist
+      if (!userBeliefs[beliefName].replies) {
+        userBeliefs[beliefName].replies = [];
+      }
+
+      // Add the new reply
+      const reply = {
+        username: authenticatedUserId,
+        comment,
+        timestamp: Date.now()
+      };
+
+      userBeliefs[beliefName].replies.push(reply);
+
+      // Sort replies by timestamp
+      userBeliefs[beliefName].replies.sort((a, b) => a.timestamp - b.timestamp);
+
+      await saveUserBeliefs(userId, userBeliefs);
+      res.status(200).json(reply);
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      res.status(500).json({ error: 'Error adding reply.' });
+    }
+  }
+);
+
+// Delete a reply
+router.delete(
+  '/api/user-beliefs/:userId/:beliefName/reply/:timestamp',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  async (req, res) => {
+    const { userId, beliefName, timestamp } = req.params;
+    const authenticatedUserId = req.user.id;
+
+    try {
+      const userBeliefs = await getUserBeliefs(userId);
+
+      if (!userBeliefs[beliefName] || !userBeliefs[beliefName].replies) {
+        return res.status(404).json({ error: 'Belief or replies not found.' });
+      }
+
+      const replyIndex = userBeliefs[beliefName].replies.findIndex(
+        reply => reply.timestamp === parseInt(timestamp)
+      );
+
+      if (replyIndex === -1) {
+        return res.status(404).json({ error: 'Reply not found.' });
+      }
+
+      const reply = userBeliefs[beliefName].replies[replyIndex];
+
+      // Check if user is authorized to delete the reply
+      if (authenticatedUserId !== userId && authenticatedUserId !== reply.username) {
+        return res.status(403).json({ error: 'Not authorized to delete this reply.' });
+      }
+
+      // Remove the reply
+      userBeliefs[beliefName].replies.splice(replyIndex, 1);
+
+      await saveUserBeliefs(userId, userBeliefs);
+      res.status(200).json({ message: 'Reply deleted successfully.' });
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      res.status(500).json({ error: 'Error deleting reply.' });
+    }
+  }
+);
+
 export default router;
