@@ -1,0 +1,69 @@
+<div class="container">
+  <h1>Ban User</h1>
+  
+  <form id="banForm" class="ban-form">
+    <div class="form-group">
+      <label for="username">Username to ban:</label>
+      <input type="text" id="username" name="username" class="form-control" required>
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="deleteReplies" name="deleteReplies">
+        Delete all replies by this user on my profile
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-danger">Ban User</button>
+  </form>
+</div>
+
+<link rel="stylesheet" href="/static/profile.css">
+<script src="/static/bans.js"></script>
+
+<style>
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.ban-form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+</style>

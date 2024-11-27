@@ -107,4 +107,12 @@ router.post('/delete', ensureAuthenticated, express.urlencoded({ extended: false
   }
 });
 
+// Ban page route
+router.get('/ban', ensureAuthenticated, (req, res) => {
+  res.render('ban', {
+    isAuthenticated: req.isAuthenticated(),
+    username: req.user?.id || null
+  });
+});
+
 export default router;

@@ -324,6 +324,15 @@ function createReplyElement(reply, profileUserId, belief) {
     replyDiv.appendChild(deleteButton);
   }
 
+  if (window.authenticatedUserId === profileUserId && reply.username !== profileUserId) {
+    const banLink = document.createElement('a');
+    banLink.innerHTML = '🔨';
+    banLink.className = 'ban-link';
+    banLink.title = 'Ban user';
+    banLink.href = `/ban?user=${encodeURIComponent(reply.username)}`;
+    replyDiv.appendChild(banLink);
+  }
+
   replyDiv.appendChild(replyUsername);
   replyDiv.appendChild(replyText);
   return replyDiv;

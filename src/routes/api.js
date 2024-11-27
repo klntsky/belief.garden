@@ -16,6 +16,7 @@ import Bottleneck from 'bottleneck';
 import { promises as fs } from 'fs';
 
 const debatesDir = path.join('data', 'debates');
+const bansDir = path.join('data', 'bans');
 
 const COMMENT_MAX_LENGTH = 400;
 const router = express.Router();
@@ -298,8 +299,21 @@ router.post(
         error: `Reply should be no longer than ${COMMENT_MAX_LENGTH} characters.`,
       });
     }
-
+    
     try {
+      // Check if user is banned
+      const banFilePath = path.join(bansDir, `${userId}.json`);
+      let bans = [];
+      try {
+        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8'));
+        if (bans.some(ban => ban.username === req.user.id)) {
+          return res.status(403).json({ error: 'You are banned from replying to this profile' });
+        }
+      } catch (err) {
+        // If file doesn't exist, user isn't banned
+        if (err.code !== 'ENOENT') throw err;
+      }
+
       const userBeliefs = await getUserBeliefs(userId);
 
       if (!userBeliefs[beliefName]) {
@@ -406,6 +420,62 @@ router.delete(
     } catch (error) {
       console.error('Error deleting reply:', error);
       res.status(500).json({ error: 'Error deleting reply.' });
+    }
+  }
+);
+
+// Ban a user from replying to a profile
+router.post('/api/ban-user',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  express.json(),
+  async (req, res) => {
+    const { bannedUser, deleteReplies } = req.body;
+    const profileOwner = req.user.id;
+  
+    if (!bannedUser) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const banFilePath = path.join(bansDir, `${profileOwner}.json`);
+  
+    try {
+      let bans = [];
+      try {
+        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8'));
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+    
+      if (!bans.some(ban => ban.username === bannedUser)) {
+        bans.push({ username: bannedUser });
+        await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
+      }
+
+      // Delete all replies by the banned user if requested
+      if (deleteReplies) {
+        const userBeliefs = await getUserBeliefs(profileOwner);
+        let modified = false;
+        
+        for (const belief of Object.values(userBeliefs)) {
+          if (belief.replies) {
+            const originalLength = belief.replies.length;
+            belief.replies = belief.replies.filter(reply => reply.username !== bannedUser);
+            if (belief.replies.length !== originalLength) {
+              modified = true;
+            }
+          }
+        }
+
+        if (modified) {
+          await saveUserBeliefs(profileOwner, userBeliefs);
+        }
+      }
+    
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error banning user:', error);
+      res.status(500).json({ error: 'Failed to ban user' });
     }
   }
 );
