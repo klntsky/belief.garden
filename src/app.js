@@ -11,6 +11,8 @@ import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import apiRouter from './routes/api.js';
 import FileStore from 'session-file-store';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -80,6 +82,23 @@ app.use((req, res) => {
   res.status(404).render('404', { title: 'Page Not Found' });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+// Ensure all required data directories exist
+const requiredDirs = [
+  'data/accounts',
+  'data/bans',
+  'data/bio',
+  'data/comments',
+  'data/debates',
+  'data/users'
+];
+
+Promise.all(
+  requiredDirs.map(dir => fs.mkdir(dir, { recursive: true }))
+).then(() => {
+  app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+  });
+}).catch(err => {
+  console.error('Error creating data directories:', err);
+  process.exit(1);
 });
