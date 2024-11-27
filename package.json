@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/app.js",
     "update-users": "node scripts/updateUsers.js",
-    "test": "playwright test",
+    "test": "HEADLESS_BROWSER=1 playwright test",
     "generate-images": "node --experimental-modules src/generateImages.js",
     "compress-images": "node --experimental-modules src/compressImages.js ./public/img/"
   },
