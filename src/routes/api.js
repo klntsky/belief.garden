@@ -480,4 +480,61 @@ router.post('/api/ban-user',
   }
 );
 
+// Get current bans for a profile
+router.get('/api/bans',
+  ensureAuthenticatedApi,
+  async (req, res) => {
+    const profileOwner = req.user.id;
+    const banFilePath = path.join(bansDir, `${profileOwner}.json`);
+    
+    try {
+      let bans = [];
+      try {
+        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8'));
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+      res.json(bans);
+    } catch (error) {
+      console.error('Error getting bans:', error);
+      res.status(500).json({ error: 'Failed to get bans' });
+    }
+  }
+);
+
+// Unban a user
+router.post('/api/unban-user',
+  ensureAuthenticatedApi,
+  perUserWriteLimiter,
+  express.json(),
+  async (req, res) => {
+    const { bannedUser } = req.body;
+    const profileOwner = req.user.id;
+  
+    if (!bannedUser) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const banFilePath = path.join(bansDir, `${profileOwner}.json`);
+  
+    try {
+      let bans = [];
+      try {
+        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8'));
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+        return res.json({ success: true }); // No bans file means user isn't banned
+      }
+    
+      bans = bans.filter(ban => ban.username !== bannedUser);
+      await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error unbanning user:', error);
+      res.status(500).json({ error: 'Failed to unban user' });
+    }
+  }
+);
+
 export default router;

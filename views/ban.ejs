@@ -1,5 +1,5 @@
 <div class="container">
-  <h1>Ban User</h1>
+  <h1>User Bans</h1>
   
   <form id="banForm" class="ban-form">
     <div class="form-group">
@@ -16,6 +16,13 @@
 
     <button type="submit" class="btn btn-danger">Ban User</button>
   </form>
+
+  <div id="current-bans" class="current-bans">
+    <h2>Current Bans</h2>
+    <div id="bans-list">
+      <!-- Will be populated by JavaScript -->
+    </div>
+  </div>
 </div>
 
 <link rel="stylesheet" href="/static/profile.css">
@@ -33,6 +40,36 @@
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.current-bans {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ban-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.ban-item:last-child {
+  border-bottom: none;
+}
+
+.unban-link {
+  color: #dc3545;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.unban-link:hover {
+  text-decoration: underline;
 }
 
 .form-group {
