@@ -402,6 +402,9 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
         container.insertBefore(repliesContainer, replyContainer);
       }
       repliesContainer.appendChild(replyDiv);
+      
+      // Scroll the new reply into view
+      replyDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
       // Clear the input
       replyInput.value = '';

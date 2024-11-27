@@ -141,6 +141,9 @@ async function validateRegistration(username, password) {
   const blacklisted = [
     'login',
     'register',
+    'ban',
+    'mod',
+    'notifications',
     'test',
     'profile',
     'api',
