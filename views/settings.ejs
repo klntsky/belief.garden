@@ -7,10 +7,11 @@
       <div class="setting-item">
         <label>
           <input type="checkbox" id="allowAllDebates" name="allowAllDebates" <%= settings.allowAllDebates ? 'checked' : '' %>>
-          Allow debates on all cards
+          Allow replies from other users for all my belief card comments.
         </label>
         <p class="setting-description">
-          When enabled, debates can be started on any card, even without an existing comment.
+          When enabled, debates can be started on any card, if there is an existing comment.
+
           Note: This only applies to non-banned users.
         </p>
       </div>
@@ -81,7 +82,6 @@ document.getElementById('settings-form').addEventListener('submit', async (e) =>
 }
 
 .setting-description {
-  color: #888;
   font-size: 0.9em;
   margin-left: 25px;
 }
