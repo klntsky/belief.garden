@@ -83,7 +83,7 @@ function toggleFavorite(beliefName, starElement) {
     });
 }
 
-function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserId) {
+function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserId, settings) {
   const beliefDiv = createBeliefDiv(belief);
 
   const overlayDiv = createOverlayDiv();
@@ -100,7 +100,7 @@ function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserI
   }
   overlayDiv.appendChild(buttonsDiv);
 
-  const commentSection = createCommentSection(belief, userChoice, onChange, readOnly, profileUserId);
+  const commentSection = createCommentSection(belief, userChoice, onChange, readOnly, profileUserId, settings);
   if (commentSection) {
     overlayDiv.appendChild(commentSection);
   }
@@ -339,7 +339,7 @@ function createReplyElement(reply, profileUserId, belief) {
 }
 
 // Function to create replies container
-function createRepliesContainer(userChoice, profileUserId, belief, container, replyInput) {
+function createRepliesContainer(userChoice, profileUserId, belief, container) {
   const repliesContainer = document.createElement('div');
   repliesContainer.className = 'replies-container';
   repliesContainer.style.display = 'none';
@@ -419,8 +419,35 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
   return replyContainer;
 }
 
+// Cache for user settings
+const userSettingsCache = new Map();
+
+// Function to get user settings
+async function getUserSettings(userId) {
+  if (userSettingsCache.has(userId)) {
+    return userSettingsCache.get(userId);
+  }
+  
+  try {
+    const response = await fetch(`/api/settings/${userId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user settings');
+    }
+    const settings = await response.json();
+    userSettingsCache.set(userId, settings);
+    return settings;
+  } catch (error) {
+    console.error('Error fetching user settings:', error);
+    return { allowAllDebates: false };
+  }
+}
+
+function isDebatable(comment, settings = {}) {
+  return settings.allowAllDebates || comment?.toLowerCase().includes('debate me');
+}
+
 // Function to create the comment section
-function createCommentSection(belief, userChoice, onChange, readOnly, profileUserId) {
+function createCommentSection(belief, userChoice, onChange, readOnly, profileUserId, settings) {
   const container = document.createElement('div');
   container.className = 'comment-section';
 
@@ -431,8 +458,8 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
 
   // Check if user can reply
   const canReply = window.authenticatedUserId &&
-    isDebatable(userChoice?.comment) &&
-    ((profileUserId === window.authenticatedUserId && userChoice.replies?.some(r => r.username !== window.authenticatedUserId)) ||
+    isDebatable(userChoice?.comment, settings) &&
+    ((profileUserId === window.authenticatedUserId && userChoice?.replies?.some(r => r.username !== window.authenticatedUserId)) ||
      (profileUserId !== window.authenticatedUserId));
 
   if (readOnly) {
@@ -489,7 +516,10 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
     // Show textarea for editing
     const commentTextarea = document.createElement('textarea');
     commentTextarea.classList.add('comment-input');
-    commentTextarea.placeholder = 'Add nuance or context. Include \'debate me\' to allow replies';
+    const placeholder = settings.allowAllDebates ? 
+      'Add nuance or context.' :
+      'Add nuance or context. Include \'debate me\' to allow replies';
+    commentTextarea.placeholder = placeholder;
     commentTextarea.maxLength = 400;
     makeTextareaAutoExpand(commentTextarea);
     if (userChoice?.comment) {
@@ -538,10 +568,6 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
   }
 
   return container;
-}
-
-function isDebatable(comment) {
-  return comment?.toLowerCase().includes('debate me');
 }
 
 function getBeliefsInfo(userBeliefs, beliefsData) {
@@ -612,6 +638,7 @@ async function init() {
   const userId = window.userId;
   const authenticatedUserId = window.authenticatedUserId;
   const userBeliefs = await fetchUserBeliefs(userId);
+  const settings = await getUserSettings(userId);
   // Fetch viewer's beliefs if viewing another user's profile
   if (authenticatedUserId && authenticatedUserId !== userId) {
     window.viewerBeliefs = await fetchUserBeliefs(authenticatedUserId);
@@ -710,7 +737,8 @@ async function init() {
           saveUserBelief(userId, belief.name, beliefData);
         },
         isReadOnly,
-        userId // Pass the profileUserId for username label
+        userId, // Pass the profileUserId for username label
+        settings
       );
 
       if (beliefElement) {

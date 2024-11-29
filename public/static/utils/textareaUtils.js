@@ -32,6 +32,7 @@ window.makeTextareaAutoExpand = function(textarea) {
   textarea.addEventListener('input', adjustHeight);
   textarea.addEventListener('change', adjustHeight);
   textarea.addEventListener('focus', adjustHeight);
+  textarea.addEventListener('blur', adjustHeight);
 
   // Initial adjustment
   // Use setTimeout to ensure the adjustment happens after the textarea is fully rendered

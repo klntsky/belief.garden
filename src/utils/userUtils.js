@@ -8,8 +8,10 @@ const userBeliefsDir = path.join('data', 'users');
 const userBiosDir = path.join('data', 'bio');
 const userSettingsDir = path.join('data', 'settings');
 
+// Default settings for new users
 const defaultSettings = {
-  allowAllDebates: false
+  allowAllDebates: false,
+  // Add any future settings here
 };
 
 /**

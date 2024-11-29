@@ -5,7 +5,7 @@ import fs from 'fs';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import { ensureAuthenticated } from '../utils/authUtils.js';
-import { getUserByUsername, deleteUserAccount } from '../utils/userUtils.js';
+import { getUserByUsername, deleteUserAccount, getUserSettings } from '../utils/userUtils.js';
 
 dotenv.config();
 
@@ -25,6 +25,15 @@ router.get('/', async (req, res) => {
   }
 
   res.render('index', { title: 'belief.garden', usernames });
+});
+
+router.get('/settings', ensureAuthenticated, async (req, res) => {
+  const settings = await getUserSettings(req.user.id);
+  res.render('settings', {
+    title: 'Settings',
+    settings,
+    user: req.user,
+  });
 });
 
 router.get('/users', async (req, res) => {

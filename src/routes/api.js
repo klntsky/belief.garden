@@ -327,9 +327,13 @@ router.post(
         return res.status(400).json({ error: 'Cannot reply to an empty comment.' });
       }
 
+      const settings = await getUserSettings(userId);
+
       // Check if the comment contains "debate me"
-      if (!userBeliefs[beliefName].comment.toLowerCase().includes('debate me')) {
-        return res.status(400).json({ error: 'Can only reply to comments that include "debate me".' });
+      if (!settings.allowAllDebates) {
+        if (!userBeliefs[beliefName].comment.toLowerCase().includes('debate me')) {
+          return res.status(400).json({ error: 'Can only reply to comments that include "debate me".' });
+        }
       }
 
       // For non-owners, prevent consecutive replies
@@ -550,7 +554,7 @@ router.get('/api/settings', ensureAuthenticatedApi, async (req, res) => {
   }
 });
 
-router.post('/api/settings', ensureAuthenticatedApi, async (req, res) => {
+router.post('/api/settings', ensureAuthenticatedApi, express.json(), async (req, res) => {
   try {
     const settings = await getUserSettings(req.user.id);
     const updatedSettings = { ...settings, ...req.body };
@@ -559,6 +563,16 @@ router.post('/api/settings', ensureAuthenticatedApi, async (req, res) => {
   } catch (error) {
     console.error('Error saving user settings:', error);
     res.status(500).json({ error: 'Failed to save user settings' });
+  }
+});
+
+router.get('/api/settings/:userId', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const settings = await getUserSettings(req.params.userId);
+    res.json(settings);
+  } catch (error) {
+    console.error('Error getting user settings:', error);
+    res.status(500).json({ error: 'Failed to get user settings' });
   }
 });
 
