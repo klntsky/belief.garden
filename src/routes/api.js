@@ -21,10 +21,23 @@ const debatesDir = path.join('data', 'debates');
 const bansDir = path.join('data', 'bans');
 
 const COMMENT_MAX_LENGTH = 400;
+const JSON_SIZE_LIMIT = '100kb';
+const LIMITER_CLEANUP_INTERVAL = 3600000; // 1 hour
+const LIMITER_INACTIVE_THRESHOLD = 3600000; // 1 hour
 const router = express.Router();
 
-// Map to store per-user limiters
+// Map to store per-user limiters with last used timestamps
 const limiters = {};
+
+// Cleanup inactive limiters periodically
+setInterval(() => {
+  const now = Date.now();
+  Object.entries(limiters).forEach(([userId, limiter]) => {
+    if (now - limiter.lastUsed > LIMITER_INACTIVE_THRESHOLD) {
+      delete limiters[userId];
+    }
+  });
+}, LIMITER_CLEANUP_INTERVAL);
 
 /**
  * Middleware to prevent concurrent processing of requests that write to a user's JSON file.
@@ -42,7 +55,8 @@ function perUserWriteLimiter(req, res, next) {
       maxConcurrent: 1,
       minTime: 0,
     });
-  }
+  } 
+  limiters[userId].lastUsed = Date.now();
 
   limiters[userId]
     .schedule(() => {
@@ -85,7 +99,7 @@ router.put(
   '/api/user-beliefs/:userId/:beliefName',
   ensureAuthenticatedApi,
   perUserWriteLimiter,
-  express.json(),
+  express.json({ limit: JSON_SIZE_LIMIT }),
   async (req, res) => {
     const requestedUserId = req.params.userId;
     const beliefName = req.params.beliefName;
@@ -286,7 +300,7 @@ router.post(
   '/api/user-beliefs/:userId/:beliefName/reply',
   ensureAuthenticatedApi,
   perUserWriteLimiter,
-  express.json(),
+  express.json({ limit: JSON_SIZE_LIMIT }),
   async (req, res) => {
     const { userId, beliefName } = req.params;
     const { comment } = req.body;
@@ -434,7 +448,7 @@ router.delete(
 router.post('/api/ban-user',
   ensureAuthenticatedApi,
   perUserWriteLimiter,
-  express.json(),
+  express.json({ limit: JSON_SIZE_LIMIT }),
   async (req, res) => {
     const { bannedUser, deleteReplies } = req.body;
     const profileOwner = req.user.id;
@@ -512,7 +526,7 @@ router.get('/api/bans',
 router.post('/api/unban-user',
   ensureAuthenticatedApi,
   perUserWriteLimiter,
-  express.json(),
+  express.json({ limit: JSON_SIZE_LIMIT }),
   async (req, res) => {
     const { bannedUser } = req.body;
     const profileOwner = req.user.id;
