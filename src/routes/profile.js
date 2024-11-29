@@ -22,9 +22,8 @@ router.get(
       return res.redirect('/');
     }
 
-    if (!getUserByUsername(profileUserId)) {
-      next();
-      return;
+    if (!await getUserByUsername(profileUserId)) {
+      return next();
     }
 
     const userBio = getUserBio(profileUserId);
