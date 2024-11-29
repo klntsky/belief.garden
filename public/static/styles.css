@@ -184,7 +184,7 @@ h1.center {
 
 .belief .comment-input {
   width: 100%;
-  min-height: 60px;
+  height: 60px;
   padding: 5px;
   resize: none;
   border-radius: 5px;
@@ -193,7 +193,6 @@ h1.center {
   box-sizing: border-box;
   color: #000;
   background-color: rgba(255, 255, 255, 0.9);
-  overflow: hidden;
 }
 
 .belief {
@@ -461,10 +460,18 @@ h1.center {
   resize: none;
   font-size: 0.9em;
   width: 100%;
+  display: block;
+  height: 60px;
+  padding: 5px;
+  resize: none;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-top: 10px;
   box-sizing: border-box;
   color: #000;
   background-color: rgba(255, 255, 255, 0.9);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .reply-button {
@@ -509,4 +516,9 @@ h1.center {
 
 .toggle-replies:hover {
   text-decoration: underline;
+}
+
+.no-bio {
+  text-align: center;
+  margin-top: 20px;
 }

@@ -75,6 +75,14 @@ Load this page in private mode to preview`;
   } else {
     // Render bio as markdown
     const bioTextDiv = document.querySelector('.user-bio-text');
+    if (bioText === '') {
+      const noBioDiv = document.createElement('div');
+      noBioDiv.className = 'no-bio';
+      noBioDiv.textContent = 'No bio set for this user.';
+      bioTextDiv.innerHTML = ''; // Clear existing content
+      bioTextDiv.appendChild(noBioDiv);
+      return;
+    }
     if (!bioTextDiv) {
       console.error('User bio text element not found.');
       return;
