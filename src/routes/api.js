@@ -10,6 +10,8 @@ import {
   adjustPieSlicePoints,
   getUserBio,
   saveUserBio,
+  getUserSettings,
+  saveUserSettings,
   getUserBeliefsFilePath,
 } from '../utils/userUtils.js';
 import Bottleneck from 'bottleneck';
@@ -536,5 +538,28 @@ router.post('/api/unban-user',
     }
   }
 );
+
+// Settings endpoints
+router.get('/api/settings', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const settings = await getUserSettings(req.user.id);
+    res.json(settings);
+  } catch (error) {
+    console.error('Error getting user settings:', error);
+    res.status(500).json({ error: 'Failed to get user settings' });
+  }
+});
+
+router.post('/api/settings', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const settings = await getUserSettings(req.user.id);
+    const updatedSettings = { ...settings, ...req.body };
+    await saveUserSettings(req.user.id, updatedSettings);
+    res.json(updatedSettings);
+  } catch (error) {
+    console.error('Error saving user settings:', error);
+    res.status(500).json({ error: 'Failed to save user settings' });
+  }
+});
 
 export default router;

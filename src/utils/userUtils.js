@@ -6,6 +6,11 @@ import path from 'path';
 const userAccountsDir = path.join('data', 'accounts');
 const userBeliefsDir = path.join('data', 'users');
 const userBiosDir = path.join('data', 'bio');
+const userSettingsDir = path.join('data', 'settings');
+
+const defaultSettings = {
+  allowAllDebates: false
+};
 
 /**
  * Get the file path of a user's beliefs JSON file.
@@ -270,6 +275,40 @@ export async function adjustPieSlicePoints(username, beliefName, action) {
 }
 
 /**
+ * Get user settings.
+ * @param {string} username - The username of the user.
+ * @returns {Promise<Object>} - The user's settings.
+ */
+export async function getUserSettings(username) {
+  const settingsPath = path.join(userSettingsDir, `${username}.json`);
+  try {
+    const data = await fs.readFile(settingsPath, 'utf8');
+    return { ...defaultSettings, ...JSON.parse(data) };
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return { ...defaultSettings };
+    }
+    throw err;
+  }
+}
+
+/**
+ * Save user settings.
+ * @param {string} username - The username of the user.
+ * @param {Object} settings - The settings to save.
+ * @returns {Promise<void>}
+ */
+export async function saveUserSettings(username, settings) {
+  const settingsPath = path.join(userSettingsDir, `${username}.json`);
+  try {
+    await fs.mkdir(userSettingsDir, { recursive: true });
+    await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
  * Get user bio.
  * @param {string} username - The username of the user.
  * @returns {Promise<string>} - The user's bio text.
@@ -337,6 +376,14 @@ export async function deleteUserAccount(username) {
   // Delete bio file
   const bioFilePath = path.join(userBiosDir, `${username}.md`);
   await fs.unlink(bioFilePath).catch((err) => {
+    if (err.code !== 'ENOENT') {
+      throw err;
+    }
+  });
+
+  // Delete settings file
+  const userSettingsFilePath = path.join(userSettingsDir, `${username}.json`);
+  await fs.unlink(userSettingsFilePath).catch((err) => {
     if (err.code !== 'ENOENT') {
       throw err;
     }

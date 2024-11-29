@@ -89,7 +89,8 @@ const requiredDirs = [
   'data/bio',
   'data/comments',
   'data/debates',
-  'data/users'
+  'data/users',
+  'data/settings'
 ];
 
 Promise.all(
