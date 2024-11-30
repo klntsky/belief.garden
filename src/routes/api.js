@@ -580,7 +580,7 @@ router.post('/api/settings', ensureAuthenticatedApi, express.json(), async (req,
   }
 });
 
-router.get('/api/settings/:userId', ensureAuthenticatedApi, async (req, res) => {
+router.get('/api/settings/:userId', async (req, res) => {
   try {
     const settings = await getUserSettings(req.params.userId);
     res.json(settings);
