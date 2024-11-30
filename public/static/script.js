@@ -168,7 +168,7 @@ function createDescriptionContainer(belief) {
   return descriptionContainer;
 }
 
-// Function to set button title based on viewer's belief
+// Function to set button tooltip based on viewer's belief
 function setButtonTitleForViewer(buttonsDiv, belief, userChoice, profileUserId) {
   if (window.authenticatedUserId && window.authenticatedUserId !== profileUserId) {
     const viewerBelief = window.viewerBeliefs[belief.name];
@@ -176,15 +176,31 @@ function setButtonTitleForViewer(buttonsDiv, belief, userChoice, profileUserId) 
       const viewerChoice = viewerBelief.choice;
       if (viewerChoice !== userChoice?.choice) {
         if (viewerChoice === 'neutral') {
-          buttonsDiv.title = `You are neutral towards ${belief.name}`;
+          tippy(buttonsDiv, {
+            content: `You are neutral towards ${belief.name}`,
+            placement: 'top',
+            theme: 'light'
+          });
         } else {
-          buttonsDiv.title = `You ${viewerChoice} ${belief.name}`;
+          tippy(buttonsDiv, {
+            content: `You ${viewerChoice} ${belief.name}`,
+            placement: 'top',
+            theme: 'light'
+          });
         }
       } else {
-        buttonsDiv.title = 'You have the same choice';
+        tippy(buttonsDiv, {
+          content: 'You have the same choice',
+          placement: 'top',
+          theme: 'light'
+        });
       }
     } else {
-      buttonsDiv.title = 'You have not made a choice';
+      tippy(buttonsDiv, {
+        content: 'You have not made a choice',
+        placement: 'top',
+        theme: 'light'
+      });
     }
   }
 }
