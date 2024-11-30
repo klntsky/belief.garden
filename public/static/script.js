@@ -435,7 +435,7 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
       repliesContainer.appendChild(replyDiv);
       
       // Scroll the new reply into view
-      replyDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      repliesContainer.scrollTop = repliesContainer.scrollHeight;
 
       // Clear the input
       replyInput.value = '';
