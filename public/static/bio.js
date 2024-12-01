@@ -46,11 +46,15 @@ Load this page in private mode to preview`;
 
     // Auto-save after 1.5 seconds of inactivity
     let timeoutId;
+    const saveIndicator = createSaveIndicator(textarea);
     textarea.addEventListener('input', () => {
       clearTimeout(timeoutId);
+      saveIndicator.saving();
       timeoutId = setTimeout(() => {
         const updatedBio = textarea.value;
-        saveBio(updatedBio);
+        saveBio(updatedBio)
+          .then(() => saveIndicator.success())
+          .catch(() => saveIndicator.error());
       }, 1500);
     });
   } else {
@@ -88,9 +92,9 @@ Load this page in private mode to preview`;
 function saveBio(bioText) {
   if (bioText.length > 1500) {
     alert('Bio cannot exceed 1500 characters.');
-    return;
+    return Promise.reject(new Error('Bio cannot exceed 1500 characters.'));
   }
-  fetch(`/api/user-bio/${encodeURIComponent(window.userId)}`, {
+  return fetch(`/api/user-bio/${encodeURIComponent(window.userId)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/plain',
@@ -101,9 +105,7 @@ function saveBio(bioText) {
       if (!response.ok) {
         throw new Error('Failed to save bio.');
       }
-    })
-    .catch((error) => {
-      console.error('Error saving bio:', error);
+      return response;
     });
 }
 

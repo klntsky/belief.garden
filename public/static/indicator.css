@@ -1,0 +1,28 @@
+@keyframes blinker {
+  50% { opacity: 0; }
+}
+
+.indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.indicator.saving {
+  background-color: blue;
+  animation: blinker 1s linear infinite;
+}
+
+.indicator.success {
+  background-color: green;
+  animation: none;
+}
+
+.indicator.error {
+  background-color: red;
+  animation: none;
+}

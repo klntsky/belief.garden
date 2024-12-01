@@ -272,7 +272,7 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
       readOnly,
       (choice) => {
         if (onChange) {
-          onChange(choice, undefined);
+          onChange({ choice, comment: undefined });
         }
       }
     );
@@ -562,7 +562,7 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
       clearTimeout(commentTimeout);
       commentTimeout = setTimeout(() => {
         const comment = commentTextarea.value.trim();
-        onChange(undefined, comment);
+        onChange({ choice: undefined, comment });
       }, 500);
     });
 
@@ -953,6 +953,36 @@ function formatTimestamp(timestamp) {
   }
   // Otherwise show full date
   return date.toLocaleString();
+}
+
+// Add save indicator functionality to relevant save functions if applicable
+
+// Example usage in a function
+function attachSaveIndicatorToTextarea(textarea) {
+  const saveIndicator = createSaveIndicator(textarea);
+
+  // Simulate a save operation
+  function simulateSaveOperation() {
+    saveIndicator.saving();
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // Simulate a successful save
+        const isSuccess = Math.random() > 0.2; // 80% success rate
+        if (isSuccess) {
+          resolve();
+          saveIndicator.success();
+        } else {
+          reject();
+          saveIndicator.error();
+        }
+      }, 1000);
+    });
+  }
+
+  // Example textarea input event listener
+  textarea.addEventListener('input', () => {
+    simulateSaveOperation();
+  });
 }
 
 init();

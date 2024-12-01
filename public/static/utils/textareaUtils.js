@@ -38,3 +38,33 @@ window.makeTextareaAutoExpand = function(textarea) {
   // Use setTimeout to ensure the adjustment happens after the textarea is fully rendered
   setTimeout(adjustHeight, 0);
 };
+
+function createSaveIndicator(textarea) {
+  const indicator = document.createElement('div');
+  indicator.className = 'indicator';
+  textarea.parentElement.style.position = 'relative';
+  textarea.parentElement.appendChild(indicator);
+
+  function showSaving() {
+    indicator.classList.add('saving');
+    indicator.classList.remove('success', 'error');
+  }
+
+  function showSuccess() {
+    indicator.classList.add('success');
+    indicator.classList.remove('saving', 'error');
+  }
+
+  function showError() {
+    indicator.classList.add('error');
+    indicator.classList.remove('saving', 'success');
+  }
+
+  return {
+    saving: showSaving,
+    success: showSuccess,
+    error: showError,
+  };
+}
+
+window.createSaveIndicator = createSaveIndicator;
