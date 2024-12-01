@@ -162,29 +162,30 @@ function setupNotificationPopup() {
   const popup = document.querySelector('.notifications-popup');
   if (!wrapper || !popup) return;
 
-  // Show popup on hover
-  wrapper.addEventListener('mouseenter', () => {
+  let timeoutId = null;
+
+  const showPopup = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
     popup.style.display = 'block';
     updateNotificationUI();
-  });
+  };
 
-  wrapper.addEventListener('mouseleave', (e) => {
-    // Check if we're still within the popup
-    const rect = popup.getBoundingClientRect();
-    if (
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom
-    ) {
+  const hidePopup = () => {
+    timeoutId = setTimeout(() => {
       popup.style.display = 'none';
-    }
-  });
+    }, 300); // Add a small delay before hiding
+  };
 
-  // Hide popup when mouse leaves the popup
-  popup.addEventListener('mouseleave', () => {
-    popup.style.display = 'none';
-  });
+  // Show popup on hover
+  wrapper.addEventListener('mouseenter', showPopup);
+  wrapper.addEventListener('mouseleave', hidePopup);
+
+  // Keep popup visible when hovering over it
+  popup.addEventListener('mouseenter', showPopup);
+  popup.addEventListener('mouseleave', hidePopup);
 
   // Make notification items clickable
   popup.addEventListener('click', (e) => {
