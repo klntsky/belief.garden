@@ -558,15 +558,23 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
     }
 
     let commentTimeout;
+    container.appendChild(commentTextarea);
+    const saveIndicator = createSaveIndicator(commentTextarea);
     commentTextarea.addEventListener('input', () => {
       clearTimeout(commentTimeout);
-      commentTimeout = setTimeout(() => {
+      saveIndicator.saving();
+      commentTimeout = setTimeout(async () => {
         const comment = commentTextarea.value.trim();
-        onChange({ choice: undefined, comment });
+        try {
+          await onChange({ choice: undefined, comment });
+          saveIndicator.success();
+        } catch (error) {
+          saveIndicator.error();
+          console.error('Error saving comment:', error);
+        }
       }, 500);
     });
 
-    container.appendChild(commentTextarea);
 
     // Create replies container unconditionally
     repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
