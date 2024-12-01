@@ -14,7 +14,7 @@ const MAX_NOTIFICATIONS = 200;
 
 // Default settings for new users
 const defaultSettings = {
-  allowAllDebates: false,
+  allowAllDebates: true,
   // Add any future settings here
 };
 
