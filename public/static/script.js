@@ -88,7 +88,7 @@ function createBeliefOption(belief, userChoice, onChange, readOnly, profileUserI
 
   const overlayDiv = createOverlayDiv();
 
-  const titleContainer = createTitleContainer(belief, userChoice, onChange, readOnly, profileUserId);
+  const titleContainer = createTitleContainer(belief, userChoice, readOnly, profileUserId);
   overlayDiv.appendChild(titleContainer);
 
   const descriptionContainer = createDescriptionContainer(belief);
@@ -126,7 +126,7 @@ function createOverlayDiv() {
 }
 
 // Function to create the title container
-function createTitleContainer(belief, userChoice, onChange, readOnly, profileUserId) {
+function createTitleContainer(belief, userChoice, readOnly, profileUserId) {
   const titleContainer = document.createElement('div');
   titleContainer.className = 'belief-title-container';
 
@@ -210,13 +210,13 @@ function createChoiceButton(choice, isSelected, readOnly, onClick) {
   const button = document.createElement('button');
   button.textContent = choice.charAt(0).toUpperCase() + choice.slice(1);
   button.className = `choice-button ${choice}${isSelected ? ' selected' : ''}`;
-  
+
   if (!readOnly) {
     button.addEventListener('click', async () => {
       const isCurrentlySelected = button.classList.contains('selected');
       const buttonsDiv = button.parentElement;
       const siblingButtons = buttonsDiv.querySelectorAll('.choice-button');
-      
+
       siblingButtons.forEach(btn => btn.classList.remove('selected'));
       buttonsDiv.classList.remove('has-selection');
 
@@ -231,7 +231,7 @@ function createChoiceButton(choice, isSelected, readOnly, onClick) {
   } else {
     button.disabled = true;
   }
-  
+
   return button;
 }
 
@@ -244,7 +244,7 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
 
   const buttonsDiv = document.createElement('div');
   buttonsDiv.className = 'choice-buttons';
-  
+
   // Add has-selection class if there's an initial selection
   if (userChoice?.choice) {
     buttonsDiv.classList.add('has-selection');
@@ -263,7 +263,7 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
   }
 
   const choices = ['reject', 'neutral', 'support'];
-  
+
   choices.forEach(choice => {
     const isSelected = userChoice?.choice === choice;
     const button = createChoiceButton(
@@ -284,15 +284,16 @@ function createButtonsDiv(belief, userChoice, onChange, readOnly, profileUserId)
 
 // Function to create replies container
 function createRepliesContainer(userChoice, profileUserId, belief) {
-  
   const repliesContainer = document.createElement('div');
   repliesContainer.className = 'replies-container';
   repliesContainer.style.display = 'none';
 
-  userChoice.replies.forEach(reply => {
-    const replyDiv = createReplyElement(reply, profileUserId, belief);
-    repliesContainer.appendChild(replyDiv);
-  });
+  if (userChoice?.replies?.length > 0) {
+    userChoice.replies.forEach(reply => {
+      const replyDiv = createReplyElement(reply, profileUserId, belief);
+      repliesContainer.appendChild(replyDiv);
+    });
+  }
 
   return repliesContainer;
 }
@@ -337,6 +338,7 @@ function createReplyElement(reply, profileUserId, belief) {
 
           if (!response.ok) {
             const error = await response.json();
+            showError('Failed to delete reply: ' + response.status);
             throw new Error(error.error || 'Failed to delete reply');
           }
 
@@ -386,7 +388,7 @@ function createReplyElement(reply, profileUserId, belief) {
 }
 
 // Function to create reply input
-function createReplyInput(profileUserId, belief, container, repliesContainer) {
+function createReplyInput(profileUserId, belief, container, repliesContainer, userChoice) {
   const replyContainer = document.createElement('div');
   replyContainer.className = 'reply-input-container';
 
@@ -427,13 +429,11 @@ function createReplyInput(profileUserId, belief, container, repliesContainer) {
 
       // Add the new reply to the UI using the server-provided timestamp
       const replyDiv = createReplyElement(reply, profileUserId, belief);
+      userChoice.replies = userChoice.replies || [];
+      userChoice.replies.push(reply);
 
-      if (!repliesContainer) {
-        repliesContainer = createRepliesContainer(userChoice, profileUserId, belief);
-        container.appendChild(repliesContainer);
-      }
       repliesContainer.appendChild(replyDiv);
-      
+
       // Scroll the new reply into view
       repliesContainer.scrollTop = repliesContainer.scrollHeight;
 
@@ -458,7 +458,7 @@ async function getUserSettings(userId) {
   if (userSettingsCache.has(userId)) {
     return userSettingsCache.get(userId);
   }
-  
+
   try {
     const response = await fetch(`/api/settings/${userId}`);
     if (!response.ok) {
@@ -469,6 +469,7 @@ async function getUserSettings(userId) {
     return settings;
   } catch (error) {
     console.error('Error fetching user settings:', error);
+    showError('Failed to fetch user settings');
     return { allowAllDebates: false };
   }
 }
@@ -514,8 +515,11 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
       commentContainer.appendChild(commentText);
       container.appendChild(commentContainer);
 
+      // Create replies container unconditionally
+      repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
+
       // Add toggle button if there are replies or user can reply
-      if (repliesContainer || canReply) {
+      if (userChoice.replies?.length > 0 || canReply) {
         const toggleReplies = document.createElement('button');
         toggleReplies.className = 'toggle-replies';
 
@@ -526,11 +530,9 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
         }
 
         toggleReplies.onclick = () => {
-          if (repliesContainer) {
-            repliesContainer.style.display = 'flex';
-          }
+          repliesContainer.style.display = 'flex';
           if (canReply) {
-            const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer);
+            const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer, userChoice);
             container.appendChild(replyContainer);
           }
           toggleReplies.remove();
@@ -538,16 +540,14 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
         container.appendChild(toggleReplies);
       }
 
-      // Add replies container if it exists
-      if (repliesContainer) {
-        container.appendChild(repliesContainer);
-      }
+      // Add replies container
+      container.appendChild(repliesContainer);
     }
   } else {
     // Show textarea for editing
     const commentTextarea = document.createElement('textarea');
     commentTextarea.classList.add('comment-input');
-    const placeholder = settings.allowAllDebates ? 
+    const placeholder = settings.allowAllDebates ?
       'Add nuance or context.' :
       'Add nuance or context. Include \'debate me\' to allow replies';
     commentTextarea.placeholder = placeholder;
@@ -568,8 +568,11 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
 
     container.appendChild(commentTextarea);
 
+    // Create replies container unconditionally
+    repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
+
     // Add toggle button if there are replies or user can reply
-    if (repliesContainer || canReply) {
+    if (userChoice.replies?.length > 0 || canReply) {
       const toggleReplies = document.createElement('button');
       toggleReplies.className = 'toggle-replies';
 
@@ -580,11 +583,9 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
       }
 
       toggleReplies.onclick = () => {
-        if (repliesContainer) {
-          repliesContainer.style.display = 'flex';
-        }
+        repliesContainer.style.display = 'flex';
         if (canReply) {
-          const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer);
+          const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer, userChoice);
           container.appendChild(replyContainer);
         }
         toggleReplies.remove();
@@ -592,10 +593,8 @@ function createCommentSection(belief, userChoice, onChange, readOnly, profileUse
       container.appendChild(toggleReplies);
     }
 
-    // Add replies container if it exists
-    if (repliesContainer) {
-      container.appendChild(repliesContainer);
-    }
+    // Add replies container
+    container.appendChild(repliesContainer);
   }
 
   return container;
@@ -693,7 +692,7 @@ function createCategorySection(category, beliefs, userBeliefs, readOnly, profile
     const beliefElement = createBeliefOption(
       belief,
       userChoice,
-      async (choice, comment) => {
+      async ({ choice, comment }) => {
         if (readOnly) return;
 
         const beliefData = {};
@@ -759,7 +758,7 @@ async function initializeBeliefsGrid(beliefsData, userBeliefs, profileUserId, se
       profileUserId,
       settings
     );
-    
+
     if (categorySection) {
       beliefsContainer.appendChild(categorySection);
     }
@@ -811,8 +810,8 @@ async function init() {
       fetchUserBeliefs(window.userId)
     ]);
 
-    window.viewerBeliefs = window.authenticatedUserId ? 
-      await fetchUserBeliefs(window.authenticatedUserId) : 
+    window.viewerBeliefs = window.authenticatedUserId ?
+      await fetchUserBeliefs(window.authenticatedUserId) :
       {};
 
     const settings = await getUserSettings(window.userId);
