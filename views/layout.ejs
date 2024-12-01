@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/static/landing.css" />
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="/static/profile.css" />
+  <link rel="stylesheet" href="/static/notifications.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://unpkg.com/@popperjs/core@2"></script>
   <script src="https://unpkg.com/tippy.js@6"></script>
@@ -38,7 +39,15 @@
     <div class="nav-links-right">
       <span>
       <% if (user && user.id) { %>
-        Welcome, <a href="/<%= user.id %>"><%= user.id %></a> |
+        Welcome, <span class="user-notifications-wrapper">
+          <a href="/<%= user.id %>" class="user-notifications">
+            <%= user.id %>
+            <span class="notification-counter" style="display: none;">0</span>
+          </a>
+          <div class="notifications-popup" style="display: none;">
+            <div class="notifications-list"></div>
+          </div>
+        </span> |
       <% } else { %>
       <% } %>
       <a href="/faq">FAQ</a> |
@@ -70,6 +79,7 @@
 
   <!-- Include the correlation script -->
   <script src="/static/correlation.js"></script>
+  <script src="/static/notifications.js"></script>
   <footer class="site-footer">
     <div class="footer-content">
       <a href="/faq">FAQ</a> |

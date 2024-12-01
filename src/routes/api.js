@@ -13,6 +13,12 @@ import {
   getUserSettings,
   saveUserSettings,
   getUserBeliefsFilePath,
+  getUserNotifications,
+  addFollower,
+  removeFollower,
+  pushNotificationToUser,
+  pushNotificationToFollowers,
+  getUserFollowers,
 } from '../utils/userUtils.js';
 import Bottleneck from 'bottleneck';
 import { promises as fs } from 'fs';
@@ -55,7 +61,7 @@ function perUserWriteLimiter(req, res, next) {
       maxConcurrent: 1,
       minTime: 0,
     });
-  } 
+  }
   limiters[userId].lastUsed = Date.now();
 
   limiters[userId]
@@ -94,6 +100,13 @@ router.get('/api/user-beliefs/:userId', (req, res) => {
   });
 });
 
+function ellipsis(text, maxLength) {
+  if (text.length > maxLength) {
+    return text.slice(0, maxLength - 3) + '...';
+  }
+  return text;
+}
+
 // Only authenticated users can edit their own beliefs
 router.put(
   '/api/user-beliefs/:userId/:beliefName',
@@ -101,18 +114,17 @@ router.put(
   perUserWriteLimiter,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req, res) => {
-    const requestedUserId = req.params.userId;
     const beliefName = req.params.beliefName;
     const authenticatedUserId = req.user.id;
 
-    if (requestedUserId !== authenticatedUserId) {
+    if (req.params.userId !== authenticatedUserId) {
       return res.status(403).json({ error: 'Access denied.' });
     }
 
     const beliefData = req.body;
     let userBeliefs;
     try {
-      userBeliefs = await getUserBeliefs(requestedUserId);
+      userBeliefs = await getUserBeliefs(authenticatedUserId);
     } catch (error) {
       console.error('Error fetching user beliefs:', error);
       return res.status(500).json({ error: 'Internal server error.' });
@@ -140,6 +152,15 @@ router.put(
         delete userBeliefs[beliefName].comment;
         delete userBeliefs[beliefName].commentTime;
       } else {
+        const oldComment = userBeliefs[beliefName].comment;
+        if (!oldComment) {
+          await pushNotificationToFollowers(authenticatedUserId, {
+            type: 'new_comment',
+            actor: authenticatedUserId,
+            beliefName,
+            text: ellipsis(beliefData.comment, 50)
+          });
+        }
         userBeliefs[beliefName].comment = beliefData.comment;
         userBeliefs[beliefName].commentTime = Date.now();
       }
@@ -151,7 +172,7 @@ router.put(
     }
 
     try {
-      await saveUserBeliefs(requestedUserId, userBeliefs);
+      await saveUserBeliefs(authenticatedUserId, userBeliefs);
       res.status(200).json({ message: 'User belief updated successfully.' });
     } catch (error) {
       console.error('Error saving user beliefs:', error);
@@ -315,7 +336,7 @@ router.post(
         error: `Reply should be no longer than ${COMMENT_MAX_LENGTH} characters.`,
       });
     }
-    
+
     try {
       // Check if user is banned
       const banFilePath = path.join(bansDir, `${userId}.json`);
@@ -394,6 +415,25 @@ router.post(
 
       await saveUserBeliefs(userId, userBeliefs);
       res.status(200).json(reply);
+
+      // Push notification for the belief owner if it's not their own reply
+      if (userId !== authenticatedUserId) {
+        await pushNotificationToUser(userId, {
+          actor: authenticatedUserId,
+          profileName: userId,
+          beliefName,
+          type: 'new_reply',
+        });
+      } else {
+        // Push notification to all followers of the authenticated user (reply author)
+        await pushNotificationToFollowers(userId, {
+          actor: authenticatedUserId,
+          profileName: userId,
+          beliefName,
+          type: 'self_reply',
+        });
+      }
+
     } catch (error) {
       console.error('Error adding reply:', error);
       res.status(500).json({ error: 'Error adding reply.' });
@@ -452,13 +492,13 @@ router.post('/api/ban-user',
   async (req, res) => {
     const { bannedUser, deleteReplies } = req.body;
     const profileOwner = req.user.id;
-  
+
     if (!bannedUser) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const banFilePath = path.join(bansDir, `${profileOwner}.json`);
-  
+
     try {
       let bans = [];
       try {
@@ -466,7 +506,7 @@ router.post('/api/ban-user',
       } catch (err) {
         if (err.code !== 'ENOENT') throw err;
       }
-    
+
       if (!bans.some(ban => ban.username === bannedUser)) {
         bans.push({ username: bannedUser });
         await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
@@ -476,7 +516,7 @@ router.post('/api/ban-user',
       if (deleteReplies) {
         const userBeliefs = await getUserBeliefs(profileOwner);
         let modified = false;
-        
+
         for (const belief of Object.values(userBeliefs)) {
           if (belief.replies) {
             const originalLength = belief.replies.length;
@@ -491,7 +531,7 @@ router.post('/api/ban-user',
           await saveUserBeliefs(profileOwner, userBeliefs);
         }
       }
-    
+
       res.json({ success: true });
     } catch (error) {
       console.error('Error banning user:', error);
@@ -506,7 +546,7 @@ router.get('/api/bans',
   async (req, res) => {
     const profileOwner = req.user.id;
     const banFilePath = path.join(bansDir, `${profileOwner}.json`);
-    
+
     try {
       let bans = [];
       try {
@@ -530,13 +570,13 @@ router.post('/api/unban-user',
   async (req, res) => {
     const { bannedUser } = req.body;
     const profileOwner = req.user.id;
-  
+
     if (!bannedUser) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const banFilePath = path.join(bansDir, `${profileOwner}.json`);
-  
+
     try {
       let bans = [];
       try {
@@ -545,10 +585,10 @@ router.post('/api/unban-user',
         if (err.code !== 'ENOENT') throw err;
         return res.json({ success: true }); // No bans file means user isn't banned
       }
-    
+
       bans = bans.filter(ban => ban.username !== bannedUser);
       await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('Error unbanning user:', error);
@@ -556,6 +596,79 @@ router.post('/api/unban-user',
     }
   }
 );
+
+// Get notifications since timestamp
+router.get('/api/notifications', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const since = parseInt(req.query.since) || 0;
+    const notifications = await getUserNotifications(req.user.id);
+
+    // Filter notifications newer than the given timestamp
+    const recentNotifications = notifications.filter(n => n.timestamp > since);
+
+    res.json(recentNotifications);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Check if user is following another user
+router.get('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const targetUserId = req.params.userId;
+    const authenticatedUserId = req.user.id;
+
+    // Can't follow yourself
+    if (targetUserId === authenticatedUserId) {
+      return res.status(400).json(false);
+    }
+
+    const followers = await getUserFollowers(targetUserId);
+    const isFollowing = followers.includes(authenticatedUserId);
+
+    res.json(isFollowing);
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    res.status(500).json({ error: 'Failed to check follow status' });
+  }
+});
+
+// Follow a user
+router.put('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
+  const userToFollow = req.params.userId;
+  const follower = req.user.id;
+
+  if (userToFollow === follower) {
+    return res.status(400).json({ error: 'Cannot follow yourself.' });
+  }
+
+  try {
+    await addFollower(userToFollow, follower);
+    res.json({ message: 'Successfully followed user.' });
+  } catch (error) {
+    console.error('Error following user:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Unfollow a user
+router.delete('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
+  const userToUnfollow = req.params.userId;
+  const follower = req.user.id;
+
+  if (userToUnfollow === follower) {
+    return res.status(400).json({ error: 'Cannot unfollow yourself.' });
+  }
+
+  try {
+    await removeFollower(userToUnfollow, follower);
+    res.json({ message: 'Successfully unfollowed user.' });
+  } catch (error) {
+    console.error('Error unfollowing user:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
 
 // Settings endpoints
 router.get('/api/settings', ensureAuthenticatedApi, async (req, res) => {

@@ -8,9 +8,18 @@
   </div>
   <div class="user-info">
     <div class="top-right-box">
-      <h2>About <%= profileUserId %></h2>
-      <div class="user-bio">
-        <div class="user-bio-text"></div>
+      <div class="profile-header">
+        <h2>
+          About <%= profileUserId %>
+          <% if (user && user.id !== profileUserId) { %>
+            <button id="followButton" class="follow-button" style="display: none;">Follow</button>
+          <% } %>
+        </h2>
+        <div class="bio-container">
+          <div class="user-bio">
+            <div class="user-bio-text"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="bottom-right-box">

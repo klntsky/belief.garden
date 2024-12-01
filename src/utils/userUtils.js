@@ -7,6 +7,10 @@ const userAccountsDir = path.join('data', 'accounts');
 const userBeliefsDir = path.join('data', 'users');
 const userBiosDir = path.join('data', 'bio');
 const userSettingsDir = path.join('data', 'settings');
+const notificationsDir = path.join('data', 'notifications');
+const followersDir = path.join('data', 'followers');
+
+const MAX_NOTIFICATIONS = 200;
 
 // Default settings for new users
 const defaultSettings = {
@@ -390,4 +394,133 @@ export async function deleteUserAccount(username) {
       throw err;
     }
   });
+}
+
+/**
+ * Get a user's notifications
+ * @param {string} username - The username of the user
+ * @returns {Promise<Array>} - Array of notification objects
+ */
+export async function getUserNotifications(username) {
+  const notificationPath = path.join(notificationsDir, `${username}.json`);
+  try {
+    await fs.access(notificationPath);
+    const data = await fs.readFile(notificationPath, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      // If file doesn't exist, create it with empty array
+      await fs.mkdir(notificationsDir, { recursive: true });
+      await fs.writeFile(notificationPath, '[]', 'utf8');
+      return [];
+    }
+    throw err;
+  }
+}
+
+/**
+ * Push a notification to a user
+ * @param {string} username - The username of the recipient
+ * @param {Object} notification - The notification object to add
+ * @returns {Promise<void>}
+ */
+export async function pushNotificationToUser(username, notification) {
+  const notificationPath = path.join(notificationsDir, `${username}.json`);
+  try {
+    const notifications = await getUserNotifications(username);
+    notifications.unshift({
+      ...notification,
+      timestamp: Date.now()
+    });
+    // Keep only the most recent MAX_NOTIFICATIONS
+    if (notifications.length > MAX_NOTIFICATIONS) {
+      notifications.length = MAX_NOTIFICATIONS;
+    }
+    await fs.writeFile(notificationPath, JSON.stringify(notifications, null, 2), 'utf8');
+  } catch (err) {
+    console.error(`Failed to push notification to ${username}:`, err);
+  }
+}
+
+/**
+ * Push a notification to all followers of a user
+ * @param {string} username - The username whose followers should receive the notification
+ * @param {Object} notification - The notification object to add
+ * @returns {Promise<void>}
+ */
+export async function pushNotificationToFollowers(username, notification) {
+  try {
+    const followers = await getUserFollowers(username);
+    await Promise.all(followers.map(follower =>
+      pushNotificationToUser(follower, notification)
+    ));
+  } catch (err) {
+    console.error(`Failed to push notification to followers of ${username}:`, err);
+  }
+}
+
+/**
+ * Get a user's followers
+ * @param {string} username - The username of the user
+ * @returns {Promise<Array<string>>} - Array of follower usernames
+ */
+export async function getUserFollowers(username) {
+  const followersPath = path.join(followersDir, `${username}.json`);
+  try {
+    await fs.access(followersPath);
+    const data = await fs.readFile(followersPath, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      // If file doesn't exist, create it with empty array
+      await fs.mkdir(followersDir, { recursive: true });
+      await fs.writeFile(followersPath, '[]', 'utf8');
+      return [];
+    }
+    throw err;
+  }
+}
+
+/**
+ * Add a follower to a user
+ * @param {string} username - The username of the user to follow
+ * @param {string} followerUsername - The username of the follower
+ * @returns {Promise<void>}
+ */
+export async function addFollower(username, followerUsername) {
+  const followersPath = path.join(followersDir, `${username}.json`);
+  const followers = await getUserFollowers(username);
+
+  if (!followers.includes(followerUsername)) {
+    followers.push(followerUsername);
+    await fs.writeFile(followersPath, JSON.stringify(followers, null, 2), 'utf8');
+
+    // Send notification to the user being followed
+    await pushNotificationToUser(username, {
+      type: 'new_follower',
+      actor: followerUsername
+    });
+  }
+}
+
+/**
+ * Remove a follower from a user
+ * @param {string} username - The username of the user to unfollow
+ * @param {string} followerUsername - The username of the follower to remove
+ * @returns {Promise<void>}
+ */
+export async function removeFollower(username, followerUsername) {
+  const followersPath = path.join(followersDir, `${username}.json`);
+  const followers = await getUserFollowers(username);
+
+  const index = followers.indexOf(followerUsername);
+  if (index !== -1) {
+    followers.splice(index, 1);
+    await fs.writeFile(followersPath, JSON.stringify(followers, null, 2), 'utf8');
+    // Send notification to the user being followed
+    await pushNotificationToUser(username, {
+      type: 'unfollowed',
+      actor: followerUsername
+    });
+  }
 }

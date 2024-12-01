@@ -3,29 +3,14 @@
 document.addEventListener('DOMContentLoaded', () => {
   const userId = window.userId;
   const authenticatedUserId = window.authenticatedUserId;
-  const isCurrentUser = userId === authenticatedUserId;
   const userInfoDiv = document.querySelector('.user-info');
 
   if (!userInfoDiv) {
     console.error('User info container not found.');
     return;
   }
-
-  // Fetch the bio
-  fetch(`/api/user-bio/${encodeURIComponent(userId)}`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Failed to fetch bio.');
-      }
-      return response.text();
-    })
-    .then((bioText) => {
-      renderBio(bioText, isCurrentUser);
-    })
-    .catch((error) => {
-      console.error('Error fetching bio:', error);
-      renderBio('', isCurrentUser); // Render empty bio if error
-    });
+  setupBioEditor();
+  setupFollowButton();
 });
 
 function renderBio(bioText, isCurrentUser) {
@@ -51,11 +36,7 @@ etc.
 
 [link title](https://...)
 
-**bold**
-
-*italic*
-
-~~strikethrough~~
+**bold**, *italic*, ~~strikethrough~~
 
 max. 1500 characters
 
@@ -123,5 +104,70 @@ function saveBio(bioText) {
     })
     .catch((error) => {
       console.error('Error saving bio:', error);
+    });
+}
+
+// Follow button functionality
+async function setupFollowButton() {
+  const followButton = document.getElementById('followButton');
+  if (!followButton || !window.authenticatedUserId) return;
+
+  let isFollowing = false;
+
+  try {
+    // Check if already following
+    const response = await fetch(`/api/follow/${window.userId}`);
+    if (!response.ok) {
+      throw new Error('Failed to check follow status');
+    }
+    isFollowing = await response.json();
+
+    followButton.textContent = isFollowing ? 'Unfollow' : 'Follow';
+    followButton.setAttribute('data-following', isFollowing);
+    followButton.style.display = 'inline-block';
+
+    followButton.onclick = async () => {
+      try {
+        const method = isFollowing ? 'DELETE' : 'PUT';
+        const response = await fetch(`/api/follow/${window.userId}`, {
+          method,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update follow status');
+        }
+
+        isFollowing = !isFollowing;
+        followButton.textContent = isFollowing ? 'Unfollow' : 'Follow';
+        followButton.setAttribute('data-following', isFollowing);
+      } catch (error) {
+        console.error('Error updating follow status:', error);
+      }
+    };
+  } catch (error) {
+    console.error('Error setting up follow button:', error);
+    followButton.style.display = 'none';
+  }
+}
+
+function setupBioEditor() {
+  const isCurrentUser = window.userId === authenticatedUserId;
+  // Fetch the bio
+  fetch(`/api/user-bio/${encodeURIComponent(window.userId)}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch bio.');
+      }
+      return response.text();
+    })
+    .then((bioText) => {
+      renderBio(bioText, isCurrentUser);
+    })
+    .catch((error) => {
+      console.error('Error fetching bio:', error);
+      renderBio('', isCurrentUser); // Render empty bio if error
     });
 }
