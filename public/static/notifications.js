@@ -87,7 +87,7 @@ function createNotificationElement(notification) {
   const item = document.createElement('a');
   item.href = getNotificationURL(notification);
   item.className = 'notification-item';
-  
+
   // Force page reload only if notification is newer than page load
   item.addEventListener('click', (e) => {
     if (notification.timestamp > pageLoadTimestamp) {
@@ -162,18 +162,32 @@ function updateNotificationUI() {
           allowAllDebates: settingsCheckbox.checked
         })
       });
-
+      
       if (response.ok) {
         window.userSettings = await response.json();
+        Toastify({
+          text: "Settings saved successfully!",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: { background: "#4CAF50" }
+        }).showToast();
       }
     } catch (error) {
       console.error('Failed to save setting:', error);
       settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
+      Toastify({
+        text: "Failed to save settings",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#ff4444" }
+      }).showToast();
     }
   });
 
   const settingsText = document.createElement('span');
-  settingsText.textContent = 'Allow debates';
+  settingsText.textContent = 'Allow all debates';
   settingsLabel.appendChild(settingsCheckbox);
   settingsLabel.appendChild(settingsText);
 
@@ -187,27 +201,30 @@ function updateNotificationUI() {
 
   header.appendChild(settingsLabel);
 
-  // Add mark all as read button
-  const markReadButton = document.createElement('button');
-  markReadButton.className = 'mark-read-button';
-  markReadButton.textContent = 'Mark all as read';
-  markReadButton.onclick = () => {
-    if (notifications.length > 0) {
-      // Use the most recent notification's timestamp
-      const latestTimestamp = notifications[0].timestamp;
-      setLastReadTimestamp(latestTimestamp);
-      unreadCount = 0;
-      updateNotificationUI();
-    }
-  };
-  header.appendChild(markReadButton);
+  // Add mark all as read button only if there are unread notifications
+  if (unreadCount > 0) {
+    const markReadButton = document.createElement('button');
+    markReadButton.className = 'mark-read-button';
+    markReadButton.textContent = 'Mark all as read';
+    markReadButton.onclick = () => {
+      if (notifications.length > 0) {
+        // Use the most recent notification's timestamp
+        const latestTimestamp = notifications[0].timestamp;
+        setLastReadTimestamp(latestTimestamp);
+        unreadCount = 0;
+        updateNotificationUI();
+      }
+    };
+    header.appendChild(markReadButton);
+  }
+
   list.appendChild(header);
 
   // Add new notifications or show empty state
   if (notifications.length === 0) {
     const emptyMessage = document.createElement('div');
     emptyMessage.className = 'notifications-empty';
-    emptyMessage.textContent = 'No notifications yet';
+    emptyMessage.textContent = 'No new notifications';
     list.appendChild(emptyMessage);
   } else {
     // Add notifications
