@@ -4,12 +4,11 @@
 
 .indicator {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   z-index: 10;
+  pointer-events: none;
 }
 
 .indicator.saving {
@@ -18,8 +17,17 @@
 }
 
 .indicator.success {
-  background-color: green;
-  animation: none;
+  background: none;
+  border-radius: 0;
+  color: #22c55e;
+}
+
+.indicator.success::before {
+  content: '✓';
+  position: absolute;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 16px;
 }
 
 .indicator.error {

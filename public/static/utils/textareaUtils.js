@@ -42,8 +42,23 @@ window.makeTextareaAutoExpand = function(textarea) {
 function createSaveIndicator(textarea) {
   const indicator = document.createElement('div');
   indicator.className = 'indicator';
-  textarea.parentElement.style.position = 'relative';
-  textarea.parentElement.appendChild(indicator);
+  document.body.appendChild(indicator);
+
+  function updatePosition() {
+    const rect = textarea.getBoundingClientRect();
+    const scrollX = window.scrollX || window.pageXOffset;
+    const scrollY = window.scrollY || window.pageYOffset;
+
+    indicator.style.position = 'absolute';
+    indicator.style.left = `${rect.right - indicator.offsetWidth - 5 + scrollX}px`;
+    indicator.style.top = `${rect.bottom - indicator.offsetHeight - 5 + scrollY}px`;
+  }
+
+  // Update position initially and on relevant events
+  updatePosition();
+  window.addEventListener('resize', updatePosition);
+  window.addEventListener('scroll', updatePosition);
+  textarea.addEventListener('input', updatePosition);
 
   let hideTimeout;
 
@@ -52,6 +67,7 @@ function createSaveIndicator(textarea) {
     indicator.classList.add('saving');
     indicator.classList.remove('success', 'error');
     indicator.style.display = 'block';
+    updatePosition();
   }
 
   function showSuccess() {
@@ -59,6 +75,7 @@ function createSaveIndicator(textarea) {
     indicator.classList.add('success');
     indicator.classList.remove('saving', 'error');
     indicator.style.display = 'block';
+    updatePosition();
     hideTimeout = setTimeout(() => {
       indicator.style.display = 'none';
     }, 5000);
@@ -69,6 +86,7 @@ function createSaveIndicator(textarea) {
     indicator.classList.add('error');
     indicator.classList.remove('saving', 'success');
     indicator.style.display = 'block';
+    updatePosition();
     Toastify({
       text: "Failed to save changes",
       duration: 3000,
@@ -80,10 +98,21 @@ function createSaveIndicator(textarea) {
     }).showToast();
   }
 
+  // Clean up event listeners when indicator is removed
+  function cleanup() {
+    window.removeEventListener('resize', updatePosition);
+    window.removeEventListener('scroll', updatePosition);
+    textarea.removeEventListener('input', updatePosition);
+    if (indicator.parentNode) {
+      indicator.parentNode.removeChild(indicator);
+    }
+  }
+
   return {
     saving: showSaving,
     success: showSuccess,
     error: showError,
+    cleanup: cleanup,
   };
 }
 
