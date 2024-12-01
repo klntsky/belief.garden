@@ -479,7 +479,7 @@ function isDebatable(comment, settings = {}) {
 }
 
 // Function to create the comment section
-function createCommentSection(belief, userChoice, onChange, readOnly, profileUserId, settings) {
+function createCommentSection(belief, userChoice = {}, onChange, readOnly, profileUserId, settings) {
   const container = document.createElement('div');
   container.className = 'comment-section';
 

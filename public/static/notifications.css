@@ -25,7 +25,7 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 300px;
+  width: 450px;
   z-index: 1000;
   margin-top: 8px;
 }
@@ -122,4 +122,42 @@
 
 .broadcast-message {
   border-left: 5px solid lightgreen;
+}
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notification-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.notification-setting input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.notification-setting span {
+  user-select: none;
+}
+
+/* Ensure tippy tooltips wrap text */
+.tippy-box {
+  white-space: normal;
+  text-align: left;
+  hyphens: auto;
+}
+
+.tippy-content {
+  white-space: normal;
+  word-wrap: break-word;
 }

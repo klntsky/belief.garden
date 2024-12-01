@@ -4,6 +4,7 @@ let lastChecked = 0;
 let notifications = [];
 const checkInterval = 30000; // Check every 30 seconds
 let unreadCount = 0;
+const pageLoadTimestamp = Date.now();
 
 // Local storage key for last read timestamp
 const LAST_READ_KEY = 'lastNotificationRead';
@@ -86,6 +87,15 @@ function createNotificationElement(notification) {
   const item = document.createElement('a');
   item.href = getNotificationURL(notification);
   item.className = 'notification-item';
+  
+  // Force page reload only if notification is newer than page load
+  item.addEventListener('click', (e) => {
+    if (notification.timestamp > pageLoadTimestamp) {
+      e.preventDefault();
+      window.location.href = item.href;
+      window.location.reload();
+    }
+  });
 
   const message = document.createElement('div');
   message.textContent = getNotificationMessage(notification);
@@ -109,6 +119,15 @@ function updateNotificationUI() {
   const counter = document.querySelector('.notification-counter');
   if (!list || !counter) return;
 
+  // Clean up existing tippy instances
+  const existingTippyElements = list.querySelectorAll('[data-tippy-root]');
+  existingTippyElements.forEach(element => {
+    const tippyInstance = element._tippy;
+    if (tippyInstance) {
+      tippyInstance.destroy();
+    }
+  });
+
   // Update notification counter
   if (unreadCount > 0) {
     counter.textContent = unreadCount;
@@ -118,9 +137,71 @@ function updateNotificationUI() {
   }
 
   // Clear existing notifications
-  while (list.firstChild) {
-    list.removeChild(list.firstChild);
-  }
+  list.innerHTML = '';
+
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'notifications-header';
+
+  // Add settings checkbox
+  const settingsLabel = document.createElement('label');
+  settingsLabel.className = 'notification-setting';
+  settingsLabel.setAttribute('data-tippy-root', '');
+  const settingsCheckbox = document.createElement('input');
+  settingsCheckbox.type = 'checkbox';
+  settingsCheckbox.id = 'allowAllDebates';
+  settingsCheckbox.checked = window.userSettings?.allowAllDebates || false;
+  settingsCheckbox.addEventListener('change', async () => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          allowAllDebates: settingsCheckbox.checked
+        })
+      });
+
+      if (response.ok) {
+        window.userSettings = await response.json();
+      }
+    } catch (error) {
+      console.error('Failed to save setting:', error);
+      settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
+    }
+  });
+
+  const settingsText = document.createElement('span');
+  settingsText.textContent = 'Allow debates';
+  settingsLabel.appendChild(settingsCheckbox);
+  settingsLabel.appendChild(settingsText);
+
+  // Add tooltip
+  tippy(settingsLabel, {
+    content: 'When enabled, debates can be started under any belief card, if there is a comment from you. When disabled, debates can only be started if you include \'debate me\' in the comment.',
+    placement: 'bottom',
+    theme: 'light-border',
+    maxWidth: 400
+  });
+
+  header.appendChild(settingsLabel);
+
+  // Add mark all as read button
+  const markReadButton = document.createElement('button');
+  markReadButton.className = 'mark-read-button';
+  markReadButton.textContent = 'Mark all as read';
+  markReadButton.onclick = () => {
+    if (notifications.length > 0) {
+      // Use the most recent notification's timestamp
+      const latestTimestamp = notifications[0].timestamp;
+      setLastReadTimestamp(latestTimestamp);
+      unreadCount = 0;
+      updateNotificationUI();
+    }
+  };
+  header.appendChild(markReadButton);
+  list.appendChild(header);
 
   // Add new notifications or show empty state
   if (notifications.length === 0) {
@@ -129,24 +210,6 @@ function updateNotificationUI() {
     emptyMessage.textContent = 'No notifications yet';
     list.appendChild(emptyMessage);
   } else {
-    // Add mark all as read button
-    const header = document.createElement('div');
-    header.className = 'notifications-header';
-    const markReadButton = document.createElement('button');
-    markReadButton.className = 'mark-read-button';
-    markReadButton.textContent = 'Mark all as read';
-    markReadButton.onclick = () => {
-      if (notifications.length > 0) {
-        // Use the most recent notification's timestamp
-        const latestTimestamp = notifications[0].timestamp;
-        setLastReadTimestamp(latestTimestamp);
-        unreadCount = 0;
-        updateNotificationUI();
-      }
-    };
-    header.appendChild(markReadButton);
-    list.appendChild(header);
-
     // Add notifications
     notifications.forEach(notification => {
       list.appendChild(createNotificationElement(notification));
@@ -231,11 +294,27 @@ function handleNewNotifications(newNotifications) {
 /**
  * Start periodic notification checking
  */
-function startNotificationChecking() {
+async function startNotificationChecking() {
   if (!window.authenticatedUserId) return;
 
+  try {
+    // Fetch initial settings
+    const settingsResponse = await fetch('/api/settings');
+    if (settingsResponse.ok) {
+      window.userSettings = await settingsResponse.json();
+    }
+  } catch (error) {
+    console.error('Failed to fetch initial settings:', error);
+  }
+
+  // Initial check
   checkNotifications();
+
+  // Set up periodic checking
   setInterval(checkNotifications, checkInterval);
+
+  // Check notifications when tab becomes active
+  window.addEventListener('focus', checkNotifications);
 }
 
 /**
