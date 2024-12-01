@@ -50,11 +50,14 @@ Load this page in private mode to preview`;
     textarea.addEventListener('input', () => {
       clearTimeout(timeoutId);
       saveIndicator.saving();
-      timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(async () => {
         const updatedBio = textarea.value;
-        saveBio(updatedBio)
-          .then(() => saveIndicator.success())
-          .catch(() => saveIndicator.error());
+        try {
+          await saveBio(updatedBio);
+          saveIndicator.success();
+        } catch (error) {
+          saveIndicator.error();
+        }
       }, 1500);
     });
   } else {

@@ -45,19 +45,39 @@ function createSaveIndicator(textarea) {
   textarea.parentElement.style.position = 'relative';
   textarea.parentElement.appendChild(indicator);
 
+  let hideTimeout;
+
   function showSaving() {
+    clearTimeout(hideTimeout);
     indicator.classList.add('saving');
     indicator.classList.remove('success', 'error');
+    indicator.style.display = 'block';
   }
 
   function showSuccess() {
+    clearTimeout(hideTimeout);
     indicator.classList.add('success');
     indicator.classList.remove('saving', 'error');
+    indicator.style.display = 'block';
+    hideTimeout = setTimeout(() => {
+      indicator.style.display = 'none';
+    }, 5000);
   }
 
   function showError() {
+    clearTimeout(hideTimeout);
     indicator.classList.add('error');
     indicator.classList.remove('saving', 'success');
+    indicator.style.display = 'block';
+    Toastify({
+      text: "Failed to save changes",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      style: {
+        background: "linear-gradient(to right, #ff6b6b, #ff4757)",
+      }
+    }).showToast();
   }
 
   return {
