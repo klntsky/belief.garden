@@ -54,6 +54,8 @@ function getNotificationMessage(notification) {
     return `${notification.actor} replied to your comment on ${notification.beliefName} on your profile`;
   } else if (notification.type === 'self_reply') {
     return `${notification.actor} replied to a comment on ${notification.beliefName}`;
+  } else if (notification.type === 'broadcast') {
+    return notification.message;
   }
   return '';
 }
@@ -69,6 +71,8 @@ function getNotificationURL(notification){
     return `/${notification.profileName}#${notification.beliefName}`;
   } else if (notification.type === 'self_reply') {
     return `/${notification.profileName}#${notification.beliefName}`;
+  } else if (notification.type === 'broadcast') {
+    return notification.url;
   }
   return '';
 }
@@ -86,7 +90,9 @@ function createNotificationElement(notification) {
   const message = document.createElement('div');
   message.textContent = getNotificationMessage(notification);
   item.appendChild(message);
-
+  if (notification.type === 'broadcast') {
+    message.classList.add('broadcast-message');
+  }
   const time = document.createElement('div');
   time.className = 'notification-time';
   time.textContent = formatTimestamp(notification.timestamp);
