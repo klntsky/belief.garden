@@ -57,6 +57,8 @@ function getNotificationMessage(notification) {
     return `${notification.actor} replied to a comment on ${notification.beliefName}`;
   } else if (notification.type === 'broadcast') {
     return notification.message;
+  } else if (notification.type === 'choice_changed') {
+    return `${notification.actor} changed their opinion on ${notification.beliefName} to ${notification.new_choice || 'none'}`;
   }
   return '';
 }

@@ -24,7 +24,6 @@ import {
 } from '../utils/userUtils.js';
 import { perUserWriteLimiter } from '../utils/rateLimiter.js';
 import { promises as fs } from 'fs';
-import { profile } from 'console';
 
 const debatesDir = path.join('data', 'debates');
 const bansDir = path.join('data', 'bans');
@@ -87,16 +86,25 @@ router.put(
     }
 
     if ('choice' in beliefData) {
-      if (beliefData.choice === null) {
-        delete userBeliefs[beliefName].choice;
-      } else {
-        await postFeed({
-          actor: authenticatedUserId,
+      await postFeed({
+        actor: authenticatedUserId,
+        type: 'choice_changed',
+        beliefName,
+        old_choice: userBeliefs[beliefName].choice,
+        new_choice: beliefData.choice
+      });
+      if (beliefData.choice) {
+        await pushNotificationToFollowers(authenticatedUserId, {
           type: 'choice_changed',
+          actor: authenticatedUserId,
           beliefName,
           old_choice: userBeliefs[beliefName].choice,
           new_choice: beliefData.choice
         });
+      }
+      if (beliefData.choice === null) {
+        delete userBeliefs[beliefName].choice;
+      } else {
         userBeliefs[beliefName].choice = beliefData.choice;
       }
     }

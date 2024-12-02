@@ -79,7 +79,7 @@ function getActionElements(entry) {
       container.appendChild(document.createTextNode(': '));
       container.appendChild(document.createTextNode(entry.old_choice || 'none'));
       container.appendChild(document.createTextNode(' ➜ '));
-      container.appendChild(document.createTextNode(entry.new_choice));
+      container.appendChild(document.createTextNode(entry.new_choice || 'none'));
       break;
     }
 
