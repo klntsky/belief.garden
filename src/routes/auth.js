@@ -164,6 +164,7 @@ async function validateRegistration(username, password) {
     'delete',
     'faq',
     'donate',
+    'feed',
     'app',
     'redirect',
     'auth',

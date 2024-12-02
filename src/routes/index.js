@@ -129,4 +129,12 @@ router.get('/feed', (req, res) => {
   res.render('feed', { user: req.user });
 });
 
+// Notifications page
+router.get('/notifications', ensureAuthenticated, async (req, res) => {
+  res.render('notifications', {
+    user: req.user,
+    settings: await getUserSettings(req.user.id)
+  });
+});
+
 export default router;

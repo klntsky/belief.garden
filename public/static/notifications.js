@@ -111,16 +111,43 @@ function createNotificationElement(notification) {
   return item;
 }
 
+// Check if we're on mobile
+const isMobile = window.innerWidth <= 768;
+
 /**
  * Update notification counter and list
  */
 function updateNotificationUI() {
-  const list = document.querySelector('.notifications-list');
-  const counter = document.querySelector('.notification-counter');
-  if (!list || !counter) return;
+  const isNotificationsPage = window.location.pathname === '/notifications';
+  const container = isNotificationsPage
+    ? document.getElementById('notifications-page-container')
+    : document.querySelector('.notifications-list');
+
+  if (!container) return;
+
+  // Update notification counter and username link if not on notifications page
+  if (!isNotificationsPage) {
+    const counter = document.querySelector('.notification-counter');
+    if (counter) {
+      if (unreadCount > 0) {
+        counter.textContent = unreadCount;
+        counter.style.display = 'inline-block';
+
+        // On mobile, redirect username link to notifications
+        if (isMobile) {
+          const usernameLink = document.querySelector('.user-notifications');
+          if (usernameLink) {
+            usernameLink.href = '/notifications';
+          }
+        }
+      } else {
+        counter.style.display = 'none';
+      }
+    }
+  }
 
   // Clean up existing tippy instances
-  const existingTippyElements = list.querySelectorAll('[data-tippy-root]');
+  const existingTippyElements = container.querySelectorAll('[data-tippy-root]');
   existingTippyElements.forEach(element => {
     const tippyInstance = element._tippy;
     if (tippyInstance) {
@@ -128,109 +155,105 @@ function updateNotificationUI() {
     }
   });
 
-  // Update notification counter
-  if (unreadCount > 0) {
-    counter.textContent = unreadCount;
-    counter.style.display = 'inline-block';
-  } else {
-    counter.style.display = 'none';
-  }
-
   // Clear existing notifications
-  list.innerHTML = '';
+  container.innerHTML = '';
 
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'notifications-header';
+  // Create header with settings (only if there are notifications)
+  if (notifications.length > 0) {
+    const header = document.createElement('div');
+    header.className = 'notifications-header';
 
-  // Add settings checkbox
-  const settingsLabel = document.createElement('label');
-  settingsLabel.className = 'notification-setting';
-  settingsLabel.setAttribute('data-tippy-root', '');
-  const settingsCheckbox = document.createElement('input');
-  settingsCheckbox.type = 'checkbox';
-  settingsCheckbox.id = 'allowAllDebates';
-  settingsCheckbox.checked = window.userSettings?.allowAllDebates || false;
-  settingsCheckbox.addEventListener('change', async () => {
-    try {
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          allowAllDebates: settingsCheckbox.checked
-        })
+    // Add settings checkbox only on desktop
+    if (!isMobile) {
+      const settingsLabel = document.createElement('label');
+      settingsLabel.className = 'notification-setting';
+      settingsLabel.setAttribute('data-tippy-root', '');
+      const settingsCheckbox = document.createElement('input');
+      settingsCheckbox.type = 'checkbox';
+      settingsCheckbox.id = 'allowAllDebates';
+      settingsCheckbox.checked = window.userSettings?.allowAllDebates || false;
+      settingsCheckbox.addEventListener('change', async () => {
+        try {
+          const response = await fetch('/api/settings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              allowAllDebates: settingsCheckbox.checked
+            })
+          });
+
+          if (response.ok) {
+            window.userSettings = await response.json();
+            Toastify({
+              text: "Settings saved successfully!",
+              duration: 3000,
+              gravity: "top",
+              position: "right",
+              style: { background: "#4CAF50" }
+            }).showToast();
+          }
+        } catch (error) {
+          console.error('Failed to save setting:', error);
+          settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
+          Toastify({
+            text: "Failed to save settings",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: { background: "#ff4444" }
+          }).showToast();
+        }
       });
 
-      if (response.ok) {
-        window.userSettings = await response.json();
-        Toastify({
-          text: "Settings saved successfully!",
-          duration: 3000,
-          gravity: "top",
-          position: "right",
-          style: { background: "#4CAF50" }
-        }).showToast();
-      }
-    } catch (error) {
-      console.error('Failed to save setting:', error);
-      settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
-      Toastify({
-        text: "Failed to save settings",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        style: { background: "#ff4444" }
-      }).showToast();
+      const settingsText = document.createElement('span');
+      settingsText.textContent = 'Allow all debates';
+      settingsLabel.appendChild(settingsCheckbox);
+      settingsLabel.appendChild(settingsText);
+
+      // Add tooltip
+      tippy(settingsLabel, {
+        content: 'When enabled, debates can be started under any belief card,<br>if there is a comment from you.<br>When disabled, debates can only be started if you include<br>\'debate me\' in the comment.',
+        placement: 'bottom',
+        theme: 'light-border',
+        maxWidth: 400,
+        allowHTML: true
+      });
+
+      header.appendChild(settingsLabel);
     }
-  });
 
-  const settingsText = document.createElement('span');
-  settingsText.textContent = 'Allow all debates';
-  settingsLabel.appendChild(settingsCheckbox);
-  settingsLabel.appendChild(settingsText);
+    // Add mark all as read button only if there are unread notifications
+    if (unreadCount > 0) {
+      const markReadButton = document.createElement('button');
+      markReadButton.className = 'mark-read-button';
+      markReadButton.textContent = 'Mark all as read';
+      markReadButton.onclick = () => {
+        if (notifications.length > 0) {
+          // Use the most recent notification's timestamp
+          const latestTimestamp = notifications[0].timestamp;
+          setLastReadTimestamp(latestTimestamp);
+          unreadCount = 0;
+          updateNotificationUI();
+        }
+      };
+      header.appendChild(markReadButton);
+    }
 
-  // Add tooltip
-  tippy(settingsLabel, {
-    content: 'When enabled, debates can be started under any belief card,<br>if there is a comment from you.<br>When disabled, debates can only be started if you include<br>\'debate me\' in the comment.',
-    placement: 'bottom',
-    theme: 'light-border',
-    maxWidth: 400,
-    allowHTML: true
-  });
-
-  header.appendChild(settingsLabel);
-
-  // Add mark all as read button only if there are unread notifications
-  if (unreadCount > 0) {
-    const markReadButton = document.createElement('button');
-    markReadButton.className = 'mark-read-button';
-    markReadButton.textContent = 'Mark all as read';
-    markReadButton.onclick = () => {
-      if (notifications.length > 0) {
-        // Use the most recent notification's timestamp
-        const latestTimestamp = notifications[0].timestamp;
-        setLastReadTimestamp(latestTimestamp);
-        unreadCount = 0;
-        updateNotificationUI();
-      }
-    };
-    header.appendChild(markReadButton);
+    container.appendChild(header);
   }
-
-  list.appendChild(header);
 
   // Add new notifications or show empty state
   if (notifications.length === 0) {
     const emptyMessage = document.createElement('div');
     emptyMessage.className = 'notifications-empty';
     emptyMessage.textContent = 'No new notifications';
-    list.appendChild(emptyMessage);
+    container.appendChild(emptyMessage);
   } else {
     // Add notifications
     notifications.forEach(notification => {
-      list.appendChild(createNotificationElement(notification));
+      container.appendChild(createNotificationElement(notification));
     });
   }
 }
@@ -239,6 +262,15 @@ function updateNotificationUI() {
  * Setup notification popup behavior
  */
 function setupNotificationPopup() {
+  // If on mobile, make the notification icon link to the notifications page
+  if (isMobile) {
+    const notificationLink = document.querySelector('.user-notifications a');
+    if (notificationLink) {
+      notificationLink.href = '/notifications';
+      return; // Don't set up popup behavior on mobile
+    }
+  }
+
   const wrapper = document.querySelector('.user-notifications-wrapper');
   const popup = document.querySelector('.notifications-popup');
   if (!wrapper || !popup) return;
@@ -267,15 +299,6 @@ function setupNotificationPopup() {
   // Keep popup visible when hovering over it
   popup.addEventListener('mouseenter', showPopup);
   popup.addEventListener('mouseleave', hidePopup);
-
-  // Make notification items clickable
-  popup.addEventListener('click', (e) => {
-    const notificationItem = e.target.closest('.notification-item');
-    if (notificationItem) {
-      // Handle notification click - can be customized based on notification type
-      console.log('Notification clicked:', notificationItem);
-    }
-  });
 }
 
 /**
@@ -411,6 +434,11 @@ async function toggleFollow(button, userId) {
   }
 }
 
+// Start checking for notifications if user is authenticated
+if (window.authenticatedUserId) {
+  startNotificationChecking();
+  setupNotificationPopup();
+}
 // Export functions to window object
 window.notifications = {
   formatTimestamp,
@@ -420,9 +448,3 @@ window.notifications = {
   unfollowUser,
   toggleFollow
 };
-
-// Start checking for notifications if user is authenticated
-if (window.authenticatedUserId) {
-  startNotificationChecking();
-  setupNotificationPopup();
-}

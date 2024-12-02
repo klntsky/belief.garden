@@ -38,8 +38,8 @@
 }
 
 .mark-read-button {
-  background: none;
-  border: none;
+  background: white;
+  border: 1px solid var(--border-color);
   color: #666;
   font-size: 0.9em;
   cursor: pointer;
@@ -148,4 +148,42 @@
 
 .notification-setting span {
   user-select: none;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  #notifications-page-container {
+    padding: 0;
+  }
+
+  .notifications-header {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .notification-item {
+    padding: 12px;
+  }
+
+  .notification-setting {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .mark-read-button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;\
+    color: white;
+    border-radius: 4px;
+  }
+}
+}
+
+/* Hide popup on mobile */
+@media (max-width: 768px) {
+  .notifications-popup {
+    display: none !important;
+  }
 }
