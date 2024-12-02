@@ -22,7 +22,7 @@ import {
   getFeed,
   postFeed,
 } from '../utils/userUtils.js';
-import Bottleneck from 'bottleneck';
+import { perUserWriteLimiter } from '../utils/rateLimiter.js';
 import { promises as fs } from 'fs';
 import { profile } from 'console';
 
@@ -31,58 +31,7 @@ const bansDir = path.join('data', 'bans');
 
 const COMMENT_MAX_LENGTH = 400;
 const JSON_SIZE_LIMIT = '100kb';
-const LIMITER_CLEANUP_INTERVAL = 3600000; // 1 hour
-const LIMITER_INACTIVE_THRESHOLD = 3600000; // 1 hour
 const router = express.Router();
-
-// Map to store per-user limiters with last used timestamps
-const limiters = {};
-
-// Cleanup inactive limiters periodically
-setInterval(() => {
-  const now = Date.now();
-  Object.entries(limiters).forEach(([userId, limiter]) => {
-    if (now - limiter.lastUsed > LIMITER_INACTIVE_THRESHOLD) {
-      delete limiters[userId];
-    }
-  });
-}, LIMITER_CLEANUP_INTERVAL);
-
-/**
- * Middleware to prevent concurrent processing of requests that write to a user's JSON file.
- * Uses Bottleneck to ensure that only one request per user is processed at a time.
- */
-function perUserWriteLimiter(req, res, next) {
-  const userId = req.params.userId;
-  if (!userId) {
-    return next();
-  }
-
-  // Create a new limiter for the user if it doesn't exist
-  if (!limiters[userId]) {
-    limiters[userId] = new Bottleneck({
-      maxConcurrent: 1,
-      minTime: 0,
-    });
-  }
-  limiters[userId].lastUsed = Date.now();
-
-  limiters[userId]
-    .schedule(() => {
-      return new Promise((resolve, reject) => {
-        // Proceed to the next middleware
-        next();
-        // Resolve when the response is finished or an error occurs
-        res.on('finish', resolve);
-        res.on('close', resolve);
-        res.on('error', reject);
-      });
-    })
-    .catch((err) => {
-      console.error('Error in limiter schedule:', err);
-      next(err);
-    });
-}
 
 // Route to get user beliefs
 router.get('/api/user-beliefs/:userId', (req, res) => {
@@ -727,7 +676,7 @@ router.get('/api/settings', ensureAuthenticatedApi, async (req, res) => {
   }
 });
 
-router.post('/api/settings', ensureAuthenticatedApi, perUserWriteLimiterexpress.json(), async (req, res) => {
+router.post('/api/settings', ensureAuthenticatedApi, perUserWriteLimiter, express.json(), async (req, res) => {
   try {
     const settings = await getUserSettings(req.user.id);
     const updatedSettings = { ...settings, ...req.body };
