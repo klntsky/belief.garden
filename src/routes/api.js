@@ -19,9 +19,12 @@ import {
   pushNotificationToUser,
   pushNotificationToFollowers,
   getUserFollowers,
+  getFeed,
+  postFeed,
 } from '../utils/userUtils.js';
 import Bottleneck from 'bottleneck';
 import { promises as fs } from 'fs';
+import { profile } from 'console';
 
 const debatesDir = path.join('data', 'debates');
 const bansDir = path.join('data', 'bans');
@@ -138,6 +141,13 @@ router.put(
       if (beliefData.choice === null) {
         delete userBeliefs[beliefName].choice;
       } else {
+        await postFeed({
+          actor: authenticatedUserId,
+          type: 'choice_changed',
+          beliefName,
+          old_choice: userBeliefs[beliefName].choice,
+          new_choice: beliefData.choice
+        });
         userBeliefs[beliefName].choice = beliefData.choice;
       }
     }
@@ -159,6 +169,12 @@ router.put(
             actor: authenticatedUserId,
             beliefName,
             text: ellipsis(beliefData.comment, 50)
+          });
+          await postFeed({
+            actor: authenticatedUserId,
+            type: 'new_comment',
+            text: ellipsis(beliefData.comment, 100),
+            beliefName
           });
         }
         userBeliefs[beliefName].comment = beliefData.comment;
@@ -246,6 +262,12 @@ router.post(
 
     try {
       const isFavorite = await toggleUserFavorite(userId, beliefName);
+      await postFeed({
+        actor: userId,
+        type: 'core_belief_changed',
+        beliefName,
+        isFavorite: isFavorite
+      });
       res.json({ isFavorite });
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -289,6 +311,13 @@ router.post(
     }
 
     try {
+      const oldBio = await getUserBio(userId);
+      if (oldBio.length == 0) {
+        await postFeed({
+          actor: userId,
+          type: 'bio_updated'
+        });
+      }
       await saveUserBio(userId, bioText);
       res.status(200).send('Bio saved.');
     } catch (error) {
@@ -415,6 +444,13 @@ router.post(
 
       await saveUserBeliefs(userId, userBeliefs);
       res.status(200).json(reply);
+
+      await postFeed({
+        actor: authenticatedUserId,
+        type: 'new_reply',
+        beliefName,
+        profileName: userId
+      });
 
       // Push notification for the belief owner if it's not their own reply
       if (userId !== authenticatedUserId) {
@@ -645,6 +681,11 @@ router.put('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
 
   try {
     await addFollower(userToFollow, follower);
+    await postFeed({
+      actor: follower,
+      type: 'followed_user',
+      user: userToFollow
+    });
     res.json({ message: 'Successfully followed user.' });
   } catch (error) {
     console.error('Error following user:', error);
@@ -663,6 +704,11 @@ router.delete('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) =>
 
   try {
     await removeFollower(userToUnfollow, follower);
+    await postFeed({
+      actor: follower,
+      type: 'unfollowed_user',
+      user: userToUnfollow
+    });
     res.json({ message: 'Successfully unfollowed user.' });
   } catch (error) {
     console.error('Error unfollowing user:', error);
@@ -700,6 +746,35 @@ router.get('/api/settings/:userId', async (req, res) => {
   } catch (error) {
     console.error('Error getting user settings:', error);
     res.status(500).json({ error: 'Failed to get user settings' });
+  }
+});
+
+// Get global feed entries
+router.get('/api/feed', async (req, res) => {
+  try {
+    const since = parseInt(req.query.since) || 0;
+    const feed = await getFeed();
+    const recentFeed = feed.filter(entry => entry.timestamp > since);
+    res.json(recentFeed);
+  } catch (error) {
+    console.error('Error getting feed:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add chat message
+router.post('/api/chat', ensureAuthenticatedApi, express.json(), async (req, res) => {
+  try {
+    // ... existing chat message code ...
+    await postFeed({
+      actor: req.user.id,
+      type: 'chat_msg',
+      text: req.body.text.slice(0, 1000)
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+    res.status(500).json({ error: 'Failed to send message' });
   }
 });
 

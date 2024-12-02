@@ -52,20 +52,24 @@ router.get('/register', (req, res) => {
 });
 
 router.post('/register', rateLimitRegistration, async (req, res) => {
-  const { username, password } = req.body;
-  const error = await validateRegistration(username, password);
-  if (error) {
-    res.render('register', { error, title: 'Register' });
-  } else {
-    try {
+  try {
+    const { username, password } = req.body;
+    const error = await validateRegistration(username, password);
+    if (error) {
+      res.render('register', { error, title: 'Register' });
+    } else {
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
       await addUser({ username, passwordHash });
+      await postFeed({
+        actor: username,
+        type: 'new_user_joined'
+      });
       res.redirect('/login');
-    } catch (err) {
-      console.error('Registration error:', err);
-      res.render('register', { error: 'Registration failed. Please try again.', title: 'Register' });
     }
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.render('register', { error: 'Registration failed. Please try again.', title: 'Register' });
   }
 });
 

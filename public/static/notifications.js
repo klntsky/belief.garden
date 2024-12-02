@@ -162,7 +162,7 @@ function updateNotificationUI() {
           allowAllDebates: settingsCheckbox.checked
         })
       });
-      
+
       if (response.ok) {
         window.userSettings = await response.json();
         Toastify({
@@ -193,10 +193,11 @@ function updateNotificationUI() {
 
   // Add tooltip
   tippy(settingsLabel, {
-    content: 'When enabled, debates can be started under any belief card, if there is a comment from you. When disabled, debates can only be started if you include \'debate me\' in the comment.',
+    content: 'When enabled, debates can be started under any belief card,<br>if there is a comment from you.<br>When disabled, debates can only be started if you include<br>\'debate me\' in the comment.',
     placement: 'bottom',
     theme: 'light-border',
-    maxWidth: 400
+    maxWidth: 400,
+    allowHTML: true
   });
 
   header.appendChild(settingsLabel);

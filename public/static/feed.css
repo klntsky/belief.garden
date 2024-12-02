@@ -1,0 +1,54 @@
+.feed-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.feed-entry {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px;
+  font-size: small;
+  gap: 15px;
+}
+
+.feed-timestamp {
+  color: #666;
+  font-size: 0.9em;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
+}
+
+.feed-content {
+  flex-grow: 1;
+}
+
+.feed-actor {
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.feed-actor:hover {
+  text-decoration: underline;
+}
+
+.feed-message {
+  color: #374151;
+}
+
+.feed-username-label {
+  font-weight: bold;
+  color: pink !important;
+  text-shadow:
+  2px 0 #322,
+  -2px 0 #322,
+  0 2px #322,
+  0 -2px #322,
+  1px 1px #322,
+  -1px -1px #322,
+  1px -1px #322,
+  -1px 1px #000;
+  text-decoration: none;
+}

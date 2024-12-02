@@ -1,6 +1,6 @@
 // src/utils/userUtils.js
 
-import { promises as fs } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
 const userAccountsDir = path.join('data', 'accounts');
@@ -11,6 +11,8 @@ const notificationsDir = path.join('data', 'notifications');
 const followersDir = path.join('data', 'followers');
 
 const MAX_NOTIFICATIONS = 200;
+const MAX_FEED_ENTRIES = 400;
+const FEED_FILE = path.join('data', 'feed.json');
 
 // Default settings for new users
 const defaultSettings = {
@@ -522,5 +524,47 @@ export async function removeFollower(username, followerUsername) {
       type: 'unfollowed',
       actor: followerUsername
     });
+  }
+}
+
+/**
+ * Post a feed entry.
+ * @param {Object} entry - The feed entry to post.
+ * @returns {Promise<void>}
+ */
+export async function postFeed(entry) {
+  if (!entry.actor) {
+    throw new Error('Actor is required for feed entries');
+  }
+
+  const feedEntry = {
+    ...entry,
+    timestamp: Math.floor(Date.now() / 1000)
+  };
+
+  let feed = await getFeed();
+
+  feed.unshift(feedEntry);
+  feed = feed.slice(0, MAX_FEED_ENTRIES);
+
+  try {
+    await fs.writeFile(FEED_FILE, JSON.stringify(feed, null, 2));
+  } catch (error) {
+    console.error('Error writing feed file:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get the feed.
+ * @returns {Promise<Array>} - The feed entries.
+ */
+export async function getFeed() {
+  try {
+    const feed = JSON.parse(await fs.readFile(FEED_FILE, 'utf8'));
+    return feed;
+  } catch (error) {
+    console.error('Error reading feed file:', error);
+    return [];
   }
 }

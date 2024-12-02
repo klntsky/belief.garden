@@ -124,4 +124,9 @@ router.get('/ban', ensureAuthenticated, (req, res) => {
   });
 });
 
+// Feed page
+router.get('/feed', (req, res) => {
+  res.render('feed', { user: req.user });
+});
+
 export default router;

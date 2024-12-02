@@ -149,15 +149,3 @@
 .notification-setting span {
   user-select: none;
 }
-
-/* Ensure tippy tooltips wrap text */
-.tippy-box {
-  white-space: normal;
-  text-align: left;
-  hyphens: auto;
-}
-
-.tippy-content {
-  white-space: normal;
-  word-wrap: break-word;
-}
