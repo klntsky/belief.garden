@@ -208,18 +208,6 @@ h1.center {
     outline: 1px solid red;
 }
 
-@media screen and (max-width: 800px) {
-  #nav-link {
-      display: none;
-  }
-}
-
-@media screen and (max-width: 500px) {
-  .beliefs-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .nav-links {
     display: block;
     background-color: var(--bg-color, #EFCCCC);
@@ -542,4 +530,21 @@ h1.center {
 .no-bio {
   text-align: center;
   margin-top: 20px;
+}
+
+
+@media screen and (max-width: 800px) {
+  #nav-link {
+      display: none;
+  }
+
+  .delete-reply {
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .beliefs-grid {
+    grid-template-columns: 1fr;
+  }
 }

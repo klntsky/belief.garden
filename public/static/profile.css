@@ -199,14 +199,18 @@
         min-width: unset !important;
     }
 
+    .ban-link {
+        opacity: 1;
+    }
 
-  .info-block {
-      display: block !important;
-  }
+    .info-block {
+        display: block !important;
+    }
 
   #correlation-container {
       padding: 30px;
   }
+
   .beliefs-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
