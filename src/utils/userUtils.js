@@ -2,6 +2,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { writeFileAtomic } from './fileUtils.js';
 
 const userAccountsDir = path.join('data', 'accounts');
 const userBeliefsDir = path.join('data', 'users');
@@ -79,7 +80,7 @@ export async function addUser(user) {
           throw dirErr;
         }
       }
-      await fs.writeFile(userFilePath, JSON.stringify(user, null, 2), 'utf8');
+      await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
     } else {
       throw err;
     }
@@ -109,7 +110,7 @@ export async function updateUserPassword(username, newPasswordHash) {
  */
 async function saveUser(user) {
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
-  await fs.writeFile(userFilePath, JSON.stringify(user, null, 2), 'utf8');
+  await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
 }
 
 /**
@@ -158,7 +159,7 @@ export async function getUserBeliefs(username) {
  */
 export async function saveUserBeliefs(username, data) {
   const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
-  await fs.writeFile(userBeliefsFilePath, JSON.stringify(data, null, 2), 'utf8');
+  await writeFileAtomic(userBeliefsFilePath, JSON.stringify(data, null, 2));
 }
 
 /**
@@ -310,7 +311,7 @@ export async function saveUserSettings(username, settings) {
   const settingsPath = path.join(userSettingsDir, `${username}.json`);
   try {
     await fs.mkdir(userSettingsDir, { recursive: true });
-    await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+    await writeFileAtomic(settingsPath, JSON.stringify(settings, null, 2));
   } catch (err) {
     throw err;
   }
@@ -345,6 +346,7 @@ export async function saveUserBio(username, bioText) {
   if (bioText.length > 1500) {
     throw new Error('Bio cannot exceed 1500 characters.');
   }
+
   const dirPath = userBiosDir;
   try {
     await fs.access(dirPath);
@@ -355,8 +357,9 @@ export async function saveUserBio(username, bioText) {
       throw err;
     }
   }
+
   const bioFilePath = path.join(dirPath, `${username}.md`);
-  await fs.writeFile(bioFilePath, bioText, 'utf8');
+  await writeFileAtomic(bioFilePath, bioText);
 }
 
 /**
@@ -438,7 +441,7 @@ export async function pushNotificationToUser(username, notification) {
     if (notifications.length > MAX_NOTIFICATIONS) {
       notifications.length = MAX_NOTIFICATIONS;
     }
-    await fs.writeFile(notificationPath, JSON.stringify(notifications, null, 2), 'utf8');
+    await writeFileAtomic(notificationPath, JSON.stringify(notifications, null, 2));
   } catch (err) {
     console.error(`Failed to push notification to ${username}:`, err);
   }
@@ -495,7 +498,7 @@ export async function addFollower(username, followerUsername) {
 
   if (!followers.includes(followerUsername)) {
     followers.push(followerUsername);
-    await fs.writeFile(followersPath, JSON.stringify(followers, null, 2), 'utf8');
+    await writeFileAtomic(followersPath, JSON.stringify(followers, null, 2));
 
     // Send notification to the user being followed
     await pushNotificationToUser(username, {
@@ -518,7 +521,7 @@ export async function removeFollower(username, followerUsername) {
   const index = followers.indexOf(followerUsername);
   if (index !== -1) {
     followers.splice(index, 1);
-    await fs.writeFile(followersPath, JSON.stringify(followers, null, 2), 'utf8');
+    await writeFileAtomic(followersPath, JSON.stringify(followers, null, 2));
     // Send notification to the user being followed
     await pushNotificationToUser(username, {
       type: 'unfollowed',
@@ -548,7 +551,7 @@ export async function postFeed(entry) {
   feed = feed.slice(0, MAX_FEED_ENTRIES);
 
   try {
-    await fs.writeFile(FEED_FILE, JSON.stringify(feed, null, 2));
+    await writeFileAtomic(FEED_FILE, JSON.stringify(feed, null, 2));
   } catch (error) {
     console.error('Error writing feed file:', error);
     throw error;
