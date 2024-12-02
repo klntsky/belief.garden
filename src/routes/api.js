@@ -671,7 +671,7 @@ router.get('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
 });
 
 // Follow a user
-router.put('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
+router.put('/api/follow/:userId', ensureAuthenticatedApi, perUserWriteLimiter, async (req, res) => {
   const userToFollow = req.params.userId;
   const follower = req.user.id;
 
@@ -694,7 +694,7 @@ router.put('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
 });
 
 // Unfollow a user
-router.delete('/api/follow/:userId', ensureAuthenticatedApi, async (req, res) => {
+router.delete('/api/follow/:userId', ensureAuthenticatedApi, perUserWriteLimiter, async (req, res) => {
   const userToUnfollow = req.params.userId;
   const follower = req.user.id;
 
@@ -727,7 +727,7 @@ router.get('/api/settings', ensureAuthenticatedApi, async (req, res) => {
   }
 });
 
-router.post('/api/settings', ensureAuthenticatedApi, express.json(), async (req, res) => {
+router.post('/api/settings', ensureAuthenticatedApi, perUserWriteLimiterexpress.json(), async (req, res) => {
   try {
     const settings = await getUserSettings(req.user.id);
     const updatedSettings = { ...settings, ...req.body };
@@ -763,7 +763,7 @@ router.get('/api/feed', async (req, res) => {
 });
 
 // Add chat message
-router.post('/api/chat', ensureAuthenticatedApi, express.json(), async (req, res) => {
+router.post('/api/chat', ensureAuthenticatedApi, perUserWriteLimiter, express.json(), async (req, res) => {
   try {
     // ... existing chat message code ...
     await postFeed({
