@@ -14,6 +14,8 @@ function createUserLink(username) {
   link.href = `/${username}`;
   link.textContent = username;
   link.classList.add('feed-username-label');
+  link.classList.add('username');
+  link.setAttribute('data-username', username);
   return link;
 }
 
@@ -22,6 +24,47 @@ function createBeliefLink(username, beliefName) {
   link.href = `/${username}#${beliefName}`;
   link.textContent = beliefName;
   return link;
+}
+
+function createTypeIndicator(type) {
+  const indicator = document.createElement('div');
+  indicator.className = 'feed-type-indicator';
+
+  let emoji;
+  switch (type) {
+    case 'choice_changed':
+      emoji = '💡'; // Changed opinion
+      break;
+    case 'new_comment':
+      emoji = '💬'; // Comment bubble
+      break;
+    case 'core_belief_changed':
+      emoji = '⭐'; // Star for core belief
+      break;
+    case 'bio_updated':
+      emoji = '✏️'; // Pencil for edit
+      break;
+    case 'new_reply':
+      emoji = '💬'; // Reply arrow
+      break;
+    case 'followed_user':
+      emoji = '👋'; // Wave for following
+      break;
+    case 'unfollowed_user':
+      emoji = '💔'; // Broken heart for unfollowing
+      break;
+    case 'chat_msg':
+      emoji = '💬'; // Speech bubble
+      break;
+    case 'new_user_joined':
+      emoji = '🌱'; // Sprout for new user
+      break;
+    default:
+      emoji = '❔'; // Question mark for unknown
+  }
+
+  indicator.textContent = emoji;
+  return indicator;
 }
 
 function getActionElements(entry) {
@@ -72,12 +115,6 @@ function getActionElements(entry) {
       break;
     }
 
-    case 'reply_deleted': {
-      container.appendChild(actor);
-      container.appendChild(document.createTextNode(' deleted a reply'));
-      break;
-    }
-
     case 'followed_user': {
       container.appendChild(actor);
       container.appendChild(document.createTextNode(' started following '));
@@ -119,6 +156,9 @@ function createFeedEntry(entry) {
   const div = document.createElement('div');
   div.className = 'feed-entry';
 
+  const typeIndicator = createTypeIndicator(entry.type);
+  div.appendChild(typeIndicator);
+
   const timestamp = document.createElement('div');
   timestamp.className = 'feed-timestamp';
   timestamp.textContent = formatTimestamp(entry.timestamp * 1000);
@@ -153,7 +193,7 @@ async function updateFeed() {
     feed.forEach(entry => {
       feedContainer.insertBefore(createFeedEntry(entry), feedContainer.firstChild);
     });
-
+    addCorrelationBullets();
   } catch (error) {
     console.error('Error updating feed:', error);
   } finally {

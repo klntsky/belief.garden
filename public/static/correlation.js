@@ -206,7 +206,7 @@ async function addCorrelationBullets() {
   const authenticatedUserId = window.authenticatedUserId;
 
   const usernameElements = document.querySelectorAll(
-    '.username[data-username]'
+    '.username[data-username]:not(.correlated)'
   );
 
   for (const element of usernameElements) {

@@ -12,6 +12,13 @@
   gap: 15px;
 }
 
+.feed-type-indicator {
+  min-width: 20px;
+  text-align: center;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
 .feed-timestamp {
   color: #666;
   font-size: 0.9em;
@@ -20,7 +27,7 @@
   text-align: right;
 }
 
-.feed-content {
+.feed-action {
   flex-grow: 1;
 }
 
@@ -38,17 +45,17 @@
   color: #374151;
 }
 
-.feed-username-label {
+.feed-username-label, .feed-type-indicator {
   font-weight: bold;
   color: pink !important;
   text-shadow:
-  2px 0 #322,
-  -2px 0 #322,
-  0 2px #322,
-  0 -2px #322,
-  1px 1px #322,
-  -1px -1px #322,
-  1px -1px #322,
-  -1px 1px #000;
+    2px 0 #322,
+    -2px 0 #322,
+    0 2px #322,
+    0 -2px #322,
+    1px 1px #322,
+    -1px -1px #322,
+    1px -1px #322,
+    -1px 1px #000;
   text-decoration: none;
 }
