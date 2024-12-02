@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import zxcvbn from 'zxcvbn';
-import { getUserByUsername, addUser, updateUserPassword, userExists } from '../utils/userUtils.js';
+import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed } from '../utils/userUtils.js';
 import { rateLimitRegistration } from '../utils/rateLimiter.js';
 
 const router = express.Router();
