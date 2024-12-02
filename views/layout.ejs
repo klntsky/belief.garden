@@ -44,7 +44,7 @@
       <% if (user && user.id) { %>
         Welcome, <span class="user-notifications-wrapper">
           <a href="/<%= user.id %>" class="user-notifications">
-            <%= user.id %>
+            <span id="login-username"><%= user.id %></span>
             <span class="notification-counter" style="display: none;">0</span>
           </a>
           <div class="notifications-popup" style="display: none;">

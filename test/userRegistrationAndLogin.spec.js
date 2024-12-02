@@ -32,6 +32,6 @@ test.describe('User Registration and Login', () => {
     await expect(page).toHaveURL(`${SITE_DEPLOYMENT_PATH}/${uniqueUsername}`);
 
     // Verify that the user's name is displayed
-    await expect(page.locator('.nav-links-right span')).toContainText('Welcome');
+    await expect(page.locator('.nav-links-right #login-username')).toContainText(uniqueUsername);
   });
 });
