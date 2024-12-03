@@ -99,36 +99,35 @@ router.get('/logout', (req, res) => {
 
 // Password change route
 router.get('/change-password', ensureAuthenticated, (req, res) => {
-  res.render('change-password', { error: null, title: 'Change Password' });
+  res.redirect('/settings');
 });
 
-router.post('/change-password', ensureAuthenticated, async (req, res) => {
+router.post('/api/change-password', ensureAuthenticated, express.json(), async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const user = await getUserByUsername(req.user.id);
 
   if (!user) {
-    return res.redirect('/login');
+    return res.status(401).json({ error: 'User not found' });
   }
 
   const match = await bcrypt.compare(oldPassword, user.passwordHash);
   if (!match) {
-    res.render('change-password', { error: 'Old password is incorrect.', title: 'Change Password' });
-  } else {
-    const passwordError = validatePassword(newPassword);
-    if (passwordError) {
-      res.render('change-password', { error: passwordError, title: 'Change Password' });
-      return;
-    }
+    return res.status(400).json({ error: 'Old password is incorrect' });
+  }
 
-    try {
-      const saltRounds = 10;
-      const newHash = await bcrypt.hash(newPassword, saltRounds);
-      await updateUserPassword(user.username, newHash);
-      res.redirect('/profile');
-    } catch (err) {
-      console.error('Password change error:', err);
-      res.render('change-password', { error: 'Failed to change password.', title: 'Change Password' });
-    }
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) {
+    return res.status(400).json({ error: passwordError });
+  }
+
+  try {
+    const saltRounds = 10;
+    const newHash = await bcrypt.hash(newPassword, saltRounds);
+    await updateUserPassword(user.username, newHash);
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Password change error:', err);
+    res.status(500).json({ error: 'Failed to change password' });
   }
 });
 
