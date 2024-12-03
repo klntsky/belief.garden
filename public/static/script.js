@@ -478,6 +478,29 @@ function isDebatable(comment, settings = {}) {
   return settings.allowAllDebates || comment?.toLowerCase().includes('debate me');
 }
 
+// Helper function to create toggle replies button
+function createToggleRepliesButton(userChoice, canReply, profileUserId, belief, container, repliesContainer) {
+  const toggleReplies = document.createElement('button');
+  toggleReplies.className = 'toggle-replies';
+
+  if (userChoice.replies?.length > 0) {
+    toggleReplies.textContent = `show ${userChoice.replies.length} ${userChoice.replies.length === 1 ? 'reply' : 'replies'}`;
+  } else if (canReply) {
+    toggleReplies.textContent = 'reply';
+  }
+
+  toggleReplies.onclick = () => {
+    repliesContainer.style.display = 'flex';
+    if (canReply) {
+      const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer, userChoice);
+      container.appendChild(replyContainer);
+    }
+    toggleReplies.remove();
+  };
+  
+  return toggleReplies;
+}
+
 // Function to create the comment section
 function createCommentSection(belief, userChoice = {}, onChange, readOnly, profileUserId, settings) {
   const container = document.createElement('div');
@@ -485,7 +508,7 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
 
   let repliesContainer;
   if (userChoice?.replies && userChoice.replies.length > 0) {
-    repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
+    repliesContainer = createRepliesContainer(userChoice, profileUserId, belief);
   }
 
   // Check if user can reply
@@ -514,34 +537,6 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
       commentContainer.appendChild(usernameLabel);
       commentContainer.appendChild(commentText);
       container.appendChild(commentContainer);
-
-      // Create replies container unconditionally
-      repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
-
-      // Add toggle button if there are replies or user can reply
-      if (userChoice.replies?.length > 0 || canReply) {
-        const toggleReplies = document.createElement('button');
-        toggleReplies.className = 'toggle-replies';
-
-        if (userChoice.replies?.length > 0) {
-          toggleReplies.textContent = `show ${userChoice.replies.length} ${userChoice.replies.length === 1 ? 'reply' : 'replies'}`;
-        } else if (canReply) {
-          toggleReplies.textContent = 'reply';
-        }
-
-        toggleReplies.onclick = () => {
-          repliesContainer.style.display = 'flex';
-          if (canReply) {
-            const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer, userChoice);
-            container.appendChild(replyContainer);
-          }
-          toggleReplies.remove();
-        };
-        container.appendChild(toggleReplies);
-      }
-
-      // Add replies container
-      container.appendChild(repliesContainer);
     }
   } else {
     // Show textarea for editing
@@ -574,36 +569,19 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
         }
       }, 500);
     });
-
-
-    // Create replies container unconditionally
-    repliesContainer = createRepliesContainer(userChoice, profileUserId, belief, container);
-
-    // Add toggle button if there are replies or user can reply
-    if (userChoice.replies?.length > 0 || canReply) {
-      const toggleReplies = document.createElement('button');
-      toggleReplies.className = 'toggle-replies';
-
-      if (userChoice.replies?.length > 0) {
-        toggleReplies.textContent = `show ${userChoice.replies.length} ${userChoice.replies.length === 1 ? 'reply' : 'replies'}`;
-      } else if (canReply) {
-        toggleReplies.textContent = 'reply';
-      }
-
-      toggleReplies.onclick = () => {
-        repliesContainer.style.display = 'flex';
-        if (canReply) {
-          const replyContainer = createReplyInput(profileUserId, belief, container, repliesContainer, userChoice);
-          container.appendChild(replyContainer);
-        }
-        toggleReplies.remove();
-      };
-      container.appendChild(toggleReplies);
-    }
-
-    // Add replies container
-    container.appendChild(repliesContainer);
   }
+
+  // Create replies container unconditionally
+  repliesContainer = createRepliesContainer(userChoice, profileUserId, belief);
+
+  // Add toggle button if there are replies or user can reply
+  if (userChoice.replies?.length > 0 || canReply) {
+    const toggleReplies = createToggleRepliesButton(userChoice, canReply, profileUserId, belief, container, repliesContainer);
+    container.appendChild(toggleReplies);
+  }
+
+  // Add replies container
+  container.appendChild(repliesContainer);
 
   return container;
 }
