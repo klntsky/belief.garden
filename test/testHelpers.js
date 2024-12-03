@@ -74,7 +74,7 @@ export async function addBeliefComment(page, beliefName, commentText) {
 }
 
 // Helper function to wait for auto-save
-export async function waitForAutoSave(page, duration = 1000) {
+export async function waitForAutoSave(page, duration = 1500) {
   await page.waitForTimeout(duration);
 }
 

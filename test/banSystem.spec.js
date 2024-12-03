@@ -89,7 +89,7 @@ test.describe('Ban System', () => {
 
     const banLink = beliefCard.locator('.ban-link');
     await expect(banLink).toBeVisible();
-    await expect(banLink).toHaveAttribute('href', `/ban?user=${user2.username}`);
+    await expect(banLink).toHaveAttribute('href', `/settings?ban=${user2.username}`);
   });
 
   test('should not show ban link for non-owner', async ({ page }) => {
@@ -130,9 +130,9 @@ test.describe('Ban System', () => {
     await banLink.click();
 
     // On ban page
-    await expect(page).toHaveURL(new RegExp(`${SITE_DEPLOYMENT_PATH}/ban`));
+    await expect(page).toHaveURL(new RegExp(`${SITE_DEPLOYMENT_PATH}/settings`));
     await expect(page.locator('#username')).toHaveValue(user2.username);
-    await page.click('button[type="submit"]');
+    await page.locator('#banForm button[type="submit"]').click();
 
     // Wait for ban to be saved
     const banItem = page.locator('.ban-item', { hasText: user2.username });
