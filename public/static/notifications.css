@@ -150,6 +150,24 @@
   user-select: none;
 }
 
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.notification-emoji {
+  font-size: 1.1em;
+  line-height: 1;
+  min-width: 20px;
+  text-align: center;
+}
+
+.notification-message {
+  flex-grow: 1;
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
   #notifications-page-container {

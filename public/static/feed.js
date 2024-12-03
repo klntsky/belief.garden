@@ -101,9 +101,9 @@ function getActionElements(entry) {
 
     case 'core_belief_changed': {
       container.appendChild(actor);
-      container.appendChild(document.createTextNode(` ${entry.isFavorite ? 'marked' : 'unmarked'} `));
+      container.appendChild(document.createTextNode(` ${entry.isFavorite ? 'added' : 'removed'} `));
       container.appendChild(createBeliefLink(entry.actor, entry.beliefName));
-      container.appendChild(document.createTextNode(' as a core belief'));
+      container.appendChild(document.createTextNode(` ${entry.isFavorite ? 'to' : 'from'} core beliefs`));
       break;
     }
 

@@ -63,6 +63,26 @@ function getNotificationMessage(notification) {
   return '';
 }
 
+function getNotificationEmoji(type) {
+  switch (type) {
+    case 'new_follower':
+      return '👋'; // Wave for following
+    case 'unfollowed':
+      return '💔'; // Broken heart for unfollowing
+    case 'new_comment':
+      return '💬'; // Comment bubble
+    case 'new_reply':
+    case 'self_reply':
+      return '💬'; // Reply arrow
+    case 'broadcast':
+      return '📢'; // Broadcast megaphone
+    case 'choice_changed':
+      return '💡'; // Changed opinion
+    default:
+      return 'ℹ️';
+  }
+}
+
 function getNotificationURL(notification){
   if (notification.type === 'new_follower') {
     return `/${notification.actor}`;
@@ -99,12 +119,21 @@ function createNotificationElement(notification) {
     }
   });
 
-  const message = document.createElement('div');
+  const content = document.createElement('div');
+  content.className = 'notification-content';
+
+  const emoji = document.createElement('span');
+  emoji.className = 'notification-emoji';
+  emoji.textContent = getNotificationEmoji(notification.type);
+  content.appendChild(emoji);
+
+  const message = document.createElement('span');
+  message.className = 'notification-message';
   message.textContent = getNotificationMessage(notification);
-  item.appendChild(message);
-  if (notification.type === 'broadcast') {
-    message.classList.add('broadcast-message');
-  }
+  content.appendChild(message);
+
+  item.appendChild(content);
+
   const time = document.createElement('div');
   time.className = 'notification-time';
   time.textContent = formatTimestamp(notification.timestamp);

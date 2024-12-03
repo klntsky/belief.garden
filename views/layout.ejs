@@ -88,6 +88,10 @@
     <div class="footer-content">
       <a href="/faq">FAQ</a> |
       <a href="/users">Users</a> |
+      <% if (user && user.id) { %>
+        <a href="/settings">Settings</a> |
+        <a href="/ban">Moderation</a> |
+      <% } %>
       <a target="_blank" href="https://discord.gg/Zd3D4ryHEv">Discord</a> |
       <a target="_blank" href="https://github.com/klntsky/belief.garden" target="_blank">Source Code</a>
     </div>
