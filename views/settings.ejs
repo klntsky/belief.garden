@@ -35,6 +35,34 @@
       </div>
       <button type="submit" class="btn">Change Password</button>
     </form>
+
+    <div class="form-divider"></div>
+
+    <div class="setting-item">
+      <h2>User Bans</h2>
+      <form id="banForm" class="ban-form">
+        <div class="form-group">
+          <label for="username">Username to ban:</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="deleteReplies" name="deleteReplies">
+            Delete all replies by this user on my profile
+          </label>
+        </div>
+
+        <button type="submit" class="btn">Ban User</button>
+      </form>
+
+      <div id="current-bans" class="current-bans">
+        <h3>Current Bans</h3>
+        <div id="bans-list">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -118,6 +146,152 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
     errorElement.style.display = 'block';
   }
 });
+
+// Bans functionality
+async function loadBans() {
+  try {
+    const response = await fetch('/api/bans');
+    if (!response.ok) {
+      throw new Error('Failed to load bans');
+    }
+    const bans = await response.json();
+
+    const bansList = document.getElementById('bans-list');
+    bansList.innerHTML = '';
+
+    if (bans.length === 0) {
+      bansList.innerHTML = '<p>No active bans</p>';
+      return;
+    }
+
+    bans.forEach(ban => {
+      const banItem = document.createElement('div');
+      banItem.className = 'ban-item';
+
+      const username = document.createElement('span');
+      username.textContent = ban.username;
+
+      const unbanLink = document.createElement('a');
+      unbanLink.href = '#';
+      unbanLink.className = 'unban-link';
+      unbanLink.textContent = 'Unban';
+      unbanLink.onclick = async (e) => {
+        e.preventDefault();
+        if (confirm(`Are you sure you want to unban ${ban.username}?`)) {
+          try {
+            const response = await fetch('/api/unban-user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                bannedUser: ban.username
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to unban user');
+            }
+
+            loadBans(); // Reload the bans list
+            Toastify({
+              text: `Successfully unbanned ${ban.username}`,
+              duration: 3000,
+              gravity: "top",
+              position: "right",
+              style: { background: "#4CAF50" }
+            }).showToast();
+          } catch (error) {
+            Toastify({
+              text: error.message,
+              duration: 3000,
+              gravity: "top",
+              position: "right",
+              style: { background: "#ff0000" }
+            }).showToast();
+          }
+        }
+      };
+
+      banItem.appendChild(username);
+      banItem.appendChild(unbanLink);
+      bansList.appendChild(banItem);
+    });
+  } catch (error) {
+    console.error('Error loading bans:', error);
+    document.getElementById('bans-list').innerHTML = '<p>Failed to load bans</p>';
+  }
+}
+
+document.getElementById('banForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const deleteReplies = document.getElementById('deleteReplies').checked;
+
+  try {
+    const response = await fetch('/api/ban-user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        bannedUser: username,
+        deleteReplies
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to ban user');
+    }
+
+    // Clear the form
+    document.getElementById('username').value = '';
+    document.getElementById('deleteReplies').checked = false;
+
+    // Reload the bans list
+    loadBans();
+
+    Toastify({
+      text: `Successfully banned ${username}`,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      style: { background: "#4CAF50" }
+    }).showToast();
+  } catch (error) {
+    console.error('Error banning user:', error);
+    Toastify({
+      text: error.message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      style: { background: "#ff0000" }
+    }).showToast();
+  }
+});
+
+// Load bans when the page loads
+document.addEventListener('DOMContentLoaded', loadBans);
+</script>
+
+<script>
+// Handle ban parameter in URL
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const banUser = urlParams.get('ban');
+  if (banUser) {
+    document.getElementById('username').value = banUser;
+    // Wait a bit for everything to settle
+    setTimeout(() => {
+      const banForm = document.getElementById('username');
+      if (banForm) {
+        banForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        banForm.focus();
+      }
+    }, 100);
+  }
+});
+
 </script>
 
 <style>
@@ -149,11 +323,16 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
   margin-bottom: 5px;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 0;
+  background: #fff;
   border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 .form-divider {
@@ -179,5 +358,35 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
   padding: 10px;
   background-color: #ffebee;
   border-radius: 4px;
+}
+
+.ban-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 0;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.unban-link {
+  color: #f44336;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.unban-link:hover {
+  background-color: #ffebee;
+}
+
+.current-bans {
+  margin-top: 20px;
+}
+
+#bans-list {
+  margin-top: 10px;
 }
 </style>

@@ -378,7 +378,7 @@ function createReplyElement(reply, profileUserId, belief) {
     banLink.innerHTML = '🔨';
     banLink.className = 'ban-link';
     banLink.title = 'Ban user';
-    banLink.href = `/ban?user=${encodeURIComponent(reply.username)}`;
+    banLink.href = `/settings?ban=${encodeURIComponent(reply.username)}`;
     replyDiv.appendChild(banLink);
   }
 
