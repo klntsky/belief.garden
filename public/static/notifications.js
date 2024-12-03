@@ -96,6 +96,8 @@ function getNotificationURL(notification){
     return `/${notification.profileName}#${notification.beliefName}`;
   } else if (notification.type === 'broadcast') {
     return notification.url;
+  } else if (notification.type === 'choice_changed') {
+    return `/${notification.actor}#${notification.beliefName}`;
   }
   return '';
 }
