@@ -23,6 +23,7 @@ function createBeliefLink(username, beliefName) {
   const link = document.createElement('a');
   link.href = `/${username}#${beliefName}`;
   link.textContent = beliefName;
+  link.classList.add('feed-belief-link');
   return link;
 }
 
@@ -67,6 +68,14 @@ function createTypeIndicator(type) {
   return indicator;
 }
 
+function mkChoice(choice) {
+  const span = document.createElement('span');
+  span.textContent = choice || 'none';
+  span.classList.add('feed-choice');
+  span.classList.add(`feed-choice-${choice ? choice.toLowerCase() : 'none'}`);
+  return span;
+}
+
 function getActionElements(entry) {
   const container = document.createElement('span');
   const actor = createUserLink(entry.actor);
@@ -77,9 +86,9 @@ function getActionElements(entry) {
       container.appendChild(document.createTextNode(' changed opinion on '));
       container.appendChild(createBeliefLink(entry.actor, entry.beliefName));
       container.appendChild(document.createTextNode(': '));
-      container.appendChild(document.createTextNode(entry.old_choice || 'none'));
+      container.appendChild(mkChoice(entry.old_choice));
       container.appendChild(document.createTextNode(' ➜ '));
-      container.appendChild(document.createTextNode(entry.new_choice || 'none'));
+      container.appendChild(mkChoice(entry.new_choice));
       break;
     }
 
