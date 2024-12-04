@@ -210,6 +210,14 @@ async function addCorrelationBullets() {
   );
 
   for (const element of usernameElements) {
+    // class list could change during iteration
+    if (element.classList.contains('correlated')) {
+      continue;
+    }
+
+    if (authenticatedUserId) {
+      element.classList.add('correlated');
+    }
     const otherUserId = element.getAttribute('data-username');
 
     const correlation = !!authenticatedUserId ?
@@ -266,9 +274,6 @@ async function addCorrelationBullets() {
     }
 
     element.prepend(bullet);
-    if (authenticatedUserId) {
-      element.classList.add('correlated');
-    }
   }
 }
 
