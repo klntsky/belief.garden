@@ -10,7 +10,7 @@
     <div class="top-right-box">
       <div class="profile-header">
         <h2>
-          About <%= profileUserId %>
+          <%= profileUserId %>
           <% if (user && user.id !== profileUserId) { %>
             <button id="followButton" class="follow-button" style="display: none;">Follow</button>
           <% } %>
