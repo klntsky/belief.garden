@@ -21,6 +21,7 @@ import {
   getUserFollowers,
   getFeed,
   postFeed,
+  withUserBeliefs,
 } from '../utils/userUtils.js';
 import { perUserWriteLimiter } from '../utils/rateLimiter.js';
 import { promises as fs } from 'fs';
@@ -73,53 +74,69 @@ router.put(
     }
 
     const beliefData = req.body;
-    let userBeliefs;
+
     try {
-      userBeliefs = await getUserBeliefs(authenticatedUserId);
-    } catch (error) {
-      console.error('Error fetching user beliefs:', error);
-      return res.status(500).json({ error: 'Internal server error.' });
-    }
+      const result = await withUserBeliefs(authenticatedUserId, async () => {
+        const userBeliefs = await getUserBeliefs(authenticatedUserId);
 
-    if (!userBeliefs[beliefName]) {
-      userBeliefs[beliefName] = {};
-    }
+        if (!userBeliefs[beliefName]) {
+          userBeliefs[beliefName] = {};
+        }
 
-    if ('choice' in beliefData) {
-      await postFeed({
-        actor: authenticatedUserId,
-        type: 'choice_changed',
-        beliefName,
-        old_choice: userBeliefs[beliefName].choice,
-        new_choice: beliefData.choice
+        if ('choice' in beliefData) {
+          if (beliefData.choice === null) {
+            delete userBeliefs[beliefName].choice;
+          } else {
+            userBeliefs[beliefName].choice = beliefData.choice;
+          }
+        }
+
+        if ('comment' in beliefData) {
+          if (beliefData.comment.length > COMMENT_MAX_LENGTH) {
+            throw new Error(`Comment should be no longer than ${COMMENT_MAX_LENGTH} characters.`);
+          }
+          if (beliefData.comment === '') {
+            delete userBeliefs[beliefName].comment;
+            delete userBeliefs[beliefName].commentTime;
+          } else {
+            userBeliefs[beliefName].comment = beliefData.comment;
+            userBeliefs[beliefName].commentTime = Date.now();
+          }
+        }
+
+        // If the belief entry is empty, remove it
+        if (Object.keys(userBeliefs[beliefName]).length === 0) {
+          delete userBeliefs[beliefName];
+        }
+
+        await saveUserBeliefs(authenticatedUserId, userBeliefs);
+        return { userBeliefs, oldChoice: userBeliefs[beliefName]?.choice };
       });
-      if (beliefData.choice) {
-        await pushNotificationToFollowers(authenticatedUserId, {
-          type: 'choice_changed',
+
+      res.status(200).json({ message: 'User belief updated successfully.' });
+
+      // Post notifications outside the queue
+      if ('choice' in beliefData) {
+        await postFeed({
           actor: authenticatedUserId,
+          type: 'choice_changed',
           beliefName,
-          old_choice: userBeliefs[beliefName].choice,
+          old_choice: result.oldChoice,
           new_choice: beliefData.choice
         });
+        if (beliefData.choice) {
+          await pushNotificationToFollowers(authenticatedUserId, {
+            type: 'choice_changed',
+            actor: authenticatedUserId,
+            beliefName,
+            old_choice: result.oldChoice,
+            new_choice: beliefData.choice
+          });
+        }
       }
-      if (beliefData.choice === null) {
-        delete userBeliefs[beliefName].choice;
-      } else {
-        userBeliefs[beliefName].choice = beliefData.choice;
-      }
-    }
 
-    if ('comment' in beliefData) {
-      if (beliefData.comment.length > COMMENT_MAX_LENGTH) {
-        return res.status(400).json({
-          error: `Comment should be no longer than ${COMMENT_MAX_LENGTH} characters.`,
-        });
-      }
-      if (beliefData.comment === '') {
-        delete userBeliefs[beliefName].comment;
-        delete userBeliefs[beliefName].commentTime;
-      } else {
-        const oldComment = userBeliefs[beliefName].comment;
+      if ('comment' in beliefData && beliefData.comment !== '') {
+        const oldComment = result.userBeliefs[beliefName]?.comment;
         if (!oldComment) {
           await pushNotificationToFollowers(authenticatedUserId, {
             type: 'new_comment',
@@ -134,22 +151,11 @@ router.put(
             beliefName
           });
         }
-        userBeliefs[beliefName].comment = beliefData.comment;
-        userBeliefs[beliefName].commentTime = Date.now();
       }
-    }
-
-    // If the belief entry is empty, remove it
-    if (Object.keys(userBeliefs[beliefName]).length === 0) {
-      delete userBeliefs[beliefName];
-    }
-
-    try {
-      await saveUserBeliefs(authenticatedUserId, userBeliefs);
-      res.status(200).json({ message: 'User belief updated successfully.' });
     } catch (error) {
       console.error('Error saving user beliefs:', error);
-      res.status(500).json({ error: 'Internal server error.' });
+      res.status(400)
+         .json({ error: error.message || 'Internal server error.' });
     }
   }
 );
@@ -337,71 +343,76 @@ router.post(
         if (err.code !== 'ENOENT') throw err;
       }
 
-      const userBeliefs = await getUserBeliefs(userId);
-
-      if (!userBeliefs[beliefName]) {
-        return res.status(404).json({ error: 'Belief not found.' });
-      }
-
-      // Check if the belief has a comment
-      if (!userBeliefs[beliefName].comment) {
-        return res.status(400).json({ error: 'Cannot reply to an empty comment.' });
-      }
-
       const settings = await getUserSettings(userId);
 
-      // Check if the comment contains "debate me"
-      if (!settings.allowAllDebates) {
-        if (!userBeliefs[beliefName].comment.toLowerCase().includes('debate me')) {
-          return res.status(400).json({ error: 'Can only reply to comments that include "debate me".' });
+      const reply = await withUserBeliefs(userId, async () => {
+        const userBeliefs = await getUserBeliefs(userId);
+
+        if (!userBeliefs[beliefName]) {
+          throw new Error('Belief not found.');
         }
-      }
 
-      // For non-owners, prevent consecutive replies
-      if (authenticatedUserId !== userId) {
-        const replies = userBeliefs[beliefName].replies || [];
-        const lastReply = replies[replies.length - 1];
-        if (lastReply && lastReply.username === authenticatedUserId) {
-          return res.status(400).json({ error: 'Subsequent replies are not allowed. You can delete your last comment and send a new one.' });
+        // Check if the belief has a comment
+        if (!userBeliefs[beliefName].comment) {
+          throw new Error('Cannot reply to an empty comment.');
         }
-      }
 
-      // For own profile, check if there's at least one reply from another user
-      if (userId === authenticatedUserId) {
-        const hasOtherReplies = userBeliefs[beliefName].replies?.some(
-          reply => reply.username !== authenticatedUserId
-        );
-        if (!hasOtherReplies) {
-          return res.status(400).json({ error: 'Cannot reply until someone else replies first.' });
+        // Check if the comment contains "debate me"
+        if (!settings.allowAllDebates) {
+          if (!userBeliefs[beliefName].comment.toLowerCase().includes('debate me')) {
+            throw new Error('Can only reply to comments that include "debate me".');
+          }
         }
-      }
 
-      // Check reply length
-      const lines = comment.split('\n');
-      if (lines.length > 20) {
-        return res.status(400).json({ error: 'Reply cannot be longer than 20 lines.' });
-      }
+        // For non-owners, prevent consecutive replies
+        if (authenticatedUserId !== userId) {
+          const replies = userBeliefs[beliefName].replies || [];
+          const lastReply = replies[replies.length - 1];
+          if (lastReply && lastReply.username === authenticatedUserId) {
+            throw new Error('Subsequent replies are not allowed. You can delete your last comment and send a new one.');
+          }
+        }
 
-      // Initialize replies array if it doesn't exist
-      if (!userBeliefs[beliefName].replies) {
-        userBeliefs[beliefName].replies = [];
-      }
+        // For own profile, check if there's at least one reply from another user
+        if (userId === authenticatedUserId) {
+          const hasOtherReplies = userBeliefs[beliefName].replies?.some(
+            reply => reply.username !== authenticatedUserId
+          );
+          if (!hasOtherReplies) {
+            throw new Error('Cannot reply until someone else replies first.');
+          }
+        }
 
-      // Add the new reply
-      const reply = {
-        username: authenticatedUserId,
-        comment,
-        timestamp: Date.now()
-      };
+        // Check reply length
+        const lines = comment.split('\n');
+        if (lines.length > 20) {
+          throw new Error('Reply cannot be longer than 20 lines.');
+        }
 
-      userBeliefs[beliefName].replies.push(reply);
+        // Initialize replies array if it doesn't exist
+        if (!userBeliefs[beliefName].replies) {
+          userBeliefs[beliefName].replies = [];
+        }
 
-      // Sort replies by timestamp
-      userBeliefs[beliefName].replies.sort((a, b) => a.timestamp - b.timestamp);
+        // Add the new reply
+        const newReply = {
+          username: authenticatedUserId,
+          comment,
+          timestamp: Date.now()
+        };
 
-      await saveUserBeliefs(userId, userBeliefs);
+        userBeliefs[beliefName].replies.push(newReply);
+
+        // Sort replies by timestamp
+        userBeliefs[beliefName].replies.sort((a, b) => a.timestamp - b.timestamp);
+
+        await saveUserBeliefs(userId, userBeliefs);
+        return newReply;
+      });
+
       res.status(200).json(reply);
 
+      // Send notifications outside the queue
       await postFeed({
         actor: authenticatedUserId,
         type: 'new_reply',
@@ -426,10 +437,10 @@ router.post(
           type: 'self_reply',
         });
       }
-
     } catch (error) {
       console.error('Error adding reply:', error);
-      res.status(500).json({ error: 'Error adding reply.' });
+      res.status(400)
+         .json({ error: error.message || 'Error adding reply.' });
     }
   }
 );
@@ -444,35 +455,40 @@ router.delete(
     const authenticatedUserId = req.user.id;
 
     try {
-      const userBeliefs = await getUserBeliefs(userId);
+      await withUserBeliefs(userId, async () => {
+        const userBeliefs = await getUserBeliefs(userId);
 
-      if (!userBeliefs[beliefName] || !userBeliefs[beliefName].replies) {
-        return res.status(404).json({ error: 'Belief or replies not found.' });
-      }
+        if (!userBeliefs[beliefName] || !userBeliefs[beliefName].replies) {
+          throw new Error('Belief or replies not found.');
+        }
 
-      const replyIndex = userBeliefs[beliefName].replies.findIndex(
-        reply => reply.timestamp === parseInt(timestamp)
-      );
+        const replyIndex = userBeliefs[beliefName].replies.findIndex(
+          reply => reply.timestamp === parseInt(timestamp)
+        );
 
-      if (replyIndex === -1) {
-        return res.status(404).json({ error: 'Reply not found.' });
-      }
+        if (replyIndex === -1) {
+          throw new Error('Reply not found.');
+        }
 
-      const reply = userBeliefs[beliefName].replies[replyIndex];
+        const reply = userBeliefs[beliefName].replies[replyIndex];
 
-      // Check if user is authorized to delete the reply
-      if (authenticatedUserId !== userId && authenticatedUserId !== reply.username) {
-        return res.status(403).json({ error: 'Not authorized to delete this reply.' });
-      }
+        // Check if user is authorized to delete the reply
+        if (authenticatedUserId !== userId && authenticatedUserId !== reply.username) {
+          throw new Error('Not authorized to delete this reply.');
+        }
 
-      // Remove the reply
-      userBeliefs[beliefName].replies.splice(replyIndex, 1);
+        // Remove the reply
+        userBeliefs[beliefName].replies.splice(replyIndex, 1);
 
-      await saveUserBeliefs(userId, userBeliefs);
+        await saveUserBeliefs(userId, userBeliefs);
+      });
+
       res.status(200).json({ message: 'Reply deleted successfully.' });
     } catch (error) {
       console.error('Error deleting reply:', error);
-      res.status(500).json({ error: 'Error deleting reply.' });
+      res.status(error.message?.includes('not found') ? 404 :
+                error.message?.includes('Not authorized') ? 403 : 500)
+         .json({ error: error.message || 'Error deleting reply.' });
     }
   }
 );
@@ -507,22 +523,24 @@ router.post('/api/ban-user',
 
       // Delete all replies by the banned user if requested
       if (deleteReplies) {
-        const userBeliefs = await getUserBeliefs(profileOwner);
-        let modified = false;
+        await withUserBeliefs(profileOwner, async () => {
+          const userBeliefs = await getUserBeliefs(profileOwner);
+          let modified = false;
 
-        for (const belief of Object.values(userBeliefs)) {
-          if (belief.replies) {
-            const originalLength = belief.replies.length;
-            belief.replies = belief.replies.filter(reply => reply.username !== bannedUser);
-            if (belief.replies.length !== originalLength) {
-              modified = true;
+          for (const belief of Object.values(userBeliefs)) {
+            if (belief.replies) {
+              const originalLength = belief.replies.length;
+              belief.replies = belief.replies.filter(reply => reply.username !== bannedUser);
+              if (belief.replies.length !== originalLength) {
+                modified = true;
+              }
             }
           }
-        }
 
-        if (modified) {
-          await saveUserBeliefs(profileOwner, userBeliefs);
-        }
+          if (modified) {
+            await saveUserBeliefs(profileOwner, userBeliefs);
+          }
+        });
       }
 
       res.json({ success: true });

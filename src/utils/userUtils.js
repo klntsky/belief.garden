@@ -3,6 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { writeFileAtomic } from './fileUtils.js';
+import { feedQueue, notificationQueue, userBeliefsManager } from './queueUtils.js';
 
 const userAccountsDir = path.join('data', 'accounts');
 const userBeliefsDir = path.join('data', 'users');
@@ -284,6 +285,28 @@ export async function adjustPieSlicePoints(username, beliefName, action) {
 }
 
 /**
+ * Execute a callback in a queue dedicated to a specific user's beliefs
+ * @param {string} username - The username whose beliefs are being operated on
+ * @param {Function} callback - Async function to execute in the queue
+ * @returns {Promise<T>} The result of the callback
+ * @template T
+ */
+export async function withUserBeliefs(username, callback) {
+  if (!username) {
+    throw new Error('Username is required for belief operations');
+  }
+
+  try {
+    const result = await userBeliefsManager.executeInQueue(username, callback);
+    userBeliefsManager.cleanupQueue(username); // Clean up if queue is empty
+    return result;
+  } catch (error) {
+    console.error(`Error in belief operation for user ${username}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Get user settings.
  * @param {string} username - The username of the user.
  * @returns {Promise<Object>} - The user's settings.
@@ -432,16 +455,18 @@ export async function getUserNotifications(username) {
 export async function pushNotificationToUser(username, notification) {
   const notificationPath = path.join(notificationsDir, `${username}.json`);
   try {
-    const notifications = await getUserNotifications(username);
-    notifications.unshift({
-      ...notification,
-      timestamp: Date.now()
+    await notificationQueue.add(async () => {
+      const notifications = await getUserNotifications(username);
+      notifications.unshift({
+        ...notification,
+        timestamp: Date.now()
+      });
+      // Keep only the most recent MAX_NOTIFICATIONS
+      if (notifications.length > MAX_NOTIFICATIONS) {
+        notifications.length = MAX_NOTIFICATIONS;
+      }
+      await writeFileAtomic(notificationPath, JSON.stringify(notifications, null, 2));
     });
-    // Keep only the most recent MAX_NOTIFICATIONS
-    if (notifications.length > MAX_NOTIFICATIONS) {
-      notifications.length = MAX_NOTIFICATIONS;
-    }
-    await writeFileAtomic(notificationPath, JSON.stringify(notifications, null, 2));
   } catch (err) {
     console.error(`Failed to push notification to ${username}:`, err);
   }
@@ -540,18 +565,20 @@ export async function postFeed(entry) {
     throw new Error('Actor is required for feed entries');
   }
 
-  const feedEntry = {
-    ...entry,
-    timestamp: Math.floor(Date.now() / 1000)
-  };
-
-  let feed = await getFeed();
-
-  feed.unshift(feedEntry);
-  feed = feed.slice(0, MAX_FEED_ENTRIES);
-
   try {
-    await writeFileAtomic(FEED_FILE, JSON.stringify(feed, null, 2));
+    await feedQueue.add(async () => {
+      let feed = await getFeed();
+      
+      const feedEntry = {
+        ...entry,
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+
+      feed.unshift(feedEntry);
+      feed = feed.slice(0, MAX_FEED_ENTRIES);
+
+      await writeFileAtomic(FEED_FILE, JSON.stringify(feed, null, 2));
+    });
   } catch (error) {
     console.error('Error writing feed file:', error);
     throw error;
