@@ -92,7 +92,8 @@ const requiredDirs = [
   'data/users',
   'data/settings',
   'data/notifications',
-  'data/followers'
+  'data/followers',
+  'data/follows'
 ];
 
 Promise.all(
