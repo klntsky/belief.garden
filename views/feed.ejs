@@ -1,5 +1,19 @@
 <div class="content">
+  <div class="top-users">
+    <% if (usernames && usernames.length > 0) { %>
+      <span class="top-users-label">Top users:</span>
+      <div class="top-users-list">
+        <% usernames.forEach(function(username) { %>
+          <span class="user-item">
+            <a href="/<%= username %>" class="username feed-username-label" data-username="<%= username %>"><%= username %></a>
+          </span>
+        <% }); %>
+        <span class="user-item">
+          <a href="/users" class="more-link">more...</a>
+        </span>
+      </div>
+    <% } %>
+  </div>
   <div id="feed-container" class="feed-container"></div>
 </div>
-
 <script src="/static/feed.js"></script>

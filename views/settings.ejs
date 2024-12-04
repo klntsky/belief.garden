@@ -294,7 +294,7 @@ async function loadFollowing() {
     const followingList = document.getElementById('following-list');
     followingList.innerHTML = data.following.map(username => `
       <span class="following-item">
-        <a href="/${username}" class="username" data-username="${username}">${username}</a>
+        <a href="/${username}" class="username feed-username-label" data-username="${username}">${username}</a>
         <button class="unfollow-btn" data-username="${username}">×</button>
       </span>
     `).join('');

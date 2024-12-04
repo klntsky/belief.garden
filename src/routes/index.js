@@ -125,8 +125,16 @@ router.get('/ban', ensureAuthenticated, (req, res) => {
 });
 
 // Feed page
-router.get('/feed', (req, res) => {
-  res.render('feed', { user: req.user });
+router.get('/feed', async (req, res) => {
+  try {
+    const usersFile = path.join('data', 'users.json');
+    const usersData = JSON.parse(await fs.promises.readFile(usersFile, 'utf8'));
+    const usernames = usersData.map(user => user.username).slice(0, 5);
+    res.render('feed', { user: req.user, usernames });
+  } catch (error) {
+    console.error('Error loading usernames:', error);
+    res.render('feed', { user: req.user, usernames: [] });
+  }
 });
 
 // Notifications page
