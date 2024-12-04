@@ -1,8 +1,17 @@
 <!-- views/settings.ejs -->
 <div class="content">
   <div class="settings-container">
+
+    <div class="form-divider"></div>
+
+    <div class="setting-item">
+      <h2>Followed users</h2>
+      <div id="following-list" class="following-list"></div>
+    </div>
     <form id="settings-form">
+
       <div class="setting-item">
+        <h2>Settings</h2>
         <label>
           <input type="checkbox" id="allowAllDebates" name="allowAllDebates" <%= settings.allowAllDebates ? 'checked' : '' %>>
           Allow replies from other users for all my belief card comments.
@@ -13,9 +22,9 @@
 
           Note: This only applies to non-banned users.
         </p>
+        <button type="submit" class="btn">Save Settings</button>
       </div>
 
-      <button type="submit" class="btn">Save Settings</button>
     </form>
 
     <div class="form-divider"></div>
@@ -270,26 +279,58 @@ document.getElementById('banForm').addEventListener('submit', async (e) => {
 
 // Load bans when the page loads
 document.addEventListener('DOMContentLoaded', loadBans);
-</script>
 
-<script>
-// Handle ban parameter in URL
-document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const banUser = urlParams.get('ban');
-  if (banUser) {
-    document.getElementById('username').value = banUser;
-    // Wait a bit for everything to settle
-    setTimeout(() => {
-      const banForm = document.getElementById('username');
-      if (banForm) {
-        banForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        banForm.focus();
-      }
-    }, 100);
+async function loadFollowing() {
+  try {
+    const response = await fetch('/api/following');
+    if (!response.ok) {
+      throw new Error('Failed to load following list');
+    }
+    const data = await response.json();
+
+    const followingList = document.getElementById('following-list');
+    followingList.innerHTML = data.following.map(username => `
+      <span class="following-item">
+        <a href="/${username}" class="username" data-username="${username}">${username}</a>
+        <button class="unfollow-btn" data-username="${username}">×</button>
+      </span>
+    `).join('');
+
+    // Add click handlers for unfollow buttons
+    followingList.querySelectorAll('.unfollow-btn').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const username = button.dataset.username;
+        try {
+          const response = await fetch(`/api/follow/${username}`, {
+            method: 'DELETE'
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to unfollow user');
+          }
+
+          // Remove the following item from the UI
+          button.closest('.following-item').remove();
+        } catch (error) {
+          console.error('Error unfollowing user:', error);
+          alert('Failed to unfollow user. Please try again.');
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error loading following list:', error);
+    document.getElementById('following-list').innerHTML =
+      '<div class="error-message">Failed to load following list. Please refresh the page to try again.</div>';
+  } finally {
+    addCorrelationBullets();
   }
-});
+}
 
+// Load following list when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  loadFollowing();
+});
 </script>
 
 <style>
@@ -387,4 +428,63 @@ document.addEventListener('DOMContentLoaded', () => {
 #bans-list {
   margin-top: 10px;
 }
+
+.following-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.following-item {
+  display: inline-flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 15px;
+}
+
+.username-link {
+  color: #333;
+  text-decoration: none;
+  margin-right: 5px;
+}
+
+.username-link:hover {
+  text-decoration: underline;
+}
+
+.unfollow-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.unfollow-btn:hover {
+  color: #ff4444;
+}
 </style>
+
+<script>
+// Handle ban parameter in URL
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const banUser = urlParams.get('ban');
+  if (banUser) {
+    document.getElementById('username').value = banUser;
+    // Wait a bit for everything to settle
+    setTimeout(() => {
+      const banForm = document.getElementById('username');
+      if (banForm) {
+        banForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        banForm.focus();
+      }
+    }, 100);
+  }
+});
+
+</script>

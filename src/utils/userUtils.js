@@ -11,6 +11,7 @@ const userBiosDir = path.join('data', 'bio');
 const userSettingsDir = path.join('data', 'settings');
 const notificationsDir = path.join('data', 'notifications');
 const followersDir = path.join('data', 'followers');
+const followsDir = path.join('data', 'follows');
 
 const MAX_NOTIFICATIONS = 200;
 const MAX_FEED_ENTRIES = 400;
@@ -512,25 +513,83 @@ export async function getUserFollowers(username) {
 }
 
 /**
+ * Get list of users that a user follows
+ * @param {string} username - The username to get following list for
+ * @returns {Promise<string[]>} List of usernames the user follows
+ */
+export async function getUserFollowing(username) {
+  const followingPath = path.join(followsDir, `${username}.json`);
+  try {
+    const following = JSON.parse(await fs.readFile(followingPath, 'utf8'));
+    return following;
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return [];
+    }
+    throw err;
+  }
+}
+
+/**
+ * Update both follower and following relationships
+ * @param {string} targetUser - The user being followed
+ * @param {string} follower - The user who is following
+ * @param {boolean} isFollowing - True to follow, false to unfollow
+ * @returns {Promise<void>}
+ */
+async function updateFollowRelationship(targetUser, follower, isFollowing) {
+  const followersPath = path.join(followersDir, `${targetUser}.json`);
+  const followingPath = path.join(followsDir, `${follower}.json`);
+
+  // Get current lists
+  const [followers, following] = await Promise.all([
+    getUserFollowers(targetUser),
+    getUserFollowing(follower)
+  ]);
+
+  // Update followers list
+  const followerIndex = followers.indexOf(follower);
+  const isCurrentlyFollowing = followerIndex !== -1;
+
+  if (isFollowing && !isCurrentlyFollowing) {
+    followers.push(follower);
+  } else if (!isFollowing && isCurrentlyFollowing) {
+    followers.splice(followerIndex, 1);
+  }
+
+  // Update following list
+  const followingIndex = following.indexOf(targetUser);
+  const isCurrentlyInFollowing = followingIndex !== -1;
+
+  if (isFollowing && !isCurrentlyInFollowing) {
+    following.push(targetUser);
+  } else if (!isFollowing && isCurrentlyInFollowing) {
+    following.splice(followingIndex, 1);
+  }
+
+  // Save both files atomically
+  await Promise.all([
+    writeFileAtomic(followersPath, JSON.stringify(followers, null, 2)),
+    writeFileAtomic(followingPath, JSON.stringify(following, null, 2))
+  ]);
+
+  // Send notification
+  if (isFollowing !== isCurrentlyFollowing) {
+    await pushNotificationToUser(targetUser, {
+      type: isFollowing ? 'new_follower' : 'unfollowed',
+      actor: follower
+    });
+  }
+}
+
+/**
  * Add a follower to a user
  * @param {string} username - The username of the user to follow
  * @param {string} followerUsername - The username of the follower
  * @returns {Promise<void>}
  */
 export async function addFollower(username, followerUsername) {
-  const followersPath = path.join(followersDir, `${username}.json`);
-  const followers = await getUserFollowers(username);
-
-  if (!followers.includes(followerUsername)) {
-    followers.push(followerUsername);
-    await writeFileAtomic(followersPath, JSON.stringify(followers, null, 2));
-
-    // Send notification to the user being followed
-    await pushNotificationToUser(username, {
-      type: 'new_follower',
-      actor: followerUsername
-    });
-  }
+  await updateFollowRelationship(username, followerUsername, true);
 }
 
 /**
@@ -540,19 +599,7 @@ export async function addFollower(username, followerUsername) {
  * @returns {Promise<void>}
  */
 export async function removeFollower(username, followerUsername) {
-  const followersPath = path.join(followersDir, `${username}.json`);
-  const followers = await getUserFollowers(username);
-
-  const index = followers.indexOf(followerUsername);
-  if (index !== -1) {
-    followers.splice(index, 1);
-    await writeFileAtomic(followersPath, JSON.stringify(followers, null, 2));
-    // Send notification to the user being followed
-    await pushNotificationToUser(username, {
-      type: 'unfollowed',
-      actor: followerUsername
-    });
-  }
+  await updateFollowRelationship(username, followerUsername, false);
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   pushNotificationToUser,
   pushNotificationToFollowers,
   getUserFollowers,
+  getUserFollowing,
   getFeed,
   postFeed,
   withUserBeliefs,
@@ -690,6 +691,17 @@ router.delete('/api/follow/:userId', ensureAuthenticatedApi, perUserWriteLimiter
   } catch (error) {
     console.error('Error unfollowing user:', error);
     res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// Get following list for authenticated user
+router.get('/api/following', ensureAuthenticatedApi, async (req, res) => {
+  try {
+    const following = await getUserFollowing(req.user.id);
+    res.json({ following });
+  } catch (error) {
+    console.error('Error getting following list:', error);
+    res.status(500).json({ error: 'Failed to get following list' });
   }
 });
 
