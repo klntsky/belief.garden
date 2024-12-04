@@ -127,7 +127,7 @@ router.get('/ban', ensureAuthenticated, (req, res) => {
 // Feed page
 router.get('/feed', async (req, res) => {
   try {
-    const usersFile = path.join('data', 'users.json');
+    const usersFile = path.join('public', 'users.json');
     const usersData = JSON.parse(await fs.promises.readFile(usersFile, 'utf8'));
     const usernames = usersData.map(user => user.username).slice(0, 5);
     res.render('feed', { user: req.user, usernames });
