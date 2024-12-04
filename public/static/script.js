@@ -475,7 +475,7 @@ async function getUserSettings(userId) {
 }
 
 function isDebatable(comment, settings = {}) {
-  return settings.allowAllDebates || comment?.toLowerCase().includes('debate me');
+  return comment && settings.allowAllDebates || comment?.toLowerCase().includes('debate me');
 }
 
 // Helper function to create toggle replies button
@@ -497,7 +497,7 @@ function createToggleRepliesButton(userChoice, canReply, profileUserId, belief, 
     }
     toggleReplies.remove();
   };
-  
+
   return toggleReplies;
 }
 
