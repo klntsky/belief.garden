@@ -94,6 +94,8 @@ router.put(
           }
         }
 
+        const oldComment = userBeliefs[beliefName]?.comment;
+
         if ('comment' in beliefData) {
           if (beliefData.comment.length > COMMENT_MAX_LENGTH) {
             throw new Error(`Comment should be no longer than ${COMMENT_MAX_LENGTH} characters.`);
@@ -113,7 +115,7 @@ router.put(
         }
 
         await saveUserBeliefs(authenticatedUserId, userBeliefs);
-        return { userBeliefs, oldChoice: oldChoice };
+        return { userBeliefs, oldChoice: oldChoice, oldComment };
       });
 
       res.status(200).json({ message: 'User belief updated successfully.' });
@@ -139,8 +141,7 @@ router.put(
       }
 
       if ('comment' in beliefData && beliefData.comment !== '') {
-        const oldComment = result.userBeliefs[beliefName]?.comment;
-        if (!oldComment) {
+        if (!result.oldComment) {
           await pushNotificationToFollowers(authenticatedUserId, {
             type: 'new_comment',
             actor: authenticatedUserId,
