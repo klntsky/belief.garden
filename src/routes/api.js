@@ -83,6 +83,8 @@ router.put(
           userBeliefs[beliefName] = {};
         }
 
+        const oldChoice = userBeliefs[beliefName]?.choice;
+
         if ('choice' in beliefData) {
           if (beliefData.choice === null) {
             delete userBeliefs[beliefName].choice;
@@ -110,7 +112,7 @@ router.put(
         }
 
         await saveUserBeliefs(authenticatedUserId, userBeliefs);
-        return { userBeliefs, oldChoice: userBeliefs[beliefName]?.choice };
+        return { userBeliefs, oldChoice: oldChoice };
       });
 
       res.status(200).json({ message: 'User belief updated successfully.' });
