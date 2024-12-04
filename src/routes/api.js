@@ -509,6 +509,10 @@ router.post('/api/ban-user',
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    if (bannedUser === profileOwner) {
+      return res.status(400).json({ error: 'Cannot ban yourself.' });
+    }
+
     const banFilePath = path.join(bansDir, `${profileOwner}.json`);
 
     try {
