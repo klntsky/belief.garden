@@ -206,18 +206,19 @@ async function addCorrelationBullets() {
   const authenticatedUserId = window.authenticatedUserId;
 
   const usernameElements = document.querySelectorAll(
-    '.username[data-username]:not(.correlated)'
+    '[data-username]:not(.correlated)'
   );
 
   for (const element of usernameElements) {
     // class list could change during iteration
-    if (element.classList.contains('correlated')) {
+    if (element.getAttribute('data-correlated') == 'true') {
       continue;
     }
 
     if (authenticatedUserId) {
-      element.classList.add('correlated');
+      element.setAttribute('data-correlated', true);
     }
+
     const otherUserId = element.getAttribute('data-username');
 
     const correlation = !!authenticatedUserId ?
@@ -274,6 +275,7 @@ async function addCorrelationBullets() {
     }
 
     element.prepend(bullet);
+    element.classList.add('correlated');
   }
 }
 
