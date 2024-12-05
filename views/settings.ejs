@@ -295,7 +295,7 @@ async function loadFollowing() {
     followingList.innerHTML = data.following.map(username => `
       <span class="following-item">
         <a href="/${username}" class="username feed-username-label" data-username="${username}">${username}</a>
-        <button class="unfollow-btn" data-username="${username}">×</button>
+        <button class="unfollow-btn" data-user="${username}">×</button>
       </span>
     `).join('');
 
@@ -303,7 +303,7 @@ async function loadFollowing() {
     followingList.querySelectorAll('.unfollow-btn').forEach(button => {
       button.addEventListener('click', async (e) => {
         e.preventDefault();
-        const username = button.dataset.username;
+        const username = button.dataset.user;
         try {
           const response = await fetch(`/api/follow/${username}`, {
             method: 'DELETE'
