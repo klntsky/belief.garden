@@ -59,6 +59,8 @@ function getNotificationMessage(notification) {
     return notification.message;
   } else if (notification.type === 'choice_changed') {
     return `${notification.actor} changed their opinion on ${notification.beliefName} to ${notification.new_choice || 'none'}`;
+  } else if (notification.type === 'thread_reply') {
+    return `${notification.actor} replied to ${notification.profileName}'s comment on ${notification.beliefName}`;
   }
   return '';
 }
@@ -73,7 +75,9 @@ function getNotificationEmoji(type) {
       return '💬'; // Comment bubble
     case 'new_reply':
     case 'self_reply':
-      return '💬'; // Reply arrow
+      return '💬';
+    case 'thread_reply':
+      return '💬';
     case 'broadcast':
       return '📢'; // Broadcast megaphone
     case 'choice_changed':
@@ -98,6 +102,8 @@ function getNotificationURL(notification){
     return notification.url;
   } else if (notification.type === 'choice_changed') {
     return `/${notification.actor}#${notification.beliefName}`;
+  } else if (notification.type === 'thread_reply') {
+    return `/${notification.profileName}#${notification.beliefName}`;
   }
   return '';
 }

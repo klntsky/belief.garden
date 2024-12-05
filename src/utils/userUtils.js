@@ -485,6 +485,7 @@ export async function pushNotificationToFollowers(username, notification) {
     await Promise.all(followers.map(follower =>
       pushNotificationToUser(follower, notification)
     ));
+    return followers;
   } catch (err) {
     console.error(`Failed to push notification to followers of ${username}:`, err);
   }
@@ -615,7 +616,7 @@ export async function postFeed(entry) {
   try {
     await feedQueue.add(async () => {
       let feed = await getFeed();
-      
+
       const feedEntry = {
         ...entry,
         timestamp: Math.floor(Date.now() / 1000)

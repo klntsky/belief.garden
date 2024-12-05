@@ -349,7 +349,7 @@ router.post(
 
       const settings = await getUserSettings(userId);
 
-      const reply = await withUserBeliefs(userId, async () => {
+      const [reply, userBeliefs] = await withUserBeliefs(userId, async () => {
         const userBeliefs = await getUserBeliefs(userId);
 
         if (!userBeliefs[beliefName]) {
@@ -411,10 +411,8 @@ router.post(
         userBeliefs[beliefName].replies.sort((a, b) => a.timestamp - b.timestamp);
 
         await saveUserBeliefs(userId, userBeliefs);
-        return newReply;
+        return [newReply, userBeliefs];
       });
-
-      res.status(200).json(reply);
 
       // Send notifications outside the queue
       await postFeed({
@@ -423,6 +421,8 @@ router.post(
         beliefName,
         profileName: userId
       });
+
+      let notifiedFollowers = [];
 
       // Push notification for the belief owner if it's not their own reply
       if (userId !== authenticatedUserId) {
@@ -434,13 +434,37 @@ router.post(
         });
       } else {
         // Push notification to all followers of the authenticated user (reply author)
-        await pushNotificationToFollowers(userId, {
+        // Users that are following the profile owner won't be notified
+        notifiedFollowers = await pushNotificationToFollowers(userId, {
           actor: authenticatedUserId,
           profileName: userId,
           beliefName,
           type: 'self_reply',
         });
       }
+
+      // Push notification to all the earlier reply posters, except of
+      // the current user, the profile owner, and those who
+      // have already been notified
+      const allThreadParticipants = new Set(
+        userBeliefs[beliefName].replies
+          .map(reply => reply.username)
+      );
+      allThreadParticipants.delete(authenticatedUserId);
+      allThreadParticipants.delete(userId);
+      for (const notifiedFollower of notifiedFollowers) {
+        allThreadParticipants.delete(notifiedFollower);
+      }
+      for (const threadParticipant of allThreadParticipants) {
+        await pushNotificationToUser(threadParticipant, {
+          actor: authenticatedUserId,
+          profileName: userId,
+          beliefName,
+          type: 'thread_reply',
+        });
+      }
+
+      res.status(200).json(reply);
     } catch (error) {
       console.error('Error adding reply:', error);
       res.status(400)
