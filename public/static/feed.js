@@ -116,10 +116,10 @@ function getActionElements(entry) {
     case 'new_reply': {
       container.appendChild(actor);
       container.appendChild(document.createTextNode(' replied to a comment on '));
-      const profileLink = createUserLink(entry.profileName);
-      container.appendChild(profileLink);
-      container.appendChild(document.createTextNode('\'s belief '));
       container.appendChild(createBeliefLink(entry.profileName, entry.beliefName));
+      container.appendChild(document.createTextNode(' on '));
+      container.appendChild(createUserLink(entry.profileName));
+      container.appendChild(document.createTextNode('\'s profile '));
       break;
     }
 
