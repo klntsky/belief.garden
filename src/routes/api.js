@@ -129,15 +129,6 @@ router.put(
           old_choice: result.oldChoice,
           new_choice: beliefData.choice
         });
-        if (beliefData.choice) {
-          await pushNotificationToFollowers(authenticatedUserId, {
-            type: 'choice_changed',
-            actor: authenticatedUserId,
-            beliefName,
-            old_choice: result.oldChoice,
-            new_choice: beliefData.choice
-          });
-        }
       }
 
       if ('comment' in beliefData && beliefData.comment !== '') {
