@@ -149,3 +149,44 @@
 .more-link {
   color: #666 !important;
 }
+
+.chat-input-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+  border-color: #2563eb;
+}
+
+.chat-send-button {
+  padding: 8px 16px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-send-button:hover {
+  background-color: #1d4ed8;
+}
+
+.chat-send-button:active {
+  background-color: #1e40af;
+}

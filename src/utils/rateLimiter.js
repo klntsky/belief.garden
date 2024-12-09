@@ -7,8 +7,11 @@ const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 dotenv.config({ path: envFile });
 
 const RATE_LIMIT = (process.env.RATE_LIMIT || 3) * 1;
+const CHAT_RATE_LIMIT = 2; // 2 messages per minute
+const CHAT_RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
 const registrationCache = new NodeCache({ stdTTL: 30 * 24 * 60 * 60 }); // 30 days in seconds
+const chatCache = new NodeCache({ stdTTL: Math.ceil(CHAT_RATE_WINDOW / 1000) }); // TTL matches the rate window
 
 // Map to store per-user limiters with last used timestamps
 const limiters = {};
@@ -74,3 +77,32 @@ export function perUserWriteLimiter(req, res, next) {
       next(err);
     });
 }
+
+// Chat-specific rate limiter middleware
+export const chatRateLimiter = (req, res, next) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const key = `chat:${userId}`;
+  const now = Date.now();
+  const userHistory = chatCache.get(key) || [];
+
+  // Remove messages older than the rate window
+  const recentMessages = userHistory.filter(timestamp => now - timestamp < CHAT_RATE_WINDOW);
+
+  if (recentMessages.length >= CHAT_RATE_LIMIT) {
+    const oldestMessage = recentMessages[0];
+    const timeUntilNext = CHAT_RATE_WINDOW - (now - oldestMessage);
+    return res.status(429).json({
+      error: 'Rate limit exceeded',
+      timeUntilNext: Math.ceil(timeUntilNext / 1000)
+    });
+  }
+
+  // Add current message timestamp
+  recentMessages.push(now);
+  chatCache.set(key, recentMessages);
+  next();
+};

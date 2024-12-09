@@ -14,6 +14,12 @@
       </div>
     <% } %>
   </div>
+  <% if (user && user.id) { %>
+  <div class="chat-input-container">
+    <input type="text" id="chat-input" class="chat-input" placeholder="Type a chat message..." maxlength="400">
+    <button id="chat-send" class="chat-send-button">Send</button>
+  </div>
+  <% } %>
   <div id="feed-container" class="feed-container"></div>
 </div>
 <script src="/static/feed.js"></script>

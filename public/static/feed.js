@@ -54,8 +54,8 @@ function createTypeIndicator(type) {
     case 'unfollowed_user':
       emoji = '💔'; // Broken heart for unfollowing
       break;
-    case 'chat_msg':
-      emoji = '💬'; // Speech bubble
+    case 'chat_message':
+      emoji = '💭'; // Chat message
       break;
     case 'new_user_joined':
       emoji = '🌱'; // Sprout for new user
@@ -139,9 +139,9 @@ function getActionElements(entry) {
       break;
     }
 
-    case 'chat_msg': {
+    case 'chat_message': {
       container.appendChild(actor);
-      container.appendChild(document.createTextNode(": " + entry.text));
+      container.appendChild(document.createTextNode(": " + entry.message));
       break;
     }
 
@@ -212,6 +212,75 @@ async function updateFeed() {
 // Update feed on page load
 document.addEventListener('DOMContentLoaded', () => {
   updateFeed();
+
+  const chatInput = document.getElementById('chat-input');
+  const chatSendButton = document.getElementById('chat-send');
+
+  if (chatInput && chatSendButton) {
+    async function sendChatMessage() {
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          if (response.status === 429) {
+            Toastify({
+              text: `Please wait ${data.timeUntilNext} seconds before sending another message`,
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              style: {
+                background: "#ef4444",
+              },
+            }).showToast();
+          } else {
+            Toastify({
+              text: data.error || 'Failed to send message',
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              style: {
+                background: "#ef4444",
+              },
+            }).showToast();
+          }
+          return;
+        }
+
+        chatInput.value = '';
+        updateFeed();
+      } catch (error) {
+        console.error('Error sending message:', error);
+        Toastify({
+          text: 'Failed to send message. Please try again.',
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          style: {
+            background: "#ef4444",
+          },
+        }).showToast();
+      }
+    }
+
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+
+    chatSendButton.addEventListener('click', sendChatMessage);
+  }
 });
 
 // Update feed periodically

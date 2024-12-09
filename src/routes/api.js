@@ -24,7 +24,7 @@ import {
   postFeed,
   withUserBeliefs,
 } from '../utils/userUtils.js';
-import { perUserWriteLimiter } from '../utils/rateLimiter.js';
+import { perUserWriteLimiter, chatRateLimiter } from '../utils/rateLimiter.js';
 import { promises as fs } from 'fs';
 
 const debatesDir = path.join('data', 'debates');
@@ -771,20 +771,36 @@ router.get('/api/feed', async (req, res) => {
   }
 });
 
-// Add chat message
-router.post('/api/chat', ensureAuthenticatedApi, perUserWriteLimiter, express.json(), async (req, res) => {
-  try {
-    // ... existing chat message code ...
-    await postFeed({
-      actor: req.user.id,
-      type: 'chat_msg',
-      text: req.body.text.slice(0, 1000)
-    });
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error sending chat message:', error);
-    res.status(500).json({ error: 'Failed to send message' });
+// Chat endpoint
+router.post(
+  '/api/chat',
+  ensureAuthenticatedApi,
+  chatRateLimiter,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req, res) => {
+    const { message } = req.body;
+    const userId = req.user.id;
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Invalid message format' });
+    }
+
+    if (message.length > COMMENT_MAX_LENGTH) {
+      return res.status(400).json({ error: 'Message too long' });
+    }
+
+    try {
+      await postFeed({
+        actor: userId,
+        type: 'chat_message',
+        message: message,
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error posting chat message:', error);
+      res.status(500).json({ error: 'Failed to post message' });
+    }
   }
-});
+);
 
 export default router;
