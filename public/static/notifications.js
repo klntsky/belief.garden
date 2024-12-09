@@ -153,10 +153,68 @@ function createNotificationElement(notification) {
 // Check if we're on mobile
 const isMobile = window.innerWidth <= 768;
 
+function createSettingsLabel() {
+  const settingsLabel = document.createElement('label');
+  settingsLabel.className = 'notification-setting';
+  settingsLabel.setAttribute('data-tippy-root', '');
+  const settingsCheckbox = document.createElement('input');
+  settingsCheckbox.type = 'checkbox';
+  settingsCheckbox.id = 'allowAllDebates';
+  settingsCheckbox.checked = window.userSettings?.allowAllDebates || false;
+  settingsCheckbox.addEventListener('change', async () => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          allowAllDebates: settingsCheckbox.checked
+        })
+      });
+
+      if (response.ok) {
+        window.userSettings = await response.json();
+        Toastify({
+          text: "Settings saved successfully!",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          style: { background: "#4CAF50" }
+        }).showToast();
+      }
+    } catch (error) {
+      console.error('Failed to save setting:', error);
+      settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
+      Toastify({
+        text: "Failed to save settings",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#ff4444" }
+      }).showToast();
+    }
+  });
+  const settingsText = document.createElement('span');
+  settingsText.textContent = 'Allow all debates';
+  settingsLabel.appendChild(settingsCheckbox);
+  settingsLabel.appendChild(settingsText);
+  // Add tooltip
+  tippy(settingsLabel, {
+    content: 'When enabled, debates can be started under any belief card,<br>if there is a comment from you.<br>When disabled, debates can only be started if you include<br>\'debate me\' in the comment.',
+    placement: 'bottom',
+    theme: 'light-border',
+    maxWidth: 400,
+    allowHTML: true
+  });
+  return settingsLabel;
+}
+
 /**
  * Update notification counter and list
  */
 function updateNotificationUI() {
+  if (shown) return;
   const isNotificationsPage = window.location.pathname === '/notifications';
   const container = isNotificationsPage
     ? document.getElementById('notifications-page-container')
@@ -197,105 +255,130 @@ function updateNotificationUI() {
   // Clear existing notifications
   container.innerHTML = '';
 
-  // Create header with settings (only if there are notifications)
-  if (notifications.length > 0) {
-    const header = document.createElement('div');
+  const header = document.createElement('div');
+  container.appendChild(header);
+
+  // Add settings checkbox only on desktop
+  if (!isMobile) {
     header.className = 'notifications-header';
 
-    // Add settings checkbox only on desktop
-    if (!isMobile) {
-      const settingsLabel = document.createElement('label');
-      settingsLabel.className = 'notification-setting';
-      settingsLabel.setAttribute('data-tippy-root', '');
-      const settingsCheckbox = document.createElement('input');
-      settingsCheckbox.type = 'checkbox';
-      settingsCheckbox.id = 'allowAllDebates';
-      settingsCheckbox.checked = window.userSettings?.allowAllDebates || false;
-      settingsCheckbox.addEventListener('change', async () => {
-        try {
-          const response = await fetch('/api/settings', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              allowAllDebates: settingsCheckbox.checked
-            })
-          });
+    const settingsLabel = createSettingsLabel();
 
-          if (response.ok) {
-            window.userSettings = await response.json();
-            Toastify({
-              text: "Settings saved successfully!",
-              duration: 3000,
-              gravity: "top",
-              position: "right",
-              style: { background: "#4CAF50" }
-            }).showToast();
-          }
-        } catch (error) {
-          console.error('Failed to save setting:', error);
-          settingsCheckbox.checked = !settingsCheckbox.checked; // Revert on error
-          Toastify({
-            text: "Failed to save settings",
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            style: { background: "#ff4444" }
-          }).showToast();
-        }
-      });
-
-      const settingsText = document.createElement('span');
-      settingsText.textContent = 'Allow all debates';
-      settingsLabel.appendChild(settingsCheckbox);
-      settingsLabel.appendChild(settingsText);
-
-      // Add tooltip
-      tippy(settingsLabel, {
-        content: 'When enabled, debates can be started under any belief card,<br>if there is a comment from you.<br>When disabled, debates can only be started if you include<br>\'debate me\' in the comment.',
-        placement: 'bottom',
-        theme: 'light-border',
-        maxWidth: 400,
-        allowHTML: true
-      });
-
-      header.appendChild(settingsLabel);
-    }
-
-    // Add mark all as read button only if there are unread notifications
-    if (unreadCount > 0) {
-      const markReadButton = document.createElement('button');
-      markReadButton.className = 'mark-read-button';
-      markReadButton.textContent = 'Mark all as read';
-      markReadButton.onclick = () => {
-        if (notifications.length > 0) {
-          // Use the most recent notification's timestamp
-          const latestTimestamp = notifications[0].timestamp;
-          setLastReadTimestamp(latestTimestamp);
-          unreadCount = 0;
-          updateNotificationUI();
-        }
-      };
-      header.appendChild(markReadButton);
-    }
-
-    container.appendChild(header);
+    header.appendChild(settingsLabel);
   }
 
-  // Add new notifications or show empty state
-  if (notifications.length === 0) {
-    const emptyMessage = document.createElement('div');
-    emptyMessage.className = 'notifications-empty';
-    emptyMessage.textContent = 'No new notifications';
-    container.appendChild(emptyMessage);
-  } else {
-    // Add notifications
-    notifications.forEach(notification => {
-      container.appendChild(createNotificationElement(notification));
+  // Create header with settings (only if there are notifications)
+  if (notifications.length > 0) {
+    const markReadButton = document.createElement('button');
+    markReadButton.className = 'mark-read-button';
+    markReadButton.textContent = 'Mark all as read';
+    markReadButton.onclick = () => {
+      if (notifications.length > 0) {
+        // Use the most recent notification's timestamp
+        const latestTimestamp = notifications[0].timestamp;
+        setLastReadTimestamp(latestTimestamp);
+        unreadCount = 0;
+        updateNotificationUI();
+      }
+    };
+    header.appendChild(markReadButton);
+
+    // Group notifications by actor
+    const notificationsByActor = notifications.reduce((groups, notification) => {
+      const actor = notification.actor;
+      if (!groups[actor]) {
+        groups[actor] = [];
+      }
+      groups[actor].push(notification);
+      return groups;
+    }, {});
+
+    // Sort actors by their most recent notification timestamp
+    const sortedActors = Object.keys(notificationsByActor).sort((a, b) => {
+      const mostRecentA = Math.max(...notificationsByActor[a].map(n => n.timestamp));
+      const mostRecentB = Math.max(...notificationsByActor[b].map(n => n.timestamp));
+      return mostRecentB - mostRecentA;
     });
+
+    // Render grouped notifications
+    sortedActors.forEach(actor => {
+      const actorNotifications = notificationsByActor[actor];
+
+      // Create actor section
+      const actorSection = document.createElement('div');
+      actorSection.className = 'notification-actor-section';
+
+      // Create collapsible header
+      const actorHeader = document.createElement('div');
+      actorHeader.className = 'notification-actor-header';
+
+      const actorHeaderContent = document.createElement('div');
+      actorHeaderContent.className = 'notification-actor-header-content';
+
+      const actorName = document.createElement('span');
+      actorName.textContent = actor;
+      actorName.classList.add('username');
+      actorName.classList.add('username-label');
+      actorName.classList.add('notification-actor-sticky'); // Add sticky class
+      actorName.setAttribute('data-username', actor);
+
+      actorHeaderContent.appendChild(actorName);
+      actorHeaderContent.appendChild(document.createTextNode(': '));
+
+      actorHeader.appendChild(actorHeaderContent);
+
+      // Create notifications container
+      const actorNotificationsContainer = document.createElement('div');
+      actorNotificationsContainer.className = 'notification-actor-notifications';
+
+      // Render first 3 notifications
+      const initialNotifications = actorNotifications.slice(0, 3);
+      initialNotifications.forEach(notification => {
+        const notificationElement = createNotificationElement(notification);
+        actorNotificationsContainer.appendChild(notificationElement);
+      });
+
+      // If more than 3 notifications, add an expand button
+      if (actorNotifications.length > 3) {
+        const expandButton = document.createElement('span');
+        expandButton.className = 'notification-expand-btn';
+        expandButton.textContent = `Show ${actorNotifications.length - 3} more`;
+
+        // Add expand functionality
+        expandButton.addEventListener('click', () => {
+          // Remove the expand button after clicking
+          expandButton.remove();
+          // Show all additional notifications
+          // Render additional notifications
+          actorNotifications.slice(3).forEach(notification => {
+            const notificationElement = createNotificationElement(notification);
+            actorNotificationsContainer.appendChild(notificationElement);
+          });
+        });
+
+        // Assemble expanded notifications section
+        actorNotificationsContainer.appendChild(expandButton);
+      }
+
+      // Assemble actor section
+      actorSection.appendChild(actorHeader);
+      actorSection.appendChild(actorNotificationsContainer);
+
+      // Add to main container
+      container.appendChild(actorSection);
+    });
+  } else {
+    // No notifications
+    const noNotificationsMessage = document.createElement('div');
+    noNotificationsMessage.className = 'no-notifications';
+    noNotificationsMessage.textContent = 'No notifications';
+    container.appendChild(noNotificationsMessage);
   }
+
+  addCorrelationBullets();
 }
+
+let shown = false;
 
 /**
  * Setup notification popup behavior
@@ -315,19 +398,24 @@ function setupNotificationPopup() {
   if (!wrapper || !popup) return;
 
   let timeoutId = null;
-
   const showPopup = () => {
+    if (shown) return;
     if (timeoutId) {
       clearTimeout(timeoutId);
       timeoutId = null;
     }
     popup.style.display = 'block';
     updateNotificationUI();
+    shown = true;
   };
 
   const hidePopup = () => {
+    return;
+    if (!shown) return;
+    shown = false;
     timeoutId = setTimeout(() => {
       popup.style.display = 'none';
+      console.log('Popup hidden');
     }, 300); // Add a small delay before hiding
   };
 

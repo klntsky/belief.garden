@@ -56,10 +56,14 @@
   max-height: 400px;
   overflow-y: auto;
   padding: 8px;
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .notification-item {
-  padding: 8px;
+  padding: 4px;
   border-bottom: 1px solid #eee;
   font-size: 0.9em;
 }
@@ -166,6 +170,35 @@
 
 .notification-message {
   flex-grow: 1;
+}
+
+.notification-actor-section {
+  position: relative;
+}
+
+.notification-actor-header {
+  position: sticky;
+  top: 0;
+  background-color: var(--background-color);
+  z-index: 10;
+  margin-bottom: 10px;
+}
+
+.notification-actor-header-content {
+  display: flex;
+  align-items: center;
+}
+
+.notification-actor-sticky {
+  position: static;
+  z-index: 11;
+}
+
+#notifications-page-container {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Mobile styles */
