@@ -727,6 +727,10 @@ function createCategorySection(category, beliefs, userBeliefs, readOnly, profile
   return categoryDiv;
 }
 
+async function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Function to initialize the beliefs grid
 async function initializeBeliefsGrid(beliefsData, userBeliefs, profileUserId, settings) {
   const beliefsContainer = document.getElementById('beliefs-container');
@@ -735,7 +739,7 @@ async function initializeBeliefsGrid(beliefsData, userBeliefs, profileUserId, se
   const readOnly = profileUserId !== window.authenticatedUserId;
 
   // Create and append each category section
-  Object.entries(beliefsData).forEach(([category, beliefs]) => {
+  for (const [category, beliefs] of Object.entries(beliefsData)) {
     const categorySection = createCategorySection(
       category,
       beliefs,
@@ -748,7 +752,9 @@ async function initializeBeliefsGrid(beliefsData, userBeliefs, profileUserId, se
     if (categorySection) {
       beliefsContainer.appendChild(categorySection);
     }
-  });
+
+    await delay(1);
+  }
 }
 
 // Function to initialize the correlation section
