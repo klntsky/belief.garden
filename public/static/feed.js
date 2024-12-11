@@ -182,23 +182,22 @@ function createFeedEntry(entry) {
 }
 
 function groupFeedByUsers(feed) {
+  // group feed entries into arrays by user.
   let currentGroup = [];
   const res = [];
   for (let i = 0; i < feed.length; i++) {
     const entry = feed[i];
-    while (i < feed.length && entry.actor == feed[i].actor) {
-      if (feed[i].type == 'chat_message') {
-        if (currentGroup.length) {
-          res.push(currentGroup);
-          currentGroup = [];
-        }
-        res.push([feed[i]]);
-      } else {
-        currentGroup.push(feed[i]);
+    currentGroup.push(entry);
+    while (i + 1 < feed.length && entry.actor === feed[i + 1].actor) {
+      if (['new_user_joined', 'chat_message'].includes(feed[i + 1].type)) {
+        break;
       }
       i++;
+      currentGroup.push(feed[i]);
     }
-    res.push(currentGroup);
+    if (currentGroup.length > 0) {
+      res.push(currentGroup);
+    }
     currentGroup = [];
   }
   return res;
