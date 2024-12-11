@@ -181,6 +181,29 @@ function createFeedEntry(entry) {
   return div;
 }
 
+function groupFeedByUsers(feed) {
+  let currentGroup = [];
+  const res = [];
+  for (let i = 0; i < feed.length; i++) {
+    const entry = feed[i];
+    while (i < feed.length && entry.actor == feed[i].actor) {
+      if (feed[i].type == 'chat_message') {
+        if (currentGroup.length) {
+          res.push(currentGroup);
+          currentGroup = [];
+        }
+        res.push([feed[i]]);
+      } else {
+        currentGroup.push(feed[i]);
+      }
+      i++;
+    }
+    res.push(currentGroup);
+    currentGroup = [];
+  }
+  return res;
+}
+
 async function updateFeed() {
   if (updateInProgress) return;
   updateInProgress = true;
@@ -197,10 +220,36 @@ async function updateFeed() {
     // Update timestamp for next fetch
     lastSeenTimestamp = Math.max(...feed.map(entry => entry.timestamp));
 
-    // Add new entries
-    feed.forEach(entry => {
-      feedContainer.insertBefore(createFeedEntry(entry), feedContainer.firstChild);
+    const groups = groupFeedByUsers(feed);
+
+    groups.forEach(group => {
+      // Add new entries
+      if (group.length <= 4) {
+        group.forEach(entry => {
+          feedContainer.insertBefore(createFeedEntry(entry), feedContainer.firstChild);
+        });
+      } else {
+        const groupEl = document.createElement('div');
+        groupEl.classList.add('feed-group');
+        groupEl.classList.add('feed-group-collapsed');
+        feedContainer.insertBefore(groupEl, feedContainer.firstChild);
+        group.forEach(entry => {
+          groupEl.insertBefore(createFeedEntry(entry), groupEl.firstChild);
+        });
+        const expandEl = document.createElement('div');
+        expandEl.classList.add('expand-group');
+        expandEl.appendChild(document.createTextNode(
+          'show ' + (group.length - 4) + ' more by '
+        ));
+        expandEl.appendChild(createUserLink(group[0].actor));
+        groupEl.appendChild(expandEl);
+        expandEl.addEventListener('click', () => {
+          groupEl.classList.remove('feed-group-collapsed');
+          expandEl.remove();
+        });
+      }
     });
+
     addCorrelationBullets();
   } catch (error) {
     console.error('Error updating feed:', error);
