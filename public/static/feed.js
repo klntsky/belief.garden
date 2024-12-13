@@ -184,12 +184,20 @@ function createFeedEntry(entry) {
 function groupFeedByUsers(feed) {
   // group feed entries into arrays by user.
   let currentGroup = [];
+  const standaloneMessages = ['new_user_joined', 'chat_message'];
   const res = [];
   for (let i = 0; i < feed.length; i++) {
     const entry = feed[i];
-    currentGroup.push(entry);
+    if (standaloneMessages.includes(entry.type)) {
+      res.push([entry]);
+      continue;
+    } else {
+      currentGroup.push(entry);
+    }
     while (i + 1 < feed.length && entry.actor === feed[i + 1].actor) {
-      if (['new_user_joined', 'chat_message'].includes(feed[i + 1].type)) {
+      if (standaloneMessages.includes(feed[i + 1].type)) {
+        res.push(currentGroup);
+        currentGroup = [];
         break;
       }
       i++;
@@ -238,7 +246,7 @@ async function updateFeed() {
         const expandEl = document.createElement('div');
         expandEl.classList.add('expand-group');
         expandEl.appendChild(document.createTextNode(
-          'show ' + (group.length - 4) + ' more by '
+          'show ' + (group.length - 3) + ' more by '
         ));
         expandEl.appendChild(createUserLink(group[0].actor));
         groupEl.appendChild(expandEl);
