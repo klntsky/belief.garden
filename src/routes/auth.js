@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import zxcvbn from 'zxcvbn';
-import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed } from '../utils/userUtils.js';
+import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed, pushNotificationToUser } from '../utils/userUtils.js';
 import { rateLimitRegistration } from '../utils/rateLimiter.js';
 
 const router = express.Router();
@@ -192,6 +192,10 @@ async function validateRegistration(username, password) {
   if (passwordError) {
     return passwordError;
   }
+  await pushNotificationToUser(username, {
+    type: 'welcome',
+    actor: username,
+  });
   return null;
 }
 

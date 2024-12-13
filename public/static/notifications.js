@@ -57,6 +57,8 @@ function getNotificationMessage(notification) {
     return `${notification.actor} replied to a comment on ${notification.beliefName}`;
   } else if (notification.type === 'broadcast') {
     return notification.message;
+  } else if (notification.type === 'welcome') {
+    return "Welcome to the club! Check out the global activity feed and the chat by clicking this notification";
   } else if (notification.type === 'choice_changed') {
     return `${notification.actor} changed their opinion on ${notification.beliefName} to ${notification.new_choice || 'none'}`;
   } else if (notification.type === 'thread_reply') {
@@ -68,20 +70,22 @@ function getNotificationMessage(notification) {
 function getNotificationEmoji(type) {
   switch (type) {
     case 'new_follower':
-      return '👋'; // Wave for following
+      return '👋';
     case 'unfollowed':
-      return '💔'; // Broken heart for unfollowing
+      return '💔';
     case 'new_comment':
-      return '💬'; // Comment bubble
+      return '💬';
     case 'new_reply':
     case 'self_reply':
       return '💬';
     case 'thread_reply':
       return '💬';
     case 'broadcast':
-      return '📢'; // Broadcast megaphone
+      return '📢';
+    case 'welcome':
+      return '🎉';
     case 'choice_changed':
-      return '💡'; // Changed opinion
+      return '💡';
     default:
       return 'ℹ️';
   }
@@ -100,6 +104,8 @@ function getNotificationURL(notification){
     return `/${notification.profileName}#${notification.beliefName}`;
   } else if (notification.type === 'broadcast') {
     return notification.url;
+  } else if (notification.type === 'welcome') {
+    return '/feed';
   } else if (notification.type === 'choice_changed') {
     return `/${notification.actor}#${notification.beliefName}`;
   } else if (notification.type === 'thread_reply') {
