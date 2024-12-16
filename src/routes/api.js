@@ -409,6 +409,7 @@ router.post(
       await postFeed({
         actor: authenticatedUserId,
         type: 'new_reply',
+        text: comment,
         beliefName,
         profileName: userId
       });

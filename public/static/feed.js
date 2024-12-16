@@ -119,7 +119,10 @@ function getActionElements(entry) {
       container.appendChild(createBeliefLink(entry.profileName, entry.beliefName));
       container.appendChild(document.createTextNode(' on '));
       container.appendChild(createUserLink(entry.profileName));
-      container.appendChild(document.createTextNode('\'s profile '));
+      container.appendChild(document.createTextNode('\'s profile'));
+      if (entry.text) {
+        container.appendChild(document.createTextNode(': ' + entry.text));
+      }
       break;
     }
 
