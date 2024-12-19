@@ -131,12 +131,14 @@ router.put(
         });
       }
 
-      await postFeed({
-        actor: authenticatedUserId,
-        type: 'new_comment',
-        text: ellipsis(beliefData.comment || '', 100),
-        beliefName
-      });
+      if ('comment' in beliefData) {
+        await postFeed({
+          actor: authenticatedUserId,
+          type: 'new_comment',
+          text: ellipsis(beliefData.comment, 100),
+          beliefName
+        });
+      }
 
       if ('comment' in beliefData && beliefData.comment !== '') {
         if (!result.oldComment) {
