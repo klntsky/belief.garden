@@ -16,6 +16,8 @@ const followsDir = path.join('data', 'follows');
 const MAX_NOTIFICATIONS = 200;
 const MAX_FEED_ENTRIES = 400;
 const FEED_FILE = path.join('data', 'feed.json');
+// MUST be synchronized with the frontend in feed.js:
+const CHOICE_CHANGE_MERGE_FEED_ENTRIES_TIMEOUT = 300;
 
 // Default settings for new users
 const defaultSettings = {
@@ -617,9 +619,40 @@ export async function postFeed(entry) {
     await feedQueue.add(async () => {
       let feed = await getFeed();
 
+      // some of the feed entries should be unique.
+
+      const timestamp = Math.floor(Date.now() / 1000);
+
+      if (entry.type === 'new_comment') {
+        feed = feed.filter(
+          feedEntry => feedEntry.actor != entry.actor
+            || feedEntry.type === entry.type
+            || feedEntry.beliefName != entry.beliefName
+        );
+      } else if (entry.type === 'choice_changed') {
+        feed = feed.filter(feedEntry => {
+          if (feedEntry.actor != entry.actor ||
+              feedEntry.type != 'choice_changed' ||
+              feedEntry.beliefName != entry.beliefName ||
+              feedEntry.timestamp < timestamp - CHOICE_CHANGE_MERGE_FEED_ENTRIES_TIMEOUT
+             ) return true;
+          // NOTE: we do want to push a new entry in which old choice = new choice,
+          // to overwrite the older decision on the front-end side.
+          // e.g.:
+          // user1: Belief1: none -> support (pushes entry1 to the feed)
+          // user2: *loads the feed*
+          // user1: Belief1: support -> none (**pushes to the feed**, entry1 gets removed, and entry2 gets pushed with the most recent timestamp, with "none -> none" choices)
+          // user2: *loads new feed entries* (entry2)
+          // user2: entry1 gets removed from the DOM because it's a duplicate
+          // user2: entry2 does not get added to the DOM because its old_chocie == new_choice
+          entry.old_choice = feedEntry.old_choice || null;
+          return false;
+        });
+      }
+
       const feedEntry = {
         ...entry,
-        timestamp: Math.floor(Date.now() / 1000)
+        timestamp
       };
 
       feed.unshift(feedEntry);

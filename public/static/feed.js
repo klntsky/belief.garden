@@ -1,4 +1,6 @@
 const FEED_UPDATE_INTERVAL = 10000; // 10 seconds
+// MUST be synchronized with the backend in api.js:
+const CHOICE_CHANGE_MERGE_FEED_ENTRIES_TIMEOUT = 300;
 
 // Track the timestamp of the most recent entry we've seen
 let lastSeenTimestamp = 0;
@@ -96,6 +98,9 @@ function getActionElements(entry) {
       container.appendChild(actor);
       container.appendChild(document.createTextNode(' commented on '));
       container.appendChild(createBeliefLink(entry.actor, entry.beliefName));
+      if (entry.text) {
+        container.appendChild(document.createTextNode(': ' + entry.text));
+      }
       break;
     }
 
@@ -166,6 +171,43 @@ function getActionElements(entry) {
 function createFeedEntry(entry) {
   const div = document.createElement('div');
   div.className = 'feed-entry';
+
+  if (entry.type === 'new_comment') {
+    const elements = document.querySelectorAll('[data-new-comment-belief-name]');
+    elements.forEach(element => {
+      if (
+        element.getAttribute('data-new-comment-belief-name') == entry.beliefName &&
+          element.getAttribute('data-new-comment-actor') == entry.actor
+      ) {
+        element.remove();
+      }
+    });
+    div.setAttribute('data-new-comment-belief-name', entry.beliefName);
+    div.setAttribute('data-new-comment-actor', entry.actor);
+    if (entry.text === '') {
+      return document.createTextNode('');
+    }
+  }
+
+  if (entry.type === 'choice_changed') {
+    const elements = document.querySelectorAll('[data-choice-changed-belief-name]');
+    elements.forEach(element => {
+      if (
+        element.getAttribute('data-choice-changed-belief-name') == entry.beliefName &&
+          element.getAttribute('data-choice-changed-actor') == entry.actor &&
+          parseInt(element.getAttribute('data-choice-changed-timestamp')) > entry.timestamp - CHOICE_CHANGE_MERGE_FEED_ENTRIES_TIMEOUT
+      ) {
+        element.remove();
+      }
+    });
+    if (entry.old_choice == entry.new_choice) {
+      return document.createTextNode('');
+    }
+
+    div.setAttribute('data-choice-changed-belief-name', entry.beliefName);
+    div.setAttribute('data-choice-changed-actor', entry.actor);
+    div.setAttribute('data-choice-changed-timestamp', entry.timestamp);
+  }
 
   const typeIndicator = createTypeIndicator(entry.type);
   div.appendChild(typeIndicator);
