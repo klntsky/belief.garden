@@ -134,7 +134,7 @@ router.put(
       await postFeed({
         actor: authenticatedUserId,
         type: 'new_comment',
-        text: ellipsis(beliefData.comment, 100),
+        text: ellipsis(beliefData.comment || '', 100),
         beliefName
       });
 
