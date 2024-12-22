@@ -168,6 +168,7 @@ function getActionElements(entry) {
   return container;
 }
 
+// TODO: fix this mess. Make the algo for filtering completely stateless
 function createFeedEntry(entry) {
   const div = document.createElement('div');
   div.className = 'feed-entry';
@@ -256,6 +257,12 @@ function groupFeedByUsers(feed) {
   return res;
 }
 
+const filterDummyEntries = feed => feed.filter(entry => {
+  if (entry.type === 'new_comment' && entry.text == '') return false;
+  if (entry.type === 'choice_changed' && entry.old_choice == entry.new_choice) return false;
+  return true;
+});
+
 async function updateFeed() {
   if (updateInProgress) return;
   updateInProgress = true;
@@ -275,8 +282,10 @@ async function updateFeed() {
     const groups = groupFeedByUsers(feed);
 
     groups.forEach(group => {
+      const groupLength = filterDummyEntries(group).length;
+
       // Add new entries
-      if (group.length <= 4) {
+      if (groupLength <= 4) {
         group.forEach(entry => {
           feedContainer.insertBefore(createFeedEntry(entry), feedContainer.firstChild);
         });
@@ -291,7 +300,7 @@ async function updateFeed() {
         const expandEl = document.createElement('div');
         expandEl.classList.add('expand-group');
         expandEl.appendChild(document.createTextNode(
-          'show ' + (group.length - 3) + ' more by '
+          'show ' + (groupLength - 4) + ' more by '
         ));
         expandEl.appendChild(createUserLink(group[0].actor));
         groupEl.appendChild(expandEl);
@@ -302,12 +311,12 @@ async function updateFeed() {
       }
     });
 
-    addCorrelationBullets();
   } catch (error) {
     console.error('Error updating feed:', error);
   } finally {
     updateInProgress = false;
   }
+  addCorrelationBullets();
 }
 
 // Update feed on page load
