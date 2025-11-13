@@ -90,7 +90,7 @@ export async function userExists (username) {
  * @returns {Promise<void>}
  */
 export async function addUser(user) {
-  assertUsername(user);
+  assertUsername(user.username);
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
   try {
     await fs.access(userFilePath);
@@ -137,7 +137,7 @@ export async function updateUserPassword(username, newPasswordHash) {
  * @returns {Promise<void>}
  */
 async function saveUser(user) {
-  assertUsername(user);
+  assertUsername(user.username);
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
   await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
 }
