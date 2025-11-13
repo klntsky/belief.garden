@@ -34,12 +34,33 @@ export function getUserBeliefsFilePath(username) {
   return path.join(userBeliefsDir, `${username}.json`);
 }
 
+export function isValidUsername(username) {
+  return /^[a-zA-Z0-9_-]{3,30}$/.test(username);
+}
+
+export function assertUsername(username) {
+  if (!isValidUsername(username)) {
+    throw 'Invalid username';
+  }
+}
+
+export async function doesUserExist(username) {
+  assertUsername(username);
+  const userFilePath = path.join(userAccountsDir, `${username}.json`);
+  if (fs.existsSync(userFilePath)) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Get a user by their username.
  * @param {string} username - The username of the user.
  * @returns {Promise<Object|null>} - The user object or null if not found.
  */
 export async function getUserByUsername(username) {
+  assertUsername(username);
   const userFilePath = path.join(userAccountsDir, `${username}.json`);
   try {
     const data = await fs.readFile(userFilePath, 'utf8');
@@ -54,6 +75,7 @@ export async function getUserByUsername(username) {
 }
 
 export async function userExists (username) {
+  assertUsername(username);
   try {
     const filesInDirectory = await fs.readdir(userAccountsDir);
     return filesInDirectory.some(file => file.toLowerCase() === `${username.toLowerCase()}.json`);
@@ -68,6 +90,7 @@ export async function userExists (username) {
  * @returns {Promise<void>}
  */
 export async function addUser(user) {
+  assertUsername(user);
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
   try {
     await fs.access(userFilePath);
@@ -98,6 +121,7 @@ export async function addUser(user) {
  * @returns {Promise<void>}
  */
 export async function updateUserPassword(username, newPasswordHash) {
+  assertUsername(username);
   const user = await getUserByUsername(username);
   if (user) {
     user.passwordHash = newPasswordHash;
@@ -113,6 +137,7 @@ export async function updateUserPassword(username, newPasswordHash) {
  * @returns {Promise<void>}
  */
 async function saveUser(user) {
+  assertUsername(user);
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
   await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
 }
@@ -142,6 +167,7 @@ export async function getAllUsernames() {
  * @returns {Promise<Object>} - The user's beliefs.
  */
 export async function getUserBeliefs(username) {
+  assertUsername(username);
   const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
   try {
     const data = await fs.readFile(userBeliefsFilePath, 'utf8');
@@ -162,6 +188,7 @@ export async function getUserBeliefs(username) {
  * @returns {Promise<void>}
  */
 export async function saveUserBeliefs(username, data) {
+  assertUsername(username);
   const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
   await writeFileAtomic(userBeliefsFilePath, JSON.stringify(data, null, 2));
 }
@@ -173,6 +200,7 @@ export async function saveUserBeliefs(username, data) {
  * @returns {Promise<boolean>} - True if now a favorite, false otherwise.
  */
 export async function toggleUserFavorite(username, beliefName) {
+  assertUsername(username);
   const userBeliefs = await getUserBeliefs(username);
 
   // Check if the user has more than 20 favorite beliefs
@@ -230,6 +258,7 @@ function calculateInitialPoints(userBeliefs) {
  * @returns {Promise<Object>} - The updated user beliefs.
  */
 export async function adjustPieSlicePoints(username, beliefName, action) {
+  assertUsername(username);
   const userBeliefs = await getUserBeliefs(username);
 
   const coreBeliefs = [];
@@ -298,6 +327,7 @@ export async function withUserBeliefs(username, callback) {
   if (!username) {
     throw new Error('Username is required for belief operations');
   }
+  assertUsername(username);
 
   try {
     const result = await userBeliefsManager.executeInQueue(username, callback);
@@ -315,6 +345,7 @@ export async function withUserBeliefs(username, callback) {
  * @returns {Promise<Object>} - The user's settings.
  */
 export async function getUserSettings(username) {
+  assertUsername(username);
   const settingsPath = path.join(userSettingsDir, `${username}.json`);
   try {
     const data = await fs.readFile(settingsPath, 'utf8');
@@ -334,6 +365,7 @@ export async function getUserSettings(username) {
  * @returns {Promise<void>}
  */
 export async function saveUserSettings(username, settings) {
+  assertUsername(username);
   const settingsPath = path.join(userSettingsDir, `${username}.json`);
   try {
     await fs.mkdir(userSettingsDir, { recursive: true });
@@ -349,6 +381,7 @@ export async function saveUserSettings(username, settings) {
  * @returns {Promise<string>} - The user's bio text.
  */
 export async function getUserBio(username) {
+  assertUsername(username);
   const bioFilePath = path.join(userBiosDir, `${username}.md`);
   try {
     const data = await fs.readFile(bioFilePath, 'utf8');
@@ -369,6 +402,7 @@ export async function getUserBio(username) {
  * @returns {Promise<void>}
  */
 export async function saveUserBio(username, bioText) {
+  assertUsername(username);
   if (bioText.length > 1500) {
     throw new Error('Bio cannot exceed 1500 characters.');
   }
@@ -394,6 +428,7 @@ export async function saveUserBio(username, bioText) {
  * @returns {Promise<void>}
  */
 export async function deleteUserAccount(username) {
+  assertUsername(username);
   // Delete account file
   const userFilePath = path.join(userAccountsDir, `${username}.json`);
   await fs.unlink(userFilePath).catch((err) => {
@@ -433,6 +468,7 @@ export async function deleteUserAccount(username) {
  * @returns {Promise<Array>} - Array of notification objects
  */
 export async function getUserNotifications(username) {
+  assertUsername(username);
   const notificationPath = path.join(notificationsDir, `${username}.json`);
   try {
     await fs.access(notificationPath);
@@ -456,6 +492,7 @@ export async function getUserNotifications(username) {
  * @returns {Promise<void>}
  */
 export async function pushNotificationToUser(username, notification) {
+  assertUsername(username);
   const notificationPath = path.join(notificationsDir, `${username}.json`);
   try {
     await notificationQueue.add(async () => {
@@ -482,6 +519,7 @@ export async function pushNotificationToUser(username, notification) {
  * @returns {Promise<void>}
  */
 export async function pushNotificationToFollowers(username, notification) {
+  assertUsername(username);
   try {
     const followers = await getUserFollowers(username);
     await Promise.all(followers.map(follower =>
@@ -499,6 +537,7 @@ export async function pushNotificationToFollowers(username, notification) {
  * @returns {Promise<Array<string>>} - Array of follower usernames
  */
 export async function getUserFollowers(username) {
+  assertUsername(username);
   const followersPath = path.join(followersDir, `${username}.json`);
   try {
     await fs.access(followersPath);
@@ -521,6 +560,7 @@ export async function getUserFollowers(username) {
  * @returns {Promise<string[]>} List of usernames the user follows
  */
 export async function getUserFollowing(username) {
+  assertUsername(username);
   const followingPath = path.join(followsDir, `${username}.json`);
   try {
     const following = JSON.parse(await fs.readFile(followingPath, 'utf8'));
@@ -541,6 +581,8 @@ export async function getUserFollowing(username) {
  * @returns {Promise<void>}
  */
 async function updateFollowRelationship(targetUser, follower, isFollowing) {
+  assertUsername(targetUser);
+  assertUsername(follower);
   const followersPath = path.join(followersDir, `${targetUser}.json`);
   const followingPath = path.join(followsDir, `${follower}.json`);
 
@@ -592,6 +634,8 @@ async function updateFollowRelationship(targetUser, follower, isFollowing) {
  * @returns {Promise<void>}
  */
 export async function addFollower(username, followerUsername) {
+  assertUsername(username);
+  assertUsername(followerUsername);
   await updateFollowRelationship(username, followerUsername, true);
 }
 
@@ -602,6 +646,8 @@ export async function addFollower(username, followerUsername) {
  * @returns {Promise<void>}
  */
 export async function removeFollower(username, followerUsername) {
+  assertUsername(username);
+  assertUsername(followerUsername);
   await updateFollowRelationship(username, followerUsername, false);
 }
 

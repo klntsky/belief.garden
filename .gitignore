@@ -6,3 +6,5 @@ sessions/
 /public/bio/
 /public/comments/
 /test-results/
+.aider*
+.env

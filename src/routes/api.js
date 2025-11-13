@@ -4,6 +4,7 @@ import express from 'express';
 import path from 'path';
 import { ensureAuthenticatedApi } from '../utils/authUtils.js';
 import {
+  doesUserExist,
   getUserBeliefs,
   saveUserBeliefs,
   toggleUserFavorite,
@@ -32,6 +33,8 @@ const bansDir = path.join('data', 'bans');
 
 const COMMENT_MAX_LENGTH = 400;
 const JSON_SIZE_LIMIT = '100kb';
+const MAX_CHAT_MENTION_USERNAMES = 3;
+
 const router = express.Router();
 
 // Route to get user beliefs
@@ -793,12 +796,29 @@ router.post(
       return res.status(400).json({ error: 'Message too long' });
     }
 
+    const mentionedUsernames = new Set(message.match(/[a-zA-Z0-9_-]{3,30}/g));
+
+    if (mentionedUsernames.size > MAX_CHAT_MENTION_USERNAMES) {
+      return res.status(400).json(
+        { error: `No more than ${MAX_CHAT_MENTION_USERNAMES} user mentions per message` }
+      );
+    }
+
     try {
       await postFeed({
         actor: userId,
         type: 'chat_message',
         message: message,
       });
+      for (const mentionedUser of mentionedUsernames) {
+        if (await doesUserExist(mentionedUser)) {
+          await pushNotificationToUser(mentionedUser, {
+            actor: userId,
+            type: 'mention',
+            message: ellipsis(message, 100),
+          });
+        }
+      }
       res.json({ success: true });
     } catch (error) {
       console.error('Error posting chat message:', error);

@@ -228,3 +228,7 @@
         display: none;
     }
 }
+
+.chat-username {
+    cursor: pointer;
+}
