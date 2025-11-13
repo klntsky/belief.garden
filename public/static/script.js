@@ -724,6 +724,18 @@ function createCategorySection(category, beliefs, userBeliefs, readOnly, profile
     }
   });
 
+  // Add "+" card for proposing new beliefs (only when viewing own profile and not read-only)
+  if (!readOnly) {
+    const addCard = document.createElement('div');
+    addCard.className = 'belief add-belief-card';
+    addCard.textContent = '+';
+    addCard.title = 'Propose a new belief card';
+    addCard.addEventListener('click', () => {
+      window.location.href = `/propose?category=${encodeURIComponent(category)}`;
+    });
+    beliefsGrid.appendChild(addCard);
+  }
+
   return categoryDiv;
 }
 

@@ -1,0 +1,101 @@
+<h1>Delete Belief Card</h1>
+<p><a href="/admin">← Back to Admin Panel</a></p>
+
+<form id="delete-belief-form" style="max-width: 600px; margin: 20px auto;">
+  <div style="margin-bottom: 20px;">
+    <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">Category:</label>
+    <select id="category" name="category" required style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px;">
+      <option value="">-- Select a category --</option>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat %>"><%= cat %></option>
+      <% }); %>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <label for="belief" style="display: block; margin-bottom: 5px; font-weight: bold;">Belief:</label>
+    <select id="belief" name="belief" required disabled style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px;">
+      <option value="">-- Select a category first --</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <button type="submit" style="padding: 10px 20px; background-color: #A55; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Delete Belief</button>
+    <a href="/admin/proposed" style="margin-left: 10px; color: #A55;">Back to Proposals</a>
+  </div>
+</form>
+
+<script>
+const beliefsData = <%- JSON.stringify(beliefsData) %>;
+
+// Update beliefs dropdown when category changes
+document.getElementById('category').addEventListener('change', (e) => {
+  const category = e.target.value;
+  const beliefSelect = document.getElementById('belief');
+  
+  beliefSelect.innerHTML = '<option value="">-- Select a belief --</option>';
+  
+  if (category && beliefsData[category]) {
+    beliefSelect.disabled = false;
+    beliefsData[category].forEach(belief => {
+      const option = document.createElement('option');
+      option.value = belief.name;
+      option.textContent = belief.name;
+      beliefSelect.appendChild(option);
+    });
+  } else {
+    beliefSelect.disabled = true;
+    beliefSelect.innerHTML = '<option value="">-- Select a category first --</option>';
+  }
+});
+
+// Handle form submission
+document.getElementById('delete-belief-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const category = document.getElementById('category').value;
+  const beliefName = document.getElementById('belief').value;
+  
+  if (!category || !beliefName) {
+    alert('Please select both category and belief');
+    return;
+  }
+  
+  if (!confirm(`Are you sure you want to delete "${beliefName}" from "${category}"? This action cannot be undone.`)) {
+    return;
+  }
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Deleting...';
+  
+  try {
+    const response = await fetch('/api/delete-belief', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ category, beliefName })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      alert(`Belief "${beliefName}" has been deleted successfully.`);
+      // Reset form
+      document.getElementById('category').value = '';
+      document.getElementById('belief').innerHTML = '<option value="">-- Select a category first --</option>';
+      document.getElementById('belief').disabled = true;
+    } else {
+      alert('Error: ' + (data.error || 'Failed to delete belief'));
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred while deleting the belief');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Delete Belief';
+  }
+});
+</script>
+

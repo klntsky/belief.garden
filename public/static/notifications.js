@@ -65,6 +65,12 @@ function getNotificationMessage(notification) {
     return `${notification.actor} replied to ${notification.profileName}'s comment on ${notification.beliefName}`;
   } else if (notification.type === 'mention') {
     return `${notification.actor} mentioned you in the chat: ${notification.message}`;
+  } else if (notification.type === 'belief_proposal') {
+    return notification.message || `New belief card proposal: "${notification.beliefName}"`;
+  } else if (notification.type === 'belief_approved') {
+    return notification.message || `Your belief card proposal "${notification.beliefName}" has been approved!`;
+  } else if (notification.type === 'belief_rejected') {
+    return notification.message || `Your belief card proposal "${notification.beliefName}" has been rejected.`;
   }
   return '';
 }
@@ -90,6 +96,12 @@ function getNotificationEmoji(type) {
       return '💡';
     case 'mention':
       return '🙋‍♂️';
+    case 'belief_proposal':
+      return '💡';
+    case 'belief_approved':
+      return '✅';
+    case 'belief_rejected':
+      return '❌';
     default:
       return 'ℹ️';
   }
@@ -116,6 +128,12 @@ function getNotificationURL(notification){
     return `/feed`;
   } else if (notification.type === 'thread_reply') {
     return `/${notification.profileName}#${notification.beliefName}`;
+  } else if (notification.type === 'belief_proposal') {
+    return '/admin/proposed';
+  } else if (notification.type === 'belief_approved') {
+    return `/${window.authenticatedUserId}#${notification.beliefName}`;
+  } else if (notification.type === 'belief_rejected') {
+    return '/';
   }
   return '';
 }

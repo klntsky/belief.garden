@@ -49,14 +49,29 @@ export function imageExists(imagePath) {
 }
 
 // Generate the image by calling OpenAI's API with a POST request
-export async function generateImageForBelief(category, belief) {
+export async function generateImageForBelief(category, belief, customAdditionalPrompt = null) {
   try {
-    const additionalPrompt = additionalPrompts[category];
-    if (!additionalPrompt) {
-      // throw new Error(`No additional prompt for ${category}`);
+    const categoryPrompt = additionalPrompts[category];
+    
+    // Combine category prompt and custom prompt
+    let additionalPromptParts = [];
+    
+    if (categoryPrompt) {
+      additionalPromptParts.push(categoryPrompt);
+    }
+    
+    if (customAdditionalPrompt && customAdditionalPrompt.trim()) {
+      additionalPromptParts.push(customAdditionalPrompt.trim());
+    }
+    
+    // If no prompts at all, log and return
+    if (additionalPromptParts.length === 0) {
       console.log(`No additional prompt for ${category}`);
       return;
     }
+    
+    const additionalPrompt = additionalPromptParts.join(' ');
+    
     const prompt = `generate me an abstract pixarified unreal engine 3d cartoon image on the topic of ${belief.name} - use this text for inspiration, but not literally: "${belief.description}". ${additionalPrompt}`;
     console.log(`Generating image for belief: ${belief.name}`);
 

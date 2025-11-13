@@ -4,8 +4,10 @@ import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import { ensureAuthenticated } from '../utils/authUtils.js';
+import { ensureAuthenticated, ensureAdminAuthenticatedPage } from '../utils/authUtils.js';
 import { getUserByUsername, deleteUserAccount, getUserSettings } from '../utils/userUtils.js';
+import { readBeliefs } from '../readBeliefs.js';
+import { getProposedBeliefs } from '../utils/proposedBeliefsUtils.js';
 
 dotenv.config();
 
@@ -143,6 +145,65 @@ router.get('/notifications', ensureAuthenticated, async (req, res) => {
     user: req.user,
     settings: await getUserSettings(req.user.id)
   });
+});
+
+// Propose belief card page
+router.get('/propose', ensureAuthenticated, (req, res) => {
+  const beliefsData = readBeliefs();
+  const categories = Object.keys(beliefsData).sort();
+  const selectedCategory = req.query.category || '';
+  
+  res.render('propose', {
+    user: req.user,
+    title: 'Propose Belief Card',
+    categories: categories,
+    selectedCategory: selectedCategory
+  });
+});
+
+// Admin page for reviewing proposed beliefs (only for admins)
+router.get('/admin/proposed', ensureAdminAuthenticatedPage, async (req, res) => {
+  try {
+    const proposedBeliefs = await getProposedBeliefs();
+    const beliefsData = readBeliefs();
+    const categories = Object.keys(beliefsData).sort();
+
+    res.render('admin-proposed', {
+      user: req.user,
+      title: 'Review Proposed Beliefs',
+      proposedBeliefs: proposedBeliefs,
+      categories: categories
+    });
+  } catch (error) {
+    console.error('Error loading proposed beliefs:', error);
+    res.status(500).send('An error occurred while loading proposed beliefs.');
+  }
+});
+
+// Admin panel (main admin page)
+router.get('/admin', ensureAdminAuthenticatedPage, (req, res) => {
+  res.render('admin', {
+    user: req.user,
+    title: 'Admin Panel'
+  });
+});
+
+// Admin page for deleting beliefs (only for admins)
+router.get('/admin/delete-belief', ensureAdminAuthenticatedPage, async (req, res) => {
+  try {
+    const beliefsData = readBeliefs();
+    const categories = Object.keys(beliefsData).sort();
+
+    res.render('admin-delete-belief', {
+      user: req.user,
+      title: 'Delete Belief Card',
+      categories: categories,
+      beliefsData: beliefsData
+    });
+  } catch (error) {
+    console.error('Error loading delete belief page:', error);
+    res.status(500).send('An error occurred while loading the delete belief page.');
+  }
 });
 
 export default router;

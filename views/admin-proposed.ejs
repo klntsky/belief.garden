@@ -1,0 +1,215 @@
+<h1>Review Proposed Belief Cards</h1>
+<p><a href="/admin">← Back to Admin Panel</a></p>
+
+<% if (proposedBeliefs.length === 0) { %>
+  <p>No proposed belief cards pending review.</p>
+<% } else { %>
+  <div id="proposals-container">
+    <% proposedBeliefs.forEach((proposal, index) => { %>
+      <div class="proposal-card" style="border: 1px solid #A55; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 200, 200, 0.2);">
+        <div style="margin-bottom: 15px;">
+          <label for="name-<%= proposal.timestamp %>" style="display: block; margin-bottom: 5px; font-weight: bold;">Belief Name:</label>
+          <input 
+            type="text" 
+            id="name-<%= proposal.timestamp %>" 
+            class="proposal-field"
+            data-proposal-id="<%= proposal.timestamp %>"
+            value="<%= proposal.name %>"
+            maxlength="100" 
+            required
+            style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="category-<%= proposal.timestamp %>" style="display: block; margin-bottom: 5px; font-weight: bold;">Category:</label>
+          <select 
+            id="category-<%= proposal.timestamp %>" 
+            class="proposal-field"
+            data-proposal-id="<%= proposal.timestamp %>"
+            required
+            style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; box-sizing: border-box;">
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat %>" <%= proposal.category === cat ? 'selected' : '' %>><%= cat %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="description-<%= proposal.timestamp %>" style="display: block; margin-bottom: 5px; font-weight: bold;">Description:</label>
+          <textarea 
+            id="description-<%= proposal.timestamp %>" 
+            class="proposal-field"
+            data-proposal-id="<%= proposal.timestamp %>"
+            maxlength="500" 
+            rows="5" 
+            required
+            style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; font-family: inherit; box-sizing: border-box;"><%= proposal.description %></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="additional-prompt-<%= proposal.timestamp %>" style="display: block; margin-bottom: 5px; font-weight: bold;">Additional Image Prompt:</label>
+          <textarea 
+            id="additional-prompt-<%= proposal.timestamp %>" 
+            class="proposal-field"
+            data-proposal-id="<%= proposal.timestamp %>"
+            maxlength="300" 
+            rows="3" 
+            placeholder="e.g., image style: use warm colors, PIXAR 3d cartoon style..."
+            style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; font-family: inherit; box-sizing: border-box;"><%= proposal.additionalPrompt || '' %></textarea>
+          <small style="color: #666;">Optional. Additional styling instructions for image generation. Maximum 300 characters.</small>
+        </div>
+
+        <p><strong>Proposed by:</strong> <a href="/<%= proposal.author %>"><%= proposal.author %></a></p>
+        <p><strong>Submitted:</strong> <span class="timestamp" data-timestamp="<%= proposal.timestamp %>"></span></p>
+        
+        <div style="margin-top: 15px;">
+          <button 
+            class="approve-btn" 
+            data-proposal-id="<%= proposal.timestamp %>"
+            style="padding: 10px 20px; background-color: #5A5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+            Approve
+          </button>
+          <button 
+            class="reject-btn" 
+            data-proposal-id="<%= proposal.timestamp %>"
+            style="padding: 10px 20px; background-color: #A55; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Reject
+          </button>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<script>
+// Format timestamps
+document.querySelectorAll('.timestamp').forEach(el => {
+  const timestamp = parseInt(el.getAttribute('data-timestamp'));
+  const date = new Date(timestamp);
+  el.textContent = date.toLocaleString();
+});
+
+// Approve button handler
+document.querySelectorAll('.approve-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const proposalId = parseInt(btn.getAttribute('data-proposal-id'));
+    const card = btn.closest('.proposal-card');
+    
+    // Get all field values
+    const nameInput = card.querySelector(`#name-${proposalId}`);
+    const categoryInput = card.querySelector(`#category-${proposalId}`);
+    const descriptionInput = card.querySelector(`#description-${proposalId}`);
+    const promptInput = card.querySelector(`#additional-prompt-${proposalId}`);
+    
+    const name = nameInput ? nameInput.value.trim() : '';
+    const category = categoryInput ? categoryInput.value.trim() : '';
+    const description = descriptionInput ? descriptionInput.value.trim() : '';
+    const additionalPrompt = promptInput ? promptInput.value.trim() : '';
+    
+    // Validation
+    if (!name || name.length > 100) {
+      alert('Name is required and must be 100 characters or less');
+      return;
+    }
+    if (!category) {
+      alert('Category is required');
+      return;
+    }
+    if (!description || description.length > 500) {
+      alert('Description is required and must be 500 characters or less');
+      return;
+    }
+    if (additionalPrompt.length > 300) {
+      alert('Additional prompt cannot exceed 300 characters');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to approve this belief card? This will generate an image and add it to the beliefs list.')) {
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Approving...';
+
+    try {
+      const response = await fetch('/api/approve-belief', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          proposalId,
+          name,
+          category,
+          description,
+          additionalPrompt: additionalPrompt || null
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        card.style.opacity = '0.5';
+        card.innerHTML = '<p style="color: #5A5; font-weight: bold;">✓ Approved! The belief card has been added.</p>';
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to approve belief'));
+        btn.disabled = false;
+        btn.textContent = 'Approve';
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while approving the belief');
+      btn.disabled = false;
+      btn.textContent = 'Approve';
+    }
+  });
+});
+
+// Reject button handler
+document.querySelectorAll('.reject-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const proposalId = parseInt(btn.getAttribute('data-proposal-id'));
+    const card = btn.closest('.proposal-card');
+    
+    if (!confirm('Are you sure you want to reject this proposal? This action cannot be undone.')) {
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Rejecting...';
+
+    try {
+      const response = await fetch('/api/reject-belief', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ proposalId })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        card.style.opacity = '0.5';
+        card.innerHTML = '<p style="color: #A55; font-weight: bold;">✗ Rejected</p>';
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to reject proposal'));
+        btn.disabled = false;
+        btn.textContent = 'Reject';
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while rejecting the proposal');
+      btn.disabled = false;
+      btn.textContent = 'Reject';
+    }
+  });
+});
+</script>
+

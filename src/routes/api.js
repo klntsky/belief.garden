@@ -2,7 +2,7 @@
 
 import express from 'express';
 import path from 'path';
-import { ensureAuthenticatedApi } from '../utils/authUtils.js';
+import { ensureAuthenticatedApi, ensureAdminAuthenticated } from '../utils/authUtils.js';
 import {
   doesUserExist,
   getUserBeliefs,
@@ -26,7 +26,18 @@ import {
   withUserBeliefs,
 } from '../utils/userUtils.js';
 import { perUserWriteLimiter, chatRateLimiter } from '../utils/rateLimiter.js';
+import fsSync from 'fs';
 import { promises as fs } from 'fs';
+import { generateImageForBelief } from '../generateImage.js';
+import { readBeliefs, saveBeliefs } from '../readBeliefs.js';
+import { compressSingleImage } from '../utils/imageUtils.js';
+import { getAdmins } from '../utils/adminUtils.js';
+import {
+  addProposedBelief,
+  findProposedBelief,
+  removeProposedBelief,
+  updateProposedBelief
+} from '../utils/proposedBeliefsUtils.js';
 
 const debatesDir = path.join('data', 'debates');
 const bansDir = path.join('data', 'bans');
@@ -823,6 +834,303 @@ router.post(
     } catch (error) {
       console.error('Error posting chat message:', error);
       res.status(500).json({ error: 'Failed to post message' });
+    }
+  }
+);
+
+// Endpoint to propose a new belief card
+router.post(
+  '/api/propose-belief',
+  ensureAuthenticatedApi,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req, res) => {
+    const { category, name, description, additionalPrompt } = req.body;
+    const author = req.user.id;
+
+    if (!category || !name || !description) {
+      return res.status(400).json({ error: 'category, name, and description are required' });
+    }
+
+    if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) {
+      return res.status(400).json({ error: 'name must be a non-empty string with max 100 characters' });
+    }
+
+    if (typeof description !== 'string' || description.trim().length === 0 || description.length > 500) {
+      return res.status(400).json({ error: 'description must be a non-empty string with max 500 characters' });
+    }
+
+    if (additionalPrompt && (typeof additionalPrompt !== 'string' || additionalPrompt.length > 300)) {
+      return res.status(400).json({ error: 'additionalPrompt must be a string with max 300 characters' });
+    }
+
+    try {
+      const proposal = {
+        category: category.trim(),
+        name: name.trim(),
+        description: description.trim(),
+        additionalPrompt: additionalPrompt ? additionalPrompt.trim() : null,
+        author: author
+      };
+
+      await addProposedBelief(proposal);
+
+      // Send notification to all admins
+      const admins = await getAdmins();
+      await Promise.all(admins.map(admin => {
+        try {
+          return pushNotificationToUser(admin, {
+            actor: author,
+            type: 'belief_proposal',
+            beliefName: proposal.name,
+            category: proposal.category,
+            message: `New belief card proposal: "${proposal.name}"`
+          });
+        } catch (error) {
+          console.error(`Failed to send notification to admin ${admin}:`, error);
+          return Promise.resolve(); // Continue with other admins
+        }
+      }));
+
+      res.json({ success: true, message: 'Proposal submitted successfully' });
+    } catch (error) {
+      console.error('Error submitting proposal:', error);
+      if (error.message === 'A proposal with this name already exists') {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: 'Failed to submit proposal', details: error.message });
+    }
+  }
+);
+
+// Endpoint to approve a proposed belief card (only for admins)
+router.post(
+  '/api/approve-belief',
+  ensureAdminAuthenticated,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req, res) => {
+    const { proposalId, name, category, description, additionalPrompt } = req.body;
+
+    if (!proposalId || typeof proposalId !== 'number') {
+      return res.status(400).json({ error: 'proposalId is required and must be a number' });
+    }
+
+    try {
+      let proposal = await findProposedBelief(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ error: 'Proposal not found' });
+      }
+
+      // Update proposal if fields were edited
+      const updates = {};
+      if (name !== undefined && typeof name === 'string' && name.trim() !== proposal.name) {
+        updates.name = name.trim();
+      }
+      if (category !== undefined && typeof category === 'string' && category.trim() !== proposal.category) {
+        updates.category = category.trim();
+      }
+      if (description !== undefined && typeof description === 'string' && description.trim() !== proposal.description) {
+        updates.description = description.trim();
+      }
+      if (additionalPrompt !== undefined) {
+        updates.additionalPrompt = (additionalPrompt && typeof additionalPrompt === 'string') ? additionalPrompt.trim() || null : null;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        proposal = await updateProposedBelief(proposalId, updates);
+      }
+
+      // Read beliefs.json
+      const beliefsData = readBeliefs();
+
+      // Check if belief already exists
+      const existingBeliefIndex = beliefsData[proposal.category]?.findIndex(b => b.name === proposal.name);
+      const beliefExists = existingBeliefIndex !== undefined && existingBeliefIndex !== -1;
+
+      if (beliefExists) {
+        // Update description for existing belief
+        beliefsData[proposal.category][existingBeliefIndex].description = proposal.description;
+        await saveBeliefs(beliefsData);
+        
+        // Remove proposal
+        await removeProposedBelief(proposalId);
+
+        // Send notification to the proposer
+        try {
+          await pushNotificationToUser(proposal.author, {
+            actor: req.user.id,
+            type: 'belief_approved',
+            beliefName: proposal.name,
+            message: `Your belief card proposal "${proposal.name}" has been approved!`
+          });
+        } catch (error) {
+          console.error(`Failed to send approval notification to ${proposal.author}:`, error);
+        }
+
+        return res.json({ 
+          success: true, 
+          message: `Belief "${proposal.name}" description updated in ${proposal.category}` 
+        });
+      }
+
+      // Generate image for new belief
+      const belief = {
+        name: proposal.name,
+        description: proposal.description
+      };
+
+      // Use the additional prompt from the request (admin edited) or from the proposal
+      const imagePrompt = additionalPrompt !== undefined 
+        ? (additionalPrompt && typeof additionalPrompt === 'string' ? additionalPrompt.trim() : null)
+        : proposal.additionalPrompt;
+      await generateImageForBelief(proposal.category, belief, imagePrompt || null);
+
+      // Check if image was generated
+      const imagePath = path.join('public', 'img', `${belief.name}.webp`);
+      if (!fsSync.existsSync(imagePath)) {
+        return res.status(500).json({ 
+          error: 'Image generation failed',
+          details: 'The image file was not created. Check server logs for details.'
+        });
+      }
+
+      // Compress the image
+      await compressSingleImage(imagePath);
+
+      // Add belief to beliefs.json
+      if (!beliefsData[proposal.category]) {
+        beliefsData[proposal.category] = [];
+      }
+      beliefsData[proposal.category].push({
+        name: proposal.name,
+        description: proposal.description
+      });
+
+      // Save beliefs.json
+      await saveBeliefs(beliefsData);
+
+      // Remove proposal
+      await removeProposedBelief(proposalId);
+
+      // Send notification to the proposer
+      try {
+        await pushNotificationToUser(proposal.author, {
+          actor: req.user.id,
+          type: 'belief_approved',
+          beliefName: proposal.name,
+          message: `Your belief card proposal "${proposal.name}" has been approved!`
+        });
+      } catch (error) {
+        console.error(`Failed to send approval notification to ${proposal.author}:`, error);
+        // Continue even if notification fails
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Belief "${proposal.name}" approved and added to ${proposal.category}` 
+      });
+    } catch (error) {
+      console.error('Error approving belief:', error);
+      res.status(500).json({ 
+        error: 'Failed to approve belief', 
+        details: error.message 
+      });
+    }
+  }
+);
+
+// Endpoint to reject a proposed belief card (only for admins)
+router.post(
+  '/api/reject-belief',
+  ensureAdminAuthenticated,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req, res) => {
+    const { proposalId } = req.body;
+
+    if (!proposalId || typeof proposalId !== 'number') {
+      return res.status(400).json({ error: 'proposalId is required and must be a number' });
+    }
+
+    try {
+      const proposal = await removeProposedBelief(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ error: 'Proposal not found' });
+      }
+
+      // Send notification to the proposer
+      try {
+        await pushNotificationToUser(proposal.author, {
+          actor: req.user.id,
+          type: 'belief_rejected',
+          beliefName: proposal.name,
+          message: `Your belief card proposal "${proposal.name}" has been rejected.`
+        });
+      } catch (error) {
+        console.error(`Failed to send rejection notification to ${proposal.author}:`, error);
+        // Continue even if notification fails
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Proposal "${proposal.name}" rejected` 
+      });
+    } catch (error) {
+      console.error('Error rejecting belief:', error);
+      res.status(500).json({ 
+        error: 'Failed to reject proposal', 
+        details: error.message 
+      });
+    }
+  }
+);
+
+// Endpoint to delete a belief card (only for admins)
+router.post(
+  '/api/delete-belief',
+  ensureAdminAuthenticated,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req, res) => {
+    const { category, beliefName } = req.body;
+
+    if (!category || !beliefName) {
+      return res.status(400).json({ error: 'category and beliefName are required' });
+    }
+
+    if (typeof category !== 'string' || typeof beliefName !== 'string') {
+      return res.status(400).json({ error: 'category and beliefName must be strings' });
+    }
+
+    try {
+      const beliefsData = readBeliefs();
+
+      // Check if category exists
+      if (!beliefsData[category]) {
+        return res.status(404).json({ error: `Category "${category}" not found` });
+      }
+
+      // Find and remove the belief
+      const beliefIndex = beliefsData[category].findIndex(b => b.name === beliefName);
+      if (beliefIndex === -1) {
+        return res.status(404).json({ error: `Belief "${beliefName}" not found in category "${category}"` });
+      }
+
+      // Remove the belief from the array
+      beliefsData[category].splice(beliefIndex, 1);
+
+      // Save beliefs.json
+      await saveBeliefs(beliefsData);
+
+      res.json({ 
+        success: true, 
+        message: `Belief "${beliefName}" deleted from "${category}"` 
+      });
+    } catch (error) {
+      console.error('Error deleting belief:', error);
+      res.status(500).json({ 
+        error: 'Failed to delete belief', 
+        details: error.message 
+      });
     }
   }
 );

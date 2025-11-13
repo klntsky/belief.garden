@@ -1,0 +1,97 @@
+<h1>Propose a New Belief Card</h1>
+
+<form id="proposal-form" style="max-width: 600px; margin: 20px auto;">
+  <div style="margin-bottom: 20px;">
+    <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">Category:</label>
+    <select id="category" name="category" required style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px;">
+      <option value="">-- Select a category --</option>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat %>" <%= selectedCategory === cat ? 'selected' : '' %>><%= cat %></option>
+      <% }); %>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <label for="name" style="display: block; margin-bottom: 5px; font-weight: bold;">Belief Name:</label>
+    <input type="text" id="name" name="name" required maxlength="100" style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px;">
+    <small style="color: #666;">Maximum 100 characters. Use an existing name to update description.</small>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <label for="description" style="display: block; margin-bottom: 5px; font-weight: bold;">Description:</label>
+    <textarea id="description" name="description" required maxlength="500" rows="5" style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; font-family: inherit;"></textarea>
+    <small style="color: #666;">Maximum 500 characters</small>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <label for="additionalPrompt" style="display: block; margin-bottom: 5px; font-weight: bold;">Additional Image Prompt (optional):</label>
+    <textarea id="additionalPrompt" name="additionalPrompt" maxlength="300" rows="3" placeholder="e.g., image style: use warm colors, PIXAR 3d cartoon style..." style="width: 100%; padding: 8px; border: 1px solid #A55; border-radius: 4px; font-family: inherit;"></textarea>
+    <small style="color: #666;">Optional. Additional styling instructions for image generation. Maximum 300 characters. Existing images will not be regenerated. See <a href="https://github.com/klntsky/belief.garden/blob/65462e757542b6edc83d64a631e33bf4b058752a/src/generateImage.js#L10" target="_blank">here</a> for the full prompts.</small>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <button type="submit" style="padding: 10px 20px; background-color: #A55; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Submit Proposal</button>
+    <a href="/" id="cancel-link" style="margin-left: 10px; color: #A55;">Cancel</a>
+  </div>
+</form>
+
+<script>
+document.getElementById('proposal-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = {
+    category: document.getElementById('category').value,
+    name: document.getElementById('name').value.trim(),
+    description: document.getElementById('description').value.trim(),
+    additionalPrompt: document.getElementById('additionalPrompt').value.trim()
+  };
+
+  if (!formData.category || !formData.name || !formData.description) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/propose-belief', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Your proposal has been submitted! Thank you for contributing.');
+      window.location.href = '/' + window.authenticatedUserId;
+    } else {
+      alert('Error: ' + (data.error || 'Failed to submit proposal'));
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred while submitting your proposal');
+  }
+});
+
+// Category is already set server-side, but ensure it's selected if URL parameter exists
+const urlParams = new URLSearchParams(window.location.search);
+const category = urlParams.get('category');
+if (category) {
+  const decodedCategory = decodeURIComponent(category);
+  const selectElement = document.getElementById('category');
+  // Find and select the matching option
+  for (let option of selectElement.options) {
+    if (option.value === decodedCategory) {
+      selectElement.value = decodedCategory;
+      break;
+    }
+  }
+}
+
+// Set cancel link
+if (window.authenticatedUserId) {
+  document.getElementById('cancel-link').href = '/' + window.authenticatedUserId;
+}
+</script>
+

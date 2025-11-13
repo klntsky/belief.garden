@@ -71,6 +71,17 @@ h1.center {
   display: flex;
 }
 
+.add-belief-card {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  min-height: 270px;
+  background-color: rgba(255, 200, 200, 0.5);
+  border: 2px dashed rgba(165, 85, 85, 0.5);
+}
+
 .belief-overlay {
   position: relative;
   background-color: rgba(255, 200, 200, 0.3); /* Semi-transparent background */
