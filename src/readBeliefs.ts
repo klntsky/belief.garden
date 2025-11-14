@@ -3,7 +3,7 @@ import fs from 'fs';
 import { writeFileAtomic } from './utils/fileUtils.js';
 import type { BeliefData } from './types/index.js';
 
-const beliefsFilePath = './public/static/beliefs.json';
+const beliefsFilePath = './data/beliefs.json';
 
 // Read beliefs.json and return its content
 export function readBeliefs(): BeliefData {

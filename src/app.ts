@@ -11,10 +11,26 @@ import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import apiRouter from './routes/api.js';
 import FileStore from 'session-file-store';
-import { promises as fs } from 'fs';
 import { updateUsersJson } from './utils/updateUsers.js';
+import path from 'path';
+import { runDataMigrations } from './migrations.js';
 
 dotenv.config();
+
+// Validate required environment variables
+if (!process.env.OPENAI_API_KEY) {
+  console.error('Error: OPENAI_API_KEY environment variable is required but not set.');
+  console.error('Please set OPENAI_API_KEY in your .env file.');
+  process.exit(1);
+}
+
+// SESSION_SECRET is required in production (not in test mode)
+if (process.env.NODE_ENV !== 'test' && !process.env.SESSION_SECRET) {
+  console.error('Error: SESSION_SECRET environment variable is required in production.');
+  console.error('Please set a secure SESSION_SECRET in your .env file.');
+  console.error('Using the default secret is insecure and not allowed in production.');
+  process.exit(1);
+}
 
 const app = express();
 
@@ -22,6 +38,19 @@ app.set('trust proxy', true);
 app.set('view engine', 'ejs');
 app.set('layout', 'layout'); // Set default layout
 app.use(expressLayouts);
+
+// Route to serve beliefs.json from data/ for frontend compatibility
+// This must be before the static middleware to take precedence
+app.get('/static/beliefs.json', (_req: Request, res: Response) => {
+  const beliefsFilePath = path.join('data', 'beliefs.json');
+  res.sendFile(path.resolve(beliefsFilePath), (err?: Error | null) => {
+    if (err) {
+      console.error('Error serving beliefs.json:', err);
+      const status = (err as { status?: number }).status || 500;
+      res.status(status).json({ error: 'Failed to load beliefs data' });
+    }
+  });
+});
 
 // Serve static files with appropriate caching
 app.use(
@@ -82,25 +111,9 @@ app.use((_req: Request, res: Response) => {
   res.status(404).render('404', { title: 'Page Not Found' });
 });
 
-// Ensure all required data directories exist
-const requiredDirs = [
-  'data/accounts',
-  'data/bans',
-  'data/bio',
-  'data/comments',
-  'data/debates',
-  'data/users',
-  'data/settings',
-  'data/notifications',
-  'data/followers',
-  'data/follows'
-];
-
-Promise.all(
-  requiredDirs.map(dir => fs.mkdir(dir, { recursive: true }))
-).then(() => {
+runDataMigrations().then(() => {
   const port = process.env.PORT || '3000';
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     
     // Start periodic user statistics updates
@@ -112,13 +125,31 @@ Promise.all(
     console.log('Running initial user statistics update...');
     updateUsersJson();
     
-    // Then run periodically
-    setInterval(() => {
+    // Store interval ID so we can clear it on shutdown
+    const updateTimer = setInterval(() => {
       console.log('Running periodic user statistics update...');
       updateUsersJson();
     }, updateInterval);
     
     console.log(`User statistics will update every ${updateInterval / 1000} seconds`);
+    
+    // Graceful shutdown handlers
+    const shutdown = () => {
+      console.log('Shutting down gracefully...');
+      clearInterval(updateTimer);
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+      // Force exit after 10 seconds if server doesn't close
+      setTimeout(() => {
+        console.error('Forced shutdown after timeout');
+        process.exit(1);
+      }, 10000);
+    };
+    
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
   });
 }).catch((err: unknown) => {
   console.error('Error creating data directories:', err);

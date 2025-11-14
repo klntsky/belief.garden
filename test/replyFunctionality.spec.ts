@@ -40,8 +40,15 @@ test.describe('Reply Functionality', () => {
     await loginUser(page, user2.username, user2.password);
     await goToProfile(page, testUsername);
 
-    // Verify no reply button is visible
-    const replyButton = page.locator('.toggle-replies');
+    // Wait for the belief card to be visible
+    const beliefCard = page.locator(`.belief[data-belief-name="${beliefName}"]`);
+    await expect(beliefCard).toBeVisible({ timeout: 15000 });
+
+    // Wait for the page to settle after loading
+    await page.waitForTimeout(1000);
+
+    // Verify no reply button is visible within this specific belief card
+    const replyButton = beliefCard.locator('.toggle-replies');
     await expect(replyButton).not.toBeVisible();
   });
 

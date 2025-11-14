@@ -9,8 +9,7 @@
     "start": "tsx src/app.ts",
     "dev": "tsx --watch src/app.ts",
     "update-users": "tsx scripts/updateUsers.ts",
-    "test": "HEADLESS_BROWSER=1 playwright test",
-    "test:server": "./scripts/test-with-server.sh",
+    "test": "./scripts/test-with-server.sh",
     "generate-images": "tsx src/generateImages.ts",
     "compress-images": "tsx src/compressImages.ts ./public/img/",
     "broadcast": "tsx scripts/broadcast.ts"
