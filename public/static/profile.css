@@ -20,8 +20,6 @@
 
 #pie-chart-container, .user-bio, .bottom-right-box {
     background-color: #F9DDDD;
-    box-shadow: inset 0 0 20px rgba(100,0,0,0.2),
-                0px 0px 20px rgba(255,255,255,0.2);
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.5);
 }
