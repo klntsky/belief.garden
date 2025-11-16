@@ -59,6 +59,34 @@
           <small style="color: #666;">Optional. Additional styling instructions for image generation. Maximum 300 characters.</small>
         </div>
 
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Generated Image:</label>
+          <div id="image-preview-<%= proposal.timestamp %>" style="margin-bottom: 10px; min-height: 100px; border: 1px solid #A55; border-radius: 4px; padding: 10px; background-color: rgba(255, 255, 255, 0.5); display: none;">
+            <img id="preview-img-<%= proposal.timestamp %>" src="" alt="Generated image preview" style="max-width: 100%; max-height: 400px; border-radius: 4px; display: none;">
+            <p id="preview-status-<%= proposal.timestamp %>" style="margin: 0; color: #666;"></p>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button 
+              class="generate-image-btn" 
+              data-proposal-id="<%= proposal.timestamp %>"
+              style="padding: 10px 20px; background-color: #55A; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Generate Image
+            </button>
+            <button 
+              class="clear-image-btn" 
+              data-proposal-id="<%= proposal.timestamp %>"
+              style="padding: 10px 20px; background-color: #888; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">
+              Clear Image
+            </button>
+          </div>
+          <input 
+            type="hidden" 
+            id="image-url-<%= proposal.timestamp %>" 
+            class="image-url-field"
+            data-proposal-id="<%= proposal.timestamp %>"
+            value="">
+        </div>
+
         <p><strong>Proposed by:</strong> <a href="/<%= proposal.proposedBy %>"><%= proposal.proposedBy %></a></p>
         <p><strong>Submitted:</strong> <span class="timestamp" data-timestamp="<%= proposal.timestamp %>"></span></p>
         
@@ -89,8 +117,8 @@ document.querySelectorAll('.timestamp').forEach(el => {
   el.textContent = date.toLocaleString();
 });
 
-// Approve button handler
-document.querySelectorAll('.approve-btn').forEach(btn => {
+// Generate Image button handler
+document.querySelectorAll('.generate-image-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
     const proposalId = parseInt(btn.getAttribute('data-proposal-id'));
     const card = btn.closest('.proposal-card');
@@ -100,6 +128,10 @@ document.querySelectorAll('.approve-btn').forEach(btn => {
     const categoryInput = card.querySelector(`#category-${proposalId}`);
     const descriptionInput = card.querySelector(`#description-${proposalId}`);
     const promptInput = card.querySelector(`#additional-prompt-${proposalId}`);
+    const imageUrlInput = card.querySelector(`#image-url-${proposalId}`);
+    const previewDiv = card.querySelector(`#image-preview-${proposalId}`);
+    const previewImg = card.querySelector(`#preview-img-${proposalId}`);
+    const previewStatus = card.querySelector(`#preview-status-${proposalId}`);
     
     const name = nameInput ? nameInput.value.trim() : '';
     const category = categoryInput ? categoryInput.value.trim() : '';
@@ -123,8 +155,136 @@ document.querySelectorAll('.approve-btn').forEach(btn => {
       alert('Additional prompt cannot exceed 300 characters');
       return;
     }
+
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    if (previewDiv) previewDiv.style.display = 'block';
+    if (previewStatus) previewStatus.textContent = 'Generating image...';
+    if (previewImg) previewImg.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/generate-image-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          proposalId,
+          name,
+          category,
+          description,
+          additionalPrompt: additionalPrompt || null
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.imageUrl) {
+        if (imageUrlInput) imageUrlInput.value = data.imageUrl;
+        if (previewImg) {
+          previewImg.src = data.imageUrl;
+          previewImg.style.display = 'block';
+        }
+        if (previewStatus) previewStatus.textContent = 'Image generated successfully!';
+        btn.textContent = 'Regenerate Image';
+        
+        // Show clear button
+        const clearBtn = card.querySelector(`.clear-image-btn[data-proposal-id="${proposalId}"]`);
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+      } else {
+        if (previewStatus) previewStatus.textContent = 'Error: ' + (data.error || 'Failed to generate image');
+        alert('Error: ' + (data.error || 'Failed to generate image'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      if (previewStatus) previewStatus.textContent = 'An error occurred while generating the image';
+      alert('An error occurred while generating the image');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+});
+
+// Clear Image button handler
+document.querySelectorAll('.clear-image-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const proposalId = parseInt(btn.getAttribute('data-proposal-id'));
+    const card = btn.closest('.proposal-card');
     
-    if (!confirm('Are you sure you want to approve this belief card? This will generate an image and add it to the beliefs list.')) {
+    const imageUrlInput = card.querySelector(`#image-url-${proposalId}`);
+    const previewDiv = card.querySelector(`#image-preview-${proposalId}`);
+    const previewImg = card.querySelector(`#preview-img-${proposalId}`);
+    const previewStatus = card.querySelector(`#preview-status-${proposalId}`);
+    const generateBtn = card.querySelector(`.generate-image-btn[data-proposal-id="${proposalId}"]`);
+    
+    // Clear the image URL
+    if (imageUrlInput) imageUrlInput.value = '';
+    
+    // Hide preview
+    if (previewDiv) previewDiv.style.display = 'none';
+    if (previewImg) {
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+    }
+    if (previewStatus) previewStatus.textContent = '';
+    
+    // Reset generate button text
+    if (generateBtn) generateBtn.textContent = 'Generate Image';
+    
+    // Hide clear button
+    btn.style.display = 'none';
+  });
+});
+
+// Approve button handler
+document.querySelectorAll('.approve-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const proposalId = parseInt(btn.getAttribute('data-proposal-id'));
+    const card = btn.closest('.proposal-card');
+    
+    // Get all field values
+    const nameInput = card.querySelector(`#name-${proposalId}`);
+    const categoryInput = card.querySelector(`#category-${proposalId}`);
+    const descriptionInput = card.querySelector(`#description-${proposalId}`);
+    const promptInput = card.querySelector(`#additional-prompt-${proposalId}`);
+    const imageUrlInput = card.querySelector(`#image-url-${proposalId}`);
+    
+    const name = nameInput ? nameInput.value.trim() : '';
+    const category = categoryInput ? categoryInput.value.trim() : '';
+    const description = descriptionInput ? descriptionInput.value.trim() : '';
+    const additionalPrompt = promptInput ? promptInput.value.trim() : '';
+    const imageUrl = imageUrlInput ? imageUrlInput.value.trim() : '';
+    
+    // Validation
+    if (!name || name.length > 100) {
+      alert('Name is required and must be 100 characters or less');
+      return;
+    }
+    if (!category) {
+      alert('Category is required');
+      return;
+    }
+    if (!description || description.length > 500) {
+      alert('Description is required and must be 500 characters or less');
+      return;
+    }
+    if (additionalPrompt.length > 300) {
+      alert('Additional prompt cannot exceed 300 characters');
+      return;
+    }
+    
+    // Check if this is a new belief (not updating existing)
+    const beliefsData = await fetch('/static/beliefs.json').then(r => r.json()).catch(() => ({}));
+    const categoryBeliefs = beliefsData[category] || [];
+    const beliefExists = categoryBeliefs.some((b) => b.name === name);
+    
+    // Image is only required for new beliefs
+    if (!beliefExists && !imageUrl) {
+      alert('Please generate an image before approving. Click "Generate Image" first.');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to approve this belief card? This will download the image and add it to the beliefs list.')) {
       return;
     }
 
@@ -142,7 +302,8 @@ document.querySelectorAll('.approve-btn').forEach(btn => {
           name,
           category,
           description,
-          additionalPrompt: additionalPrompt || null
+          additionalPrompt: additionalPrompt || null,
+          imageUrl
         })
       });
 

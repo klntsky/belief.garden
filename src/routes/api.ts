@@ -28,7 +28,7 @@ import {
 import { perUserWriteLimiter, chatRateLimiter } from '../utils/rateLimiter.js';
 import fsSync from 'fs';
 import { promises as fs } from 'fs';
-import { generateImageForBelief } from '../generateImage.js';
+import { generateImageUrlForBelief, downloadImageFromUrl } from '../generateImage.js';
 import { readBeliefs, saveBeliefs } from '../readBeliefs.js';
 import { compressSingleImage } from '../utils/imageUtils.js';
 import { getAdmins } from '../utils/adminUtils.js';
@@ -445,28 +445,27 @@ router.post(
           throw new Error('Cannot reply to an empty comment.');
         }
 
-        // Check if the comment contains "debate me"
-        if (!settings.allowAllDebates) {
-          const commentText = beliefComment.toLowerCase();
-          if (!commentText.includes('debate me')) {
-            throw new Error('Can only reply to comments that include "debate me".');
-          }
-        }
-
-        // For non-owners, prevent consecutive replies
+        // Profile owners can reply to any comment, but only if there's at least one reply from another user
+        // Other users can only reply to debatable comments
         if (authenticatedUserId !== userId) {
+          // Check if the comment contains "debate me" for non-owners
+          if (!settings.allowAllDebates) {
+            const commentText = beliefComment.toLowerCase();
+            if (!commentText.includes('debate me')) {
+              throw new Error('Can only reply to comments that include "debate me".');
+            }
+          }
+          
+          // For non-owners, prevent consecutive replies
           const replies = belief.replies || [];
           const lastReply = replies[replies.length - 1];
           if (lastReply && lastReply.username === authenticatedUserId) {
             throw new Error('Subsequent replies are not allowed. You can delete your last comment and send a new one.');
           }
-        }
-
-        // For own profile, check if there's at least one reply from another user
-        if (userId === authenticatedUserId) {
-          const hasOtherReplies = belief.replies?.some(
-            reply => reply.username !== authenticatedUserId
-          );
+        } else {
+          // Profile owners can reply only if there's at least one reply from another user
+          const replies = belief.replies || [];
+          const hasOtherReplies = replies.some(reply => reply.username !== authenticatedUserId);
           if (!hasOtherReplies) {
             throw new Error('Cannot reply until someone else replies first.');
           }
@@ -1072,9 +1071,9 @@ router.post(
   }
 );
 
-// Endpoint to approve a proposed belief card (only for admins)
+// Endpoint to generate image URL for a proposed belief (only for admins)
 router.post(
-  '/api/approve-belief',
+  '/api/generate-image-url',
   ensureAdminAuthenticated,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req: Request, res: Response) => {
@@ -1084,6 +1083,64 @@ router.post(
       category?: string;
       description?: string;
       additionalPrompt?: string | null;
+    };
+
+    if (!proposalId || typeof proposalId !== 'number') {
+      res.status(400).json({ error: 'proposalId is required and must be a number' });
+      return;
+    }
+
+    try {
+      const proposal = await findProposedBelief(proposalId);
+      
+      if (!proposal) {
+        res.status(404).json({ error: 'Proposal not found' });
+        return;
+      }
+
+      // Use provided values or fall back to proposal values
+      const beliefName = name !== undefined && typeof name === 'string' ? name.trim() : proposal.beliefName;
+      const beliefCategory = category !== undefined && typeof category === 'string' ? category.trim() : proposal.category;
+      const beliefDescription = description !== undefined && typeof description === 'string' ? description.trim() : (typeof proposal.description === 'string' ? proposal.description : String(proposal.description));
+      const imagePrompt: string | null = additionalPrompt !== undefined 
+        ? (additionalPrompt && typeof additionalPrompt === 'string' ? additionalPrompt.trim() : null)
+        : (typeof proposal.additionalPrompt === 'string' ? proposal.additionalPrompt : null);
+
+      const belief = {
+        name: beliefName,
+        description: beliefDescription
+      };
+
+      const imageUrl = await generateImageUrlForBelief(beliefCategory, belief, imagePrompt);
+
+      res.json({ 
+        success: true, 
+        imageUrl 
+      });
+    } catch (error) {
+      console.error('Error generating image URL:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ 
+        error: 'Failed to generate image URL', 
+        details: errorMessage 
+      });
+    }
+  }
+);
+
+// Endpoint to approve a proposed belief card (only for admins)
+router.post(
+  '/api/approve-belief',
+  ensureAdminAuthenticated,
+  express.json({ limit: JSON_SIZE_LIMIT }),
+  async (req: Request, res: Response) => {
+    const { proposalId, name, category, description, additionalPrompt, imageUrl } = req.body as {
+      proposalId?: number;
+      name?: string;
+      category?: string;
+      description?: string;
+      additionalPrompt?: string | null;
+      imageUrl?: string;
     };
 
     if (!proposalId || typeof proposalId !== 'number') {
@@ -1136,6 +1193,24 @@ router.post(
         if (existingBelief) {
           existingBelief.description = typeof proposal.description === 'string' ? proposal.description : String(proposal.description);
         }
+        
+        // Update image if imageUrl is provided
+        if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim()) {
+          const belief = {
+            name: proposal.beliefName,
+            description: typeof proposal.description === 'string' ? proposal.description : String(proposal.description)
+          };
+          
+          await downloadImageFromUrl(imageUrl.trim(), belief.name);
+          
+          // Check if image was downloaded
+          const imagePath = path.join('public', 'img', `${belief.name}.webp`);
+          if (fsSync.existsSync(imagePath)) {
+            // Compress the updated image
+            await compressSingleImage(imagePath);
+          }
+        }
+        
         await saveBeliefs(beliefsData);
         
         // Remove proposal
@@ -1155,28 +1230,32 @@ router.post(
 
         res.json({ 
           success: true, 
-          message: `Belief "${proposal.beliefName}" description updated in ${proposal.category}` 
+          message: `Belief "${proposal.beliefName}" updated in ${proposal.category}` 
         });
         return;
       }
 
-      // Generate image for new belief
+      // For new beliefs, imageUrl is required
+      if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.trim()) {
+        res.status(400).json({ 
+          error: 'imageUrl is required for new beliefs. Please generate an image first.' 
+        });
+        return;
+      }
+
+      // Download image from URL for new belief
       const belief = {
         name: proposal.beliefName,
         description: typeof proposal.description === 'string' ? proposal.description : String(proposal.description)
       };
 
-      // Use the additional prompt from the request (admin edited) or from the proposal
-      const imagePrompt: string | null = additionalPrompt !== undefined 
-        ? (additionalPrompt && typeof additionalPrompt === 'string' ? additionalPrompt.trim() : null)
-        : (typeof proposal.additionalPrompt === 'string' ? proposal.additionalPrompt : null);
-      await generateImageForBelief(proposal.category, belief, imagePrompt);
+      await downloadImageFromUrl(imageUrl.trim(), belief.name);
 
-      // Check if image was generated
+      // Check if image was downloaded
       const imagePath = path.join('public', 'img', `${belief.name}.webp`);
       if (!fsSync.existsSync(imagePath)) {
         res.status(500).json({ 
-          error: 'Image generation failed',
+          error: 'Image download failed',
           details: 'The image file was not created. Check server logs for details.'
         });
         return;

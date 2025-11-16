@@ -19,12 +19,6 @@ export async function getAdmins(): Promise<string[]> {
     } catch {
       // File doesn't exist, initialize with klntsky
       const defaultAdmins: Admin[] = [{ username: 'klntsky' }];
-      const dataDir = path.dirname(adminsFilePath);
-      try {
-        await fs.mkdir(dataDir, { recursive: true });
-      } catch {
-        // Directory might already exist
-      }
       await fs.writeFile(adminsFilePath, JSON.stringify(defaultAdmins, null, 2), 'utf8');
       return ['klntsky'];
     }

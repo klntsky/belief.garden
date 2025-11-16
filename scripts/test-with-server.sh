@@ -52,5 +52,10 @@ done
 
 # Run tests
 echo "Running tests..."
-HEADLESS_BROWSER=1 SITE_DEPLOYMENT_PATH=http://localhost:${TEST_PORT} playwright test
+# If arguments are provided, pass them to playwright test
+if [ $# -gt 0 ]; then
+    HEADLESS_BROWSER=1 SITE_DEPLOYMENT_PATH=http://localhost:${TEST_PORT} playwright test "$@"
+else
+    HEADLESS_BROWSER=1 SITE_DEPLOYMENT_PATH=http://localhost:${TEST_PORT} playwright test
+fi
 

@@ -15,6 +15,7 @@
     "broadcast": "tsx scripts/broadcast.ts"
   },
   "dependencies": {
+    "@imagemagick/magick-wasm": "^0.0.31",
     "bcrypt": "^5.1.1",
     "bottleneck": "^2.19.5",
     "connect-flash": "^0.1.1",
@@ -37,7 +38,6 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@imagemagick/magick-wasm": "^0.0.31",
     "@playwright/test": "^1.56.1",
     "@types/bcrypt": "^5.0.2",
     "@types/connect-flash": "^0.0.36",

@@ -478,6 +478,52 @@ function isDebatable(comment, settings = {}) {
   return comment && settings.allowAllDebates || comment?.toLowerCase().includes('debate me');
 }
 
+// Check if user can reply
+// Profile owners can reply to any comment, but only if there's at least one reply from another user
+// Other users can reply to debatable comments, but not consecutively
+function canReply(authenticatedUserId, profileUserId, userChoice, settings) {
+  // Internal helper functions to clarify intent
+  const hasComment = () => !!userChoice?.comment;
+  const isAuthenticated = () => !!authenticatedUserId;
+  const isProfileOwner = () => profileUserId === authenticatedUserId;
+  const getReplies = () => userChoice?.replies || [];
+  
+  const hasRepliesFromOthers = () => {
+    const replies = getReplies();
+    return replies.some(reply => reply.username !== authenticatedUserId);
+  };
+  
+  const isLastReplyFromUser = () => {
+    const replies = getReplies();
+    const lastReply = replies[replies.length - 1];
+    return lastReply && lastReply.username === authenticatedUserId;
+  };
+  
+  const canNonOwnerReply = () => {
+    if (!isDebatable(userChoice?.comment, settings)) {
+      return false;
+    }
+    // Non-owners cannot reply consecutively
+    return !isLastReplyFromUser();
+  };
+  
+  const canProfileOwnerReply = () => {
+    // Profile owners can reply only if there's at least one reply from another user
+    return hasRepliesFromOthers();
+  };
+  
+  // Main logic
+  if (!isAuthenticated() || !hasComment()) {
+    return false;
+  }
+  
+  if (isProfileOwner()) {
+    return canProfileOwnerReply();
+  } else {
+    return canNonOwnerReply();
+  }
+}
+
 // Helper function to create toggle replies button
 function createToggleRepliesButton(userChoice, canReply, profileUserId, belief, container, repliesContainer) {
   const toggleReplies = document.createElement('button');
@@ -512,10 +558,7 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
   }
 
   // Check if user can reply
-  const canReply = window.authenticatedUserId &&
-    isDebatable(userChoice?.comment, settings) &&
-    ((profileUserId === window.authenticatedUserId && userChoice?.replies?.some(r => r.username !== window.authenticatedUserId)) ||
-     (profileUserId !== window.authenticatedUserId));
+  const userCanReply = canReply(window.authenticatedUserId, profileUserId, userChoice, settings);
 
   if (readOnly) {
     // Create comment display
@@ -575,8 +618,8 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
   repliesContainer = createRepliesContainer(userChoice, profileUserId, belief);
 
   // Add toggle button if there are replies or user can reply
-  if (userChoice.replies?.length > 0 || canReply) {
-    const toggleReplies = createToggleRepliesButton(userChoice, canReply, profileUserId, belief, container, repliesContainer);
+  if (userChoice.replies?.length > 0 || userCanReply) {
+    const toggleReplies = createToggleRepliesButton(userChoice, userCanReply, profileUserId, belief, container, repliesContainer);
     container.appendChild(toggleReplies);
   }
 

@@ -2,8 +2,11 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { addUser, deleteUserAccount } from '../src/utils/userUtils.js';
+import { getAdmins } from '../src/utils/adminUtils.js';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import fs from 'fs/promises';
+import path from 'path';
 
 dotenv.config();
 
@@ -76,6 +79,57 @@ export async function addBeliefComment(page: Page, beliefName: string, commentTe
 // Helper function to wait for auto-save
 export async function waitForAutoSave(page: Page, duration = 1500): Promise<void> {
   await page.waitForTimeout(duration);
+}
+
+// Helper function to set allowAllDebates setting for a user
+export async function setAllowAllDebates(page: Page, allowAllDebates: boolean): Promise<void> {
+  const response = await page.request.post(`${SITE_DEPLOYMENT_PATH}/api/settings`, {
+    data: {
+      allowAllDebates
+    }
+  });
+  
+  if (!response.ok()) {
+    throw new Error(`Failed to set allowAllDebates: ${response.status()} ${await response.text()}`);
+  }
+}
+
+// Admin management functions for testing
+const adminsFilePath = path.join('data', 'admins.json');
+
+interface Admin {
+  username: string;
+}
+
+/**
+ * Set the list of admin usernames (for testing purposes)
+ * @param usernames - Array of usernames to set as admins
+ */
+async function setAdmins(usernames: string[]): Promise<void> {
+  const adminList: Admin[] = usernames.map(username => ({ username }));
+  await fs.writeFile(adminsFilePath, JSON.stringify(adminList, null, 2), 'utf8');
+}
+
+/**
+ * Add a user as an admin (for testing purposes)
+ * @param username - The username to add as admin
+ */
+export async function addAdmin(username: string): Promise<void> {
+  const admins = await getAdmins();
+  if (!admins.includes(username)) {
+    await setAdmins([...admins, username]);
+  }
+}
+
+/**
+ * Remove a user from admins (for testing purposes)
+ * @param username - The username to remove from admins
+ */
+export async function removeAdmin(username: string): Promise<void> {
+  const admins = await getAdmins();
+  if (admins.includes(username)) {
+    await setAdmins(admins.filter(u => u !== username));
+  }
 }
 
 // Helper function for common test setup

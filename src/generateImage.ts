@@ -52,63 +52,69 @@ export function imageExists(imagePath: string): boolean {
   return fs.existsSync(imagePath);
 }
 
+// Generate the image URL by calling OpenAI's API (without downloading)
+export async function generateImageUrlForBelief(category: string, belief: Belief, customAdditionalPrompt: string | null = null): Promise<string> {
+  const categoryPrompt = additionalPrompts[category];
+  
+  // Combine category prompt and custom prompt
+  const additionalPromptParts: string[] = [];
+  
+  if (categoryPrompt) {
+    additionalPromptParts.push(categoryPrompt);
+  }
+  
+  if (customAdditionalPrompt && customAdditionalPrompt.trim()) {
+    additionalPromptParts.push(customAdditionalPrompt.trim());
+  }
+  
+  // If no prompts at all, throw error
+  if (additionalPromptParts.length === 0) {
+    throw new Error(`No additional prompt for ${category}`);
+  }
+  
+  const additionalPrompt = additionalPromptParts.join(' ');
+  
+  const prompt = `generate me an abstract pixarified unreal engine 3d cartoon image on the topic of ${belief.name} - use this text for inspiration, but not literally: "${belief.description}". ${additionalPrompt}`;
+  console.log(`Generating image URL for belief: ${belief.name}`);
+
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY || ''}`, // Ensure the API key is set
+    },
+    body: JSON.stringify({
+      prompt: prompt,
+      model: 'dall-e-3',
+      // style: 'vivid',
+      // quality: 'hd',
+      n: 1,
+      size: '1024x1024',
+    }),
+  });
+
+  const data = await response.json() as { data?: Array<{ url?: string }>; error?: { message: string } };
+  console.log('API Response:', JSON.stringify(data, null, 2));
+
+  // Check if the API returned an error
+  if (!response.ok) {
+    throw new Error(`OpenAI API Error: ${data.error?.message || 'Unknown error'}`);
+  }
+
+  const imageUrl = data.data?.[0]?.url;
+
+  if (!imageUrl) {
+    throw new Error('No image URL returned by OpenAI API.');
+  }
+
+  return imageUrl;
+}
+
 // Generate the image by calling OpenAI's API with a POST request
 export async function generateImageForBelief(category: string, belief: Belief, customAdditionalPrompt: string | null = null): Promise<void> {
   try {
-    const categoryPrompt = additionalPrompts[category];
+    const imageUrl = await generateImageUrlForBelief(category, belief, customAdditionalPrompt);
     
-    // Combine category prompt and custom prompt
-    const additionalPromptParts: string[] = [];
-    
-    if (categoryPrompt) {
-      additionalPromptParts.push(categoryPrompt);
-    }
-    
-    if (customAdditionalPrompt && customAdditionalPrompt.trim()) {
-      additionalPromptParts.push(customAdditionalPrompt.trim());
-    }
-    
-    // If no prompts at all, log and return
-    if (additionalPromptParts.length === 0) {
-      console.log(`No additional prompt for ${category}`);
-      return;
-    }
-    
-    const additionalPrompt = additionalPromptParts.join(' ');
-    
-    const prompt = `generate me an abstract pixarified unreal engine 3d cartoon image on the topic of ${belief.name} - use this text for inspiration, but not literally: "${belief.description}". ${additionalPrompt}`;
-    console.log(`Generating image for belief: ${belief.name}`);
-
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY || ''}`, // Ensure the API key is set
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        model: 'dall-e-3',
-        // style: 'vivid',
-        // quality: 'hd',
-        n: 1,
-        size: '1024x1024',
-      }),
-    });
-
-    const data = await response.json() as { data?: Array<{ url?: string }>; error?: { message: string } };
-    console.log('API Response:', JSON.stringify(data, null, 2));
-
-    // Check if the API returned an error
-    if (!response.ok) {
-      throw new Error(`OpenAI API Error: ${data.error?.message || 'Unknown error'}`);
-    }
-
-    const imageUrl = data.data?.[0]?.url;
-
-    if (!imageUrl) {
-      throw new Error('No image URL returned by OpenAI API.');
-    }
-
     const imagePath = path.join(outputFolder, `${belief.name}.webp`);
 
     // Download the image and save it locally
@@ -119,6 +125,23 @@ export async function generateImageForBelief(category: string, belief: Belief, c
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Failed to generate image for belief: ${belief.name}`, errorMessage);
+    throw error;
   }
+}
+
+// Download image from URL and save it locally
+export async function downloadImageFromUrl(imageUrl: string, beliefName: string): Promise<void> {
+  const imagePath = path.join(outputFolder, `${beliefName}.webp`);
+  
+  // Download the image and save it locally
+  const imageResponse = await fetch(imageUrl);
+  
+  if (!imageResponse.ok) {
+    throw new Error(`Failed to download image: HTTP ${imageResponse.status} ${imageResponse.statusText}`);
+  }
+  
+  const imageBuffer = await imageResponse.buffer();
+  fs.writeFileSync(imagePath, imageBuffer);
+  console.log(`Image downloaded and saved: ${imagePath}`);
 }
 
