@@ -8,6 +8,7 @@ sessions/
 /test-results/
 .aider*
 .env
+!.env.example
 /dist/
 public/users.json
 broadcast.json
