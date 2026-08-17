@@ -1,5 +1,4 @@
 // src/generateImage.ts
-import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -7,6 +6,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const outputFolder = path.join('public', 'img');
+const previewFolder = path.join(outputFolder, 'previews');
+const IMAGE_MODEL = 'gpt-image-2';
+const IMAGE_QUALITY = process.env.NODE_ENV === 'test' ? 'low' : 'medium';
 // const additionalPrompt = 'image style: use various (warm and cold and green) colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft';
 
 const additionalPrompts: Record<string, string> = {
@@ -75,36 +77,57 @@ export async function generateImageUrlForBelief(category: string, belief: Belief
   const additionalPrompt = additionalPromptParts.join(' ');
   
   const prompt = `generate me an abstract pixarified unreal engine 3d cartoon image on the topic of ${belief.name} - use this text for inspiration, but not literally: "${belief.description}". ${additionalPrompt}`;
-  console.log(`Generating image URL for belief: ${belief.name}`);
+  console.log(`Generating image URL for belief: ${belief.name} (model: ${IMAGE_MODEL}, quality: ${IMAGE_QUALITY})`);
 
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY || ''}`, // Ensure the API key is set
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY || ''}`,
+      // node-fetch v2 gunzip truncated large GPT Image payloads
+      'Accept-Encoding': 'identity',
     },
     body: JSON.stringify({
       prompt: prompt,
-      model: 'dall-e-3',
-      // style: 'vivid',
-      // quality: 'hd',
+      model: IMAGE_MODEL,
       n: 1,
       size: '1024x1024',
+      quality: IMAGE_QUALITY,
+      output_format: 'webp',
     }),
   });
 
-  const data = await response.json() as { data?: Array<{ url?: string }>; error?: { message: string } };
-  console.log('API Response:', JSON.stringify(data, null, 2));
+  const data = await response.json() as {
+    data?: Array<{ url?: string; b64_json?: string }>;
+    error?: { message: string };
+  };
+  const loggedData = {
+    ...data,
+    data: data.data?.map((item) => ({
+      ...item,
+      b64_json: item.b64_json ? `[${item.b64_json.length} chars]` : undefined,
+    })),
+  };
+  console.log('API Response:', JSON.stringify(loggedData, null, 2));
 
   // Check if the API returned an error
   if (!response.ok) {
     throw new Error(`OpenAI API Error: ${data.error?.message || 'Unknown error'}`);
   }
 
-  const imageUrl = data.data?.[0]?.url;
+  const image = data.data?.[0];
+  if (image?.b64_json) {
+    fs.mkdirSync(previewFolder, { recursive: true });
+    const filename = `preview-${Date.now()}.webp`;
+    const previewPath = path.join(previewFolder, filename);
+    fs.writeFileSync(previewPath, Buffer.from(image.b64_json, 'base64'));
+    console.log(`Preview image saved: ${previewPath}`);
+    return `/img/previews/${filename}`;
+  }
 
+  const imageUrl = image?.url;
   if (!imageUrl) {
-    throw new Error('No image URL returned by OpenAI API.');
+    throw new Error('No image data returned by OpenAI API.');
   }
 
   return imageUrl;
@@ -114,14 +137,7 @@ export async function generateImageUrlForBelief(category: string, belief: Belief
 export async function generateImageForBelief(category: string, belief: Belief, customAdditionalPrompt: string | null = null): Promise<void> {
   try {
     const imageUrl = await generateImageUrlForBelief(category, belief, customAdditionalPrompt);
-    
-    const imagePath = path.join(outputFolder, `${belief.name}.webp`);
-
-    // Download the image and save it locally
-    const imageResponse = await fetch(imageUrl);
-    const imageBuffer = await imageResponse.buffer();
-    fs.writeFileSync(imagePath, imageBuffer);
-    console.log(`Image saved: ${imagePath}`);
+    await downloadImageFromUrl(imageUrl, belief.name);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Failed to generate image for belief: ${belief.name}`, errorMessage);
@@ -132,15 +148,24 @@ export async function generateImageForBelief(category: string, belief: Belief, c
 // Download image from URL and save it locally
 export async function downloadImageFromUrl(imageUrl: string, beliefName: string): Promise<void> {
   const imagePath = path.join(outputFolder, `${beliefName}.webp`);
-  
-  // Download the image and save it locally
+
+  if (imageUrl.startsWith('/img/')) {
+    const sourcePath = path.join('public', imageUrl.replace(/^\//, ''));
+    if (!fs.existsSync(sourcePath)) {
+      throw new Error(`Preview image not found: ${sourcePath}`);
+    }
+    fs.copyFileSync(sourcePath, imagePath);
+    console.log(`Image copied from preview: ${imagePath}`);
+    return;
+  }
+
   const imageResponse = await fetch(imageUrl);
-  
+
   if (!imageResponse.ok) {
     throw new Error(`Failed to download image: HTTP ${imageResponse.status} ${imageResponse.statusText}`);
   }
-  
-  const imageBuffer = await imageResponse.buffer();
+
+  const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
   fs.writeFileSync(imagePath, imageBuffer);
   console.log(`Image downloaded and saved: ${imagePath}`);
 }

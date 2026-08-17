@@ -139,6 +139,19 @@ test.describe('Ban System', () => {
     // Wait for ban to be saved
     const banItem = page.locator('.ban-item', { hasText: user2.username });
     await expect(banItem).toBeVisible();
+
+    // Owner replies so user2 is no longer the last replier. Otherwise the
+    // consecutive-reply rule hides the reply input and this test never reaches
+    // the ban check.
+    await goToProfile(page, testUsername);
+    const ownerBeliefCard = page.locator(`.belief[data-belief-name="${beliefName}"]`);
+    await expect(ownerBeliefCard).toBeVisible({ timeout: 15000 });
+    await ownerBeliefCard.locator('.toggle-replies').click();
+    const ownerReplyInput = page.locator('.reply-input');
+    await expect(ownerReplyInput).toBeVisible();
+    await ownerReplyInput.fill('Owner reply after ban');
+    await page.locator('.reply-button').click();
+    await waitForAutoSave(page);
     await logoutUser(page);
 
     // Verify banned user can't reply
@@ -154,12 +167,14 @@ test.describe('Ban System', () => {
     await replyInput.fill('This reply should fail');
 
     const replyButton = page.locator('.reply-button');
+    const responsePromise = page.waitForResponse(response =>
+      response.request().method() === 'POST' &&
+      response.url().includes('/reply') &&
+      !response.ok()
+    );
     await replyButton.click();
 
-    // Wait for error response
-    const response = await page.waitForResponse(response =>
-      response.url().includes('/api/user-beliefs') && !response.ok()
-    );
+    const response = await responsePromise;
     const errorData = await response.json() as { error: string };
     expect(errorData.error).toContain('banned from replying');
   });
