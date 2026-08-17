@@ -11,8 +11,64 @@ const RATE_LIMIT = Number(process.env.RATE_LIMIT || 3);
 const CHAT_RATE_LIMIT = 2; // 2 messages per minute
 const CHAT_RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
+const PROPOSAL_RATE_LIMIT = Number(process.env.PROPOSAL_RATE_LIMIT || 10);
+const PROPOSAL_RATE_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+
 const registrationCache = new NodeCache({ stdTTL: 30 * 24 * 60 * 60 }); // 30 days in seconds
 const chatCache = new NodeCache({ stdTTL: Math.ceil(CHAT_RATE_WINDOW / 1000) }); // TTL matches the rate window
+const proposalCache = new NodeCache({ stdTTL: Math.ceil(PROPOSAL_RATE_WINDOW / 1000) }); // TTL matches the rate window
+
+type RateLimiterConfig = {
+  limit: number;
+  windowMs: number;
+  keyPrefix: string;
+  cache: NodeCache;
+  errorMessage: string;
+};
+
+type RateLimiterMiddleware = (req: Request, res: Response, next: NextFunction) => void;
+
+function createUserRateLimiter(config: RateLimiterConfig): RateLimiterMiddleware {
+  const { limit, windowMs, keyPrefix, cache, errorMessage } = config;
+
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const userId = req.user?.id as string | undefined;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const key = `${keyPrefix}:${userId}`;
+    const now = Date.now();
+    const userHistory = (cache.get(key) as number[] | undefined) || [];
+
+    // Remove entries older than the rate window
+    const recentEntries = userHistory.filter(timestamp => now - timestamp < windowMs);
+
+    if (recentEntries.length >= limit) {
+      const oldestEntry = recentEntries[0];
+      if (oldestEntry === undefined) {
+        res.status(429).json({
+          error: errorMessage,
+          timeUntilNext: Math.ceil(windowMs / 1000)
+        });
+        return;
+      }
+
+      const timeUntilNext = windowMs - (now - oldestEntry);
+      res.status(429).json({
+        error: errorMessage,
+        timeUntilNext: Math.ceil(timeUntilNext / 1000)
+      });
+      return;
+    }
+
+    // Add current timestamp
+    recentEntries.push(now);
+    cache.set(key, recentEntries);
+    next();
+  };
+}
 
 interface LimiterWithTimestamp extends Bottleneck {
   lastUsed: number;
@@ -98,40 +154,21 @@ export function perUserWriteLimiter(req: Request, res: Response, next: NextFunct
 }
 
 // Chat-specific rate limiter middleware
-export const chatRateLimiter = (req: Request, res: Response, next: NextFunction): void => {
-  const userId = req.user?.id as string | undefined;
-  if (!userId) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
+export const chatRateLimiter: RateLimiterMiddleware = createUserRateLimiter({
+  limit: CHAT_RATE_LIMIT,
+  windowMs: CHAT_RATE_WINDOW,
+  keyPrefix: 'chat',
+  cache: chatCache,
+  errorMessage: 'Rate limit exceeded',
+});
 
-  const key = `chat:${userId}`;
-  const now = Date.now();
-  const userHistory = (chatCache.get(key) as number[] | undefined) || [];
+// Belief proposal-related rate limiter middleware
+export const proposalRateLimiter: RateLimiterMiddleware = createUserRateLimiter({
+  limit: PROPOSAL_RATE_LIMIT,
+  windowMs: PROPOSAL_RATE_WINDOW,
+  keyPrefix: 'proposal',
+  cache: proposalCache,
+  errorMessage: 'Proposal rate limit exceeded. Please try again later.',
+});
 
-  // Remove messages older than the rate window
-  const recentMessages = userHistory.filter(timestamp => now - timestamp < CHAT_RATE_WINDOW);
-
-  if (recentMessages.length >= CHAT_RATE_LIMIT) {
-    const oldestMessage = recentMessages[0];
-    if (oldestMessage === undefined) {
-      res.status(429).json({
-        error: 'Rate limit exceeded',
-        timeUntilNext: Math.ceil(CHAT_RATE_WINDOW / 1000)
-      });
-      return;
-    }
-    const timeUntilNext = CHAT_RATE_WINDOW - (now - oldestMessage);
-    res.status(429).json({
-      error: 'Rate limit exceeded',
-      timeUntilNext: Math.ceil(timeUntilNext / 1000)
-    });
-    return;
-  }
-
-  // Add current message timestamp
-  recentMessages.push(now);
-  chatCache.set(key, recentMessages);
-  next();
-};
 

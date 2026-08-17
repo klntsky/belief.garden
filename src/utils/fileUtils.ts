@@ -1,25 +1,14 @@
-// src/utils/fileUtils.ts
-
 import fs from 'fs/promises';
-import { randomBytes } from 'crypto';
+import path from 'path';
 
-/**
- * Write data to a file atomically by using a temporary file and rename.
- * @param filePath - The target file path
- * @param data - The data to write
- */
-export async function writeFileAtomic(filePath: string, data: string | Buffer): Promise<void> {
-  const tempPath = `${filePath}.${randomBytes(6).toString('hex')}.tmp`;
-  try {
-    await fs.writeFile(tempPath, data, 'utf8');
-    await fs.rename(tempPath, filePath);
-  } catch (err) {
-    try {
-      await fs.unlink(tempPath);
-    } catch (unlinkErr) {
-      // Ignore error if temp file doesn't exist
-    }
-    throw err;
+export async function writeFileAtomic(filePath: string, data: string | Uint8Array): Promise<void> {
+  const dir = path.dirname(filePath);
+  if (dir && dir !== '.') {
+    await fs.mkdir(dir, { recursive: true });
   }
+
+  const tmpPath = `${filePath}.${process.pid}.${Math.random().toString(16).slice(2)}.tmp`;
+  await fs.writeFile(tmpPath, data);
+  await fs.rename(tmpPath, filePath);
 }
 

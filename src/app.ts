@@ -17,6 +17,13 @@ import { runDataMigrations } from './migrations.js';
 
 dotenv.config();
 
+// Global handler for unhandled promise rejections so the server
+// doesn't crash silently during tests. This logs the error and
+// keeps the process running so we can inspect the actual source.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
 // Validate required environment variables
 if (!process.env.OPENAI_API_KEY) {
   console.error('Error: OPENAI_API_KEY environment variable is required but not set.');

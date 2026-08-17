@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+run pnpm run start to get feedback.
+
+do not truncate test output with head or tail. it is always compact enough
+ 
+You can run the test files individually e.g:
+
+```
+pnpm test test/adminProposalApproval.spec.ts
+```

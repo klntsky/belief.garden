@@ -10,16 +10,35 @@ if [ -f .env ]; then
     set +a
 fi
 
-# Check if TEST_PORT is set
+# Find the first free port starting from TEST_PORT (required).
+# This allows multiple agents to share a base port but avoid collisions by
+# walking upwards until a free port is found.
+find_available_port() {
+    local base_port=$1
+    local max_port=${2:-65535}
+
+    for ((port=base_port; port<=max_port; port++)); do
+        # /dev/tcp is a bash built-in: connection succeeds if something is listening
+        if ! (echo > /dev/tcp/127.0.0.1/$port) >/dev/null 2>&1; then
+            echo "$port"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 if [ -z "$TEST_PORT" ]; then
-    echo "Error: TEST_PORT is not set. Please set it in .env file or export it."
+    echo "Error: TEST_PORT is not set. Please set it in your environment or .env file."
     exit 1
 fi
 
-# Kill any existing server processes
-echo "Stopping any existing server processes..."
-pkill -f "tsx src/app.ts" || true
-sleep 1
+TEST_PORT="$(find_available_port "$TEST_PORT" "${TEST_PORT_MAX:-65535}")" || {
+    echo "Error: could not find an available port starting from TEST_PORT=${TEST_PORT} up to ${TEST_PORT_MAX:-65535}"
+    exit 1
+}
+
+echo "Using test port ${TEST_PORT}"
 
 # Start the server in the background with NODE_ENV=test to bypass rate limiting
 echo "Starting server on port ${TEST_PORT}..."
@@ -30,7 +49,6 @@ SERVER_PID=$!
 cleanup() {
     echo "Stopping server (PID: $SERVER_PID)..."
     kill $SERVER_PID 2>/dev/null || true
-    pkill -f "tsx src/app.ts" || true
 }
 
 trap cleanup EXIT

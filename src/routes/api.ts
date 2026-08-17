@@ -25,7 +25,11 @@ import {
   postFeed,
   withUserBeliefs,
 } from '../utils/userUtils.js';
-import { perUserWriteLimiter, chatRateLimiter } from '../utils/rateLimiter.js';
+import {
+  perUserWriteLimiter,
+  chatRateLimiter,
+  proposalRateLimiter
+} from '../utils/rateLimiter.js';
 import fsSync from 'fs';
 import { promises as fs } from 'fs';
 import { generateImageUrlForBelief, downloadImageFromUrl } from '../generateImage.js';
@@ -47,6 +51,10 @@ const bansDir = path.join('data', 'bans');
 const COMMENT_MAX_LENGTH = 400;
 const JSON_SIZE_LIMIT = '100kb';
 const MAX_CHAT_MENTION_USERNAMES = 3;
+
+const PROPOSAL_NAME_MAX_LENGTH = 100;
+const PROPOSAL_DESCRIPTION_MAX_LENGTH = 500;
+const PROPOSAL_ADDITIONAL_PROMPT_MAX_LENGTH = 300;
 
 const router: express.Router = express.Router();
 
@@ -996,6 +1004,7 @@ router.post(
 router.post(
   '/api/propose-belief',
   ensureAuthenticatedApi,
+  proposalRateLimiter,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req: Request, res: Response) => {
     const { category, name, description, additionalPrompt } = req.body as {
@@ -1015,18 +1024,18 @@ router.post(
       return;
     }
 
-    if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) {
-      res.status(400).json({ error: 'name must be a non-empty string with max 100 characters' });
+    if (typeof name !== 'string' || name.trim().length === 0 || name.length > PROPOSAL_NAME_MAX_LENGTH) {
+      res.status(400).json({ error: `name must be a non-empty string with max ${PROPOSAL_NAME_MAX_LENGTH} characters` });
       return;
     }
 
-    if (typeof description !== 'string' || description.trim().length === 0 || description.length > 500) {
-      res.status(400).json({ error: 'description must be a non-empty string with max 500 characters' });
+    if (typeof description !== 'string' || description.trim().length === 0 || description.length > PROPOSAL_DESCRIPTION_MAX_LENGTH) {
+      res.status(400).json({ error: `description must be a non-empty string with max ${PROPOSAL_DESCRIPTION_MAX_LENGTH} characters` });
       return;
     }
 
-    if (additionalPrompt && (typeof additionalPrompt !== 'string' || additionalPrompt.length > 300)) {
-      res.status(400).json({ error: 'additionalPrompt must be a string with max 300 characters' });
+    if (additionalPrompt && (typeof additionalPrompt !== 'string' || additionalPrompt.length > PROPOSAL_ADDITIONAL_PROMPT_MAX_LENGTH)) {
+      res.status(400).json({ error: `additionalPrompt must be a string with max ${PROPOSAL_ADDITIONAL_PROMPT_MAX_LENGTH} characters` });
       return;
     }
 
