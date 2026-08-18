@@ -13,6 +13,7 @@ const userSettingsDir = path.join('data', 'settings');
 const notificationsDir = path.join('data', 'notifications');
 const followersDir = path.join('data', 'followers');
 const followsDir = path.join('data', 'follows');
+let followWriteChain: Promise<void> = Promise.resolve();
 
 const MAX_NOTIFICATIONS = 200;
 const MAX_FEED_ENTRIES = 400;
@@ -653,6 +654,15 @@ export async function getUserFollowing(username: string): Promise<string[]> {
  * @param isFollowing - True to follow, false to unfollow
  */
 async function updateFollowRelationship(targetUser: string, follower: string, isFollowing: boolean): Promise<void> {
+  const operation = followWriteChain.then(
+    () => updateFollowRelationshipUnlocked(targetUser, follower, isFollowing),
+    () => updateFollowRelationshipUnlocked(targetUser, follower, isFollowing),
+  );
+  followWriteChain = operation.then(() => undefined, () => undefined);
+  return operation;
+}
+
+async function updateFollowRelationshipUnlocked(targetUser: string, follower: string, isFollowing: boolean): Promise<void> {
   assertUsername(targetUser);
   assertUsername(follower);
   const followersPath = path.join(followersDir, `${targetUser}.json`);
