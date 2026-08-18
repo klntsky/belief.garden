@@ -63,6 +63,10 @@ router.post('/register', rateLimitRegistration, async (req: Request, res: Respon
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password!, saltRounds);
       await addUser({ username: username!, passwordHash });
+      await pushNotificationToUser(username!, {
+        type: 'welcome',
+        actor: username!,
+      });
       await postFeed({
         actor: username!,
         type: 'new_user_joined'
@@ -223,10 +227,6 @@ async function validateRegistration(username: string | undefined, password: stri
   if (passwordError) {
     return passwordError;
   }
-  await pushNotificationToUser(username, {
-    type: 'welcome',
-    actor: username,
-  });
   return null;
 }
 
