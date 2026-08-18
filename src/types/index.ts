@@ -3,6 +3,7 @@
 export interface User {
   username: string;
   passwordHash: string;
+  sessionVersion?: string;
 }
 
 export interface UserBeliefs {

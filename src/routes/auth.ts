@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import zxcvbn from 'zxcvbn';
-import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed, pushNotificationToUser } from '../utils/userUtils.js';
+import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed, pushNotificationToUser, invalidateUserSessions } from '../utils/userUtils.js';
 import { clearLoginRateLimit, rateLimitLogin, rateLimitRegistration } from '../utils/rateLimiter.js';
 
 const router: express.Router = express.Router();
@@ -21,7 +21,10 @@ passport.use(
       const match = await bcrypt.compare(password, user.passwordHash);
       if (match) {
         clearLoginRateLimit(req, username);
-        done(null, { id: user.username } as Express.User);
+        done(null, {
+          id: user.username,
+          sessionVersion: user.sessionVersion,
+        } as Express.User);
       } else {
         done(null, false, { message: 'Incorrect username or password.' });
       }
@@ -31,14 +34,19 @@ passport.use(
   })
 );
 
-passport.serializeUser((user: Express.User, done: (err: unknown, id?: string) => void) => {
-  done(null, user.id);
+passport.serializeUser((user: Express.User, done: (err: unknown, id?: { id: string; sessionVersion?: string }) => void) => {
+  done(null, {
+    id: user.id,
+    sessionVersion: (user as Express.User & { sessionVersion?: string }).sessionVersion,
+  });
 });
 
-passport.deserializeUser(async (id: string, done: (err: unknown, user?: Express.User | false) => void): Promise<void> => {
+passport.deserializeUser(async (serialized: string | { id: string; sessionVersion?: string }, done: (err: unknown, user?: Express.User | false) => void): Promise<void> => {
   try {
+    const id = typeof serialized === 'string' ? serialized : serialized.id;
+    const sessionVersion = typeof serialized === 'string' ? undefined : serialized.sessionVersion;
     const user = await getUserByUsername(id);
-    if (user) {
+    if (user && user.sessionVersion === sessionVersion) {
       done(null, { id: user.username } as Express.User);
     } else {
       done(null, false);
@@ -158,6 +166,8 @@ router.post('/api/change-password', ensureAuthenticated, express.json(), async (
     const saltRounds = 10;
     const newHash = await bcrypt.hash(newPassword, saltRounds);
     await updateUserPassword(user.username, newHash);
+    await invalidateUserSessions(user.username);
+    res.clearCookie('connect.sid');
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
     console.error('Password change error:', err);

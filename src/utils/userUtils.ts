@@ -2,6 +2,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { writeFileAtomic } from './fileUtils.js';
 import { feedQueue, notificationQueue, userBeliefsManager } from './queueUtils.js';
 import type { User, UserBeliefs, UserSettings, Notification, FeedEntry } from '../types/index.js';
@@ -130,6 +131,7 @@ export async function updateUserPassword(username: string, newPasswordHash: stri
   const user = await getUserByUsername(username);
   if (user) {
     user.passwordHash = newPasswordHash;
+    user.sessionVersion = randomUUID();
     await saveUser(user);
   } else {
     throw new Error('User not found.');
@@ -444,6 +446,33 @@ export async function saveUserBio(username: string, bioText: string): Promise<vo
   await writeFileAtomic(bioFilePath, bioText);
 }
 
+export async function invalidateUserSessions(username: string): Promise<void> {
+  assertUsername(username);
+  const sessionDir = 'sessions';
+  const sessionFiles = await fs.readdir(sessionDir).catch((err) => {
+    if ((err as { code?: string }).code === 'ENOENT') return [];
+    throw err;
+  });
+
+  await Promise.all(sessionFiles.map(async (file) => {
+    const filePath = path.join(sessionDir, file);
+    try {
+      const sessionData = JSON.parse(await fs.readFile(filePath, 'utf8')) as {
+        passport?: { user?: string | { id?: string } };
+      };
+      const storedUser = sessionData.passport?.user;
+      const storedUsername = typeof storedUser === 'string' ? storedUser : storedUser?.id;
+      if (storedUsername === username) {
+        await fs.unlink(filePath).catch((err) => {
+          if ((err as { code?: string }).code !== 'ENOENT') throw err;
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to inspect session file ${filePath}:`, error);
+    }
+  }));
+}
+
 /**
  * Delete a user's account, including their account file, beliefs file, and bio.
  * @param username - The username of the user.
@@ -513,25 +542,7 @@ export async function deleteUserAccount(username: string): Promise<void> {
     await writeFileAtomic(FEED_FILE, JSON.stringify(filtered, null, 2));
   });
 
-  const sessionDir = 'sessions';
-  const sessionFiles = await fs.readdir(sessionDir).catch((err) => {
-    const error = err as { code?: string };
-    if (error.code === 'ENOENT') return [];
-    throw err;
-  });
-  await Promise.all(sessionFiles.map(async (file) => {
-    const filePath = path.join(sessionDir, file);
-    try {
-      const sessionData = JSON.parse(await fs.readFile(filePath, 'utf8')) as {
-        passport?: { user?: string };
-      };
-      if (sessionData.passport?.user === username) {
-        await unlinkIfExists(filePath);
-      }
-    } catch (error) {
-      console.error(`Failed to inspect session file ${filePath}:`, error);
-    }
-  }));
+  await invalidateUserSessions(username);
 }
 
 /**
