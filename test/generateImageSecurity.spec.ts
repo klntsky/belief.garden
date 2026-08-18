@@ -30,4 +30,25 @@ test.describe('downloadImageFromUrl security', () => {
       downloadImageFromUrl('http://127.0.0.1/internal', 'security-copy'),
     ).rejects.toThrow('Image host is not allowed');
   });
+
+  test('does not follow redirects from allowlisted image hosts', async () => {
+    const originalFetch = globalThis.fetch;
+    let redirectMode: string | undefined;
+    globalThis.fetch = (async (_input, init) => {
+      redirectMode = init?.redirect;
+      throw new Error('mock request stopped');
+    }) as typeof fetch;
+
+    try {
+      await expect(
+        downloadImageFromUrl(
+          'https://oaidalleapiprodscus.blob.core.windows.net/image.webp',
+          'security-copy',
+        ),
+      ).rejects.toThrow('mock request stopped');
+      expect(redirectMode).toBe('manual');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

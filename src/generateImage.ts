@@ -188,7 +188,7 @@ export async function downloadImageFromUrl(imageUrl: string, beliefName: string)
     throw new Error('Image host is not allowed');
   }
 
-  const imageResponse = await fetch(remoteUrl);
+  const imageResponse = await fetch(remoteUrl, { redirect: 'manual' });
 
   if (!imageResponse.ok) {
     throw new Error(`Failed to download image: HTTP ${imageResponse.status} ${imageResponse.statusText}`);
