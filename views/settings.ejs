@@ -292,12 +292,24 @@ async function loadFollowing() {
     const data = await response.json();
 
     const followingList = document.getElementById('following-list');
-    followingList.innerHTML = data.following.map(username => `
-      <span class="following-item">
-        <a href="/${username}" class="username feed-username-label" data-username="${username}">${username}</a>
-        <button class="unfollow-btn" data-user="${username}">×</button>
-      </span>
-    `).join('');
+    followingList.replaceChildren(...data.following.map(username => {
+      const item = document.createElement('span');
+      item.className = 'following-item';
+
+      const link = document.createElement('a');
+      link.href = `/${encodeURIComponent(username)}`;
+      link.className = 'username feed-username-label';
+      link.dataset.username = username;
+      link.textContent = username;
+
+      const button = document.createElement('button');
+      button.className = 'unfollow-btn';
+      button.dataset.user = username;
+      button.textContent = '×';
+
+      item.append(link, button);
+      return item;
+    }));
 
     // Add click handlers for unfollow buttons
     followingList.querySelectorAll('.unfollow-btn').forEach(button => {
@@ -323,8 +335,10 @@ async function loadFollowing() {
     });
   } catch (error) {
     console.error('Error loading following list:', error);
-    document.getElementById('following-list').innerHTML =
-      '<div class="error-message">Failed to load following list. Please refresh the page to try again.</div>';
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'error-message';
+    errorMessage.textContent = 'Failed to load following list. Please refresh the page to try again.';
+    document.getElementById('following-list').replaceChildren(errorMessage);
   } finally {
     addCorrelationBullets();
   }
