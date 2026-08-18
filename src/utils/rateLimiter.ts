@@ -8,6 +8,8 @@ const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 dotenv.config({ path: envFile });
 
 const RATE_LIMIT = Number(process.env.RATE_LIMIT || 3);
+const LOGIN_RATE_LIMIT = Number(process.env.LOGIN_RATE_LIMIT || 5);
+const LOGIN_RATE_WINDOW = 15 * 60;
 const CHAT_RATE_LIMIT = 2; // 2 messages per minute
 const CHAT_RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
@@ -15,6 +17,7 @@ const PROPOSAL_RATE_LIMIT = Number(process.env.PROPOSAL_RATE_LIMIT || 10);
 const PROPOSAL_RATE_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
 
 const registrationCache = new NodeCache({ stdTTL: 30 * 24 * 60 * 60 }); // 30 days in seconds
+const loginCache = new NodeCache({ stdTTL: LOGIN_RATE_WINDOW });
 const chatCache = new NodeCache({ stdTTL: Math.ceil(CHAT_RATE_WINDOW / 1000) }); // TTL matches the rate window
 const proposalCache = new NodeCache({ stdTTL: Math.ceil(PROPOSAL_RATE_WINDOW / 1000) }); // TTL matches the rate window
 
@@ -107,6 +110,29 @@ export function rateLimitRegistration(req: Request, res: Response, next: NextFun
     registrationCache.set(key, count + 1);
     next();
   }
+}
+
+function loginRateLimitKey(req: Request, username?: string): string {
+  return `login:${req.ip}:${(username || '').trim().toLowerCase()}`;
+}
+
+export function rateLimitLogin(req: Request, res: Response, next: NextFunction): void {
+  const username = typeof req.body?.username === 'string' ? req.body.username : '';
+  const key = loginRateLimitKey(req, username);
+  const attempts = (loginCache.get(key) as number | undefined) || 0;
+  if (attempts >= LOGIN_RATE_LIMIT) {
+    res.status(429).render('login', {
+      error: 'Too many login attempts. Please try again later.',
+      title: 'Login',
+    });
+    return;
+  }
+  loginCache.set(key, attempts + 1);
+  next();
+}
+
+export function clearLoginRateLimit(req: Request, username: string): void {
+  loginCache.del(loginRateLimitKey(req, username));
 }
 
 // Export function to clear registration cache (useful for tests)

@@ -45,6 +45,24 @@ test.describe('API rate limiting', () => {
     expect(typeof body.timeUntilNext).toBe('number');
     expect(body.timeUntilNext).toBeGreaterThan(0);
   });
+
+  test('login rate limiter blocks repeated password guesses', async ({ request }) => {
+    const username = `missing_${Date.now()}`;
+
+    for (let i = 0; i < 5; i++) {
+      const response = await request.post(`${SITE_DEPLOYMENT_PATH}/login`, {
+        form: { username, password: `wrong-${i}` },
+        maxRedirects: 0,
+      });
+      expect(response.status()).toBe(302);
+    }
+
+    const blocked = await request.post(`${SITE_DEPLOYMENT_PATH}/login`, {
+      form: { username, password: 'wrong-blocked' },
+      maxRedirects: 0,
+    });
+    expect(blocked.status()).toBe(429);
+  });
 });
 
 

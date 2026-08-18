@@ -5,13 +5,13 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import zxcvbn from 'zxcvbn';
 import { getUserByUsername, addUser, updateUserPassword, userExists, postFeed, pushNotificationToUser } from '../utils/userUtils.js';
-import { rateLimitRegistration } from '../utils/rateLimiter.js';
+import { clearLoginRateLimit, rateLimitLogin, rateLimitRegistration } from '../utils/rateLimiter.js';
 
 const router: express.Router = express.Router();
 
 // Configure passport-local strategy
 passport.use(
-  new LocalStrategy(async (username: string, password: string, done: (error: unknown, user?: Express.User | false, options?: { message: string }) => void): Promise<void> => {
+  new LocalStrategy({ passReqToCallback: true }, async (req: Request, username: string, password: string, done: (error: unknown, user?: Express.User | false, options?: { message: string }) => void): Promise<void> => {
     try {
       const user = await getUserByUsername(username);
       if (!user) {
@@ -20,6 +20,7 @@ passport.use(
       }
       const match = await bcrypt.compare(password, user.passwordHash);
       if (match) {
+        clearLoginRateLimit(req, username);
         done(null, { id: user.username } as Express.User);
       } else {
         done(null, false, { message: 'Incorrect username or password.' });
@@ -84,6 +85,7 @@ router.get('/login', (req: Request, res: Response) => {
 
 router.post(
   '/login',
+  rateLimitLogin,
   passport.authenticate('local', {
     successRedirect: '/profile',
     failureRedirect: '/login',
