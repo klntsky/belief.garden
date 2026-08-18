@@ -77,6 +77,32 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    next();
+    return;
+  }
+
+  const origin = req.get('origin');
+  const fetchSite = req.get('sec-fetch-site');
+  if (fetchSite === 'cross-site') {
+    res.status(403).json({ error: 'Cross-site request rejected' });
+    return;
+  }
+  if (origin) {
+    try {
+      if (new URL(origin).host !== req.get('host')) {
+        res.status(403).json({ error: 'Cross-site request rejected' });
+        return;
+      }
+    } catch {
+      res.status(403).json({ error: 'Invalid request origin' });
+      return;
+    }
+  }
+  next();
+});
+
 // app.use((req, res, next) => {
 //   if (req.headers['cf-connecting-ip']) {
 //     req.ip = req.headers['cf-connecting-ip'];
