@@ -75,7 +75,6 @@ Load this page in private mode to preview`;
       console.error('User bio text element not found.');
       return;
     }
-    const sanitizedMarkdown = DOMPurify.sanitize(bioText);
     const renderer = new marked.Renderer();
     renderer.image = () => {
       return '';
@@ -84,10 +83,9 @@ Load this page in private mode to preview`;
       renderer,  // Use the custom renderer
       gfm: true,  // Enable GitHub Flavored Markdown
       breaks: true,  // Support line breaks
-      sanitize: true,  // Disable auto-sanitization (if you handle sanitization elsewhere)
     });
 
-    const htmlContent = marked.parse(sanitizedMarkdown);
+    const htmlContent = DOMPurify.sanitize(marked.parse(bioText));
     bioTextDiv.innerHTML = htmlContent;
   }
 }
