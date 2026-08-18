@@ -3,6 +3,7 @@
 import { test, expect } from '@playwright/test';
 import dotenv from 'dotenv';
 import { clearRegistrationCache } from '../src/utils/rateLimiter.js';
+import { deleteUserAccount } from '../src/utils/userUtils.js';
 
 dotenv.config();
 
@@ -44,6 +45,21 @@ test.describe('User Registration and Login', () => {
 
     // Verify that the user's name is displayed
     await expect(page.locator('.nav-links-right #login-username')).toContainText(uniqueUsername);
+  });
+
+  test('reserved usernames are rejected case-insensitively', async ({ page }) => {
+    await deleteUserAccount('Login');
+    try {
+      await page.goto(`${SITE_DEPLOYMENT_PATH}/register`);
+      await page.fill('input[name="username"]', 'Login');
+      await page.fill('input[name="password"]', 'SecuI&SD*^tgsdreP@ssw0rd');
+      await page.click('button[type="submit"]');
+
+      await expect(page).toHaveURL(`${SITE_DEPLOYMENT_PATH}/register`);
+      await expect(page.locator('body')).toContainText('This username is not allowed');
+    } finally {
+      await deleteUserAccount('Login');
+    }
   });
 });
 

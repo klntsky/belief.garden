@@ -193,7 +193,7 @@ async function validateRegistration(username: string | undefined, password: stri
     'bio',
   ];
 
-  if (!username || blacklisted.includes(username)) {
+  if (!username || blacklisted.includes(username.toLowerCase())) {
     return 'This username is not allowed';
   }
   if (!password) {
