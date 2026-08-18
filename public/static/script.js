@@ -413,8 +413,9 @@ function createReplyInput(profileUserId, belief, container, repliesContainer, us
   replyButton.title = "Send a reply to this thread. Replies can be deleted by the profile owner and by the author.";
   replyButton.onclick = async () => {
     const replyText = replyInput.value.trim();
-    if (!replyText) return;
+    if (!replyText || replyButton.disabled) return;
 
+    replyButton.disabled = true;
     try {
       const response = await fetch(
         `/api/user-beliefs/${encodeURIComponent(profileUserId)}/${
@@ -451,6 +452,8 @@ function createReplyInput(profileUserId, belief, container, repliesContainer, us
     } catch (error) {
       console.error('Error adding reply:', error);
       showError(error.message);
+    } finally {
+      replyButton.disabled = false;
     }
   };
 
@@ -605,6 +608,7 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
     }
 
     let commentTimeout;
+    let saveChain = Promise.resolve();
     container.appendChild(commentTextarea);
     const saveIndicator = createSaveIndicator(commentTextarea);
     commentTextarea.addEventListener('input', () => {
@@ -613,7 +617,10 @@ function createCommentSection(belief, userChoice = {}, onChange, readOnly, profi
       commentTimeout = setTimeout(async () => {
         const comment = commentTextarea.value.trim();
         try {
-          await onChange({ choice: undefined, comment });
+          saveChain = saveChain
+            .catch(() => undefined)
+            .then(() => onChange({ choice: undefined, comment }));
+          await saveChain;
           saveIndicator.success();
         } catch (error) {
           saveIndicator.error();
