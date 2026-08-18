@@ -55,6 +55,7 @@ const MAX_CHAT_MENTION_USERNAMES = 3;
 const PROPOSAL_NAME_MAX_LENGTH = 100;
 const PROPOSAL_DESCRIPTION_MAX_LENGTH = 500;
 const PROPOSAL_ADDITIONAL_PROMPT_MAX_LENGTH = 300;
+const FORBIDDEN_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 
 const router: express.Router = express.Router();
 
@@ -120,6 +121,11 @@ router.put(
     const authenticatedUserId = req.user?.id as string | undefined;
     if (!authenticatedUserId || !beliefName) {
       res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    if (FORBIDDEN_OBJECT_KEYS.has(beliefName)) {
+      res.status(400).json({ error: 'Invalid belief name.' });
       return;
     }
 
