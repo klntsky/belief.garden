@@ -41,7 +41,7 @@ if (process.env.NODE_ENV !== 'test' && !process.env.SESSION_SECRET) {
 
 const app = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || '1'));
 app.set('view engine', 'ejs');
 app.set('layout', 'layout'); // Set default layout
 app.use(expressLayouts);
