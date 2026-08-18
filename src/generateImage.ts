@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { resolveContainedFile, UnsafePathError } from './utils/fileUtils.js';
 
 dotenv.config();
 
@@ -9,6 +10,12 @@ const outputFolder = path.join('public', 'img');
 const previewFolder = path.join(outputFolder, 'previews');
 const IMAGE_MODEL = 'gpt-image-2';
 const IMAGE_QUALITY = process.env.NODE_ENV === 'test' ? 'low' : 'medium';
+const ALLOWED_IMAGE_HOSTS = new Set(
+  (process.env.ALLOWED_IMAGE_HOSTS || 'oaidalleapiprodscus.blob.core.windows.net')
+    .split(',')
+    .map(host => host.trim().toLowerCase())
+    .filter(Boolean)
+);
 // const additionalPrompt = 'image style: use various (warm and cold and green) colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft';
 
 const additionalPrompts: Record<string, string> = {
@@ -147,10 +154,22 @@ export async function generateImageForBelief(category: string, belief: Belief, c
 
 // Download image from URL and save it locally
 export async function downloadImageFromUrl(imageUrl: string, beliefName: string): Promise<void> {
-  const imagePath = path.join(outputFolder, `${beliefName}.webp`);
+  let imagePath: string;
+  try {
+    imagePath = resolveContainedFile(outputFolder, `${beliefName}.webp`);
+  } catch (error) {
+    if (error instanceof UnsafePathError) {
+      throw new Error('Invalid belief name');
+    }
+    throw error;
+  }
 
   if (imageUrl.startsWith('/img/')) {
-    const sourcePath = path.join('public', imageUrl.replace(/^\//, ''));
+    const previewMatch = /^\/img\/previews\/([a-zA-Z0-9._-]+\.webp)$/.exec(imageUrl);
+    if (!previewMatch?.[1]) {
+      throw new Error('Invalid image URL');
+    }
+    const sourcePath = resolveContainedFile(previewFolder, previewMatch[1]);
     if (!fs.existsSync(sourcePath)) {
       throw new Error(`Preview image not found: ${sourcePath}`);
     }
@@ -159,7 +178,17 @@ export async function downloadImageFromUrl(imageUrl: string, beliefName: string)
     return;
   }
 
-  const imageResponse = await fetch(imageUrl);
+  let remoteUrl: URL;
+  try {
+    remoteUrl = new URL(imageUrl);
+  } catch {
+    throw new Error('Invalid image URL');
+  }
+  if (remoteUrl.protocol !== 'https:' || !ALLOWED_IMAGE_HOSTS.has(remoteUrl.hostname.toLowerCase())) {
+    throw new Error('Image host is not allowed');
+  }
+
+  const imageResponse = await fetch(remoteUrl);
 
   if (!imageResponse.ok) {
     throw new Error(`Failed to download image: HTTP ${imageResponse.status} ${imageResponse.statusText}`);
