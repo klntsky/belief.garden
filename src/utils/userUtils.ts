@@ -581,6 +581,7 @@ export async function pushNotificationToUser(username: string, notification: Omi
     });
   } catch (err) {
     console.error(`Failed to push notification to ${username}:`, err);
+    throw err;
   }
 }
 
