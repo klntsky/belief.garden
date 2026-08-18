@@ -966,7 +966,9 @@ router.get('/api/feed', async (req: Request, res: Response) => {
   try {
     const since = parseInt((req.query.since as string) || '0', 10);
     const feed = await getFeed();
-    const recentFeed = feed.filter(entry => entry.timestamp > since);
+    const recentFeed = feed
+      .filter(entry => entry.timestamp > since)
+      .slice(0, 100);
     res.json(recentFeed);
   } catch (error) {
     console.error('Error getting feed:', error);
