@@ -145,9 +145,9 @@ export function clearRegistrationCache(): void {
  * Uses Bottleneck to ensure that only one request per user is processed at a time.
  */
 export function perUserWriteLimiter(req: Request, res: Response, next: NextFunction): void {
-  const userId = req.params.userId;
+  const userId = req.params.userId || (req.user?.id as string | undefined);
   if (!userId) {
-    next();
+    res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
