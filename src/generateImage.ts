@@ -16,20 +16,21 @@ const ALLOWED_IMAGE_HOSTS = new Set(
     .map(host => host.trim().toLowerCase())
     .filter(Boolean)
 );
-// const additionalPrompt = 'image style: use various (warm and cold and green) colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft';
-
 const additionalPrompts: Record<string, string> = {
   'Philosophy of Will': 'image style: use pink yellow or red colors, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Philosophy of Life': 'image style: use grey-ish cold colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Philosophy of Mind': 'image style: use pastel colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Economics': 'image style: use yellow, golden and green or red colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Software': 'image style: use dark grey and organge colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
+  'Software Development': 'image style: use dark grey and orange colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
+  'Software Methodology': 'image style: use dark grey and teal colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Politics': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Art': 'image style: very artsy, unusual, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Rationality': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Religious Philosophy': 'image style: use red, grey and blue colors, PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
   'Workplace Culture': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft, colors: blue, green, golden',
   'Education Philosophy': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and black',
+  'Education': 'image style: very intellectual, unusual, PIXAR 3d cartoon style humans, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and black',
   'Parenting': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, colors: pink and yellow',
   'Community Living': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, pastoral, relaxed, a lot of sun, colors: yellow and bright green',
   'Conflict Resolution': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft, anxious, colors: red and brown',
@@ -49,6 +50,8 @@ const additionalPrompts: Record<string, string> = {
   'Criminal Justice': 'image style: PIXAR 3d cartoon style people, abstract imagery, with smooth gradients and gentle lighting, soft, tragic, colors: red, brown, grey. sad humans',
   'Military Service': 'image style: PIXAR 3d cartoon style people, abstract imagery, with smooth gradients and gentle lighting, soft, tragic, dark colors: dark green, brown. heroic humans',
   'Role of a Nation': 'image style: PIXAR 3d cartoon style, abstract imagery, with smooth gradients and gentle lighting, soft',
+  'Ecology': 'image style: PIXAR 3d cartoon style nature, abstract imagery, with smooth gradients and gentle lighting, soft, colors: green, teal, earth brown, sky blue',
+  'Eating habits': 'image style: PIXAR 3d cartoon style food and people, abstract imagery, with smooth gradients and gentle lighting, soft, colors: warm yellow, orange, green, red',
 };
 
 interface Belief {
@@ -76,11 +79,10 @@ export async function generateImageUrlForBelief(category: string, belief: Belief
     additionalPromptParts.push(customAdditionalPrompt.trim());
   }
   
-  // If no prompts at all, throw error
   if (additionalPromptParts.length === 0) {
     throw new Error(`No additional prompt for ${category}`);
   }
-  
+
   const additionalPrompt = additionalPromptParts.join(' ');
   
   const prompt = `generate me an abstract pixarified unreal engine 3d cartoon image on the topic of ${belief.name} - use this text for inspiration, but not literally: "${belief.description}". ${additionalPrompt}`;
