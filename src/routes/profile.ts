@@ -1,7 +1,7 @@
 // src/routes/profile.ts
 import express, { type Request, type Response, type NextFunction } from 'express';
 import { ensureAuthenticatedOptional } from '../utils/authUtils.js';
-import { getUserBio, getUserByUsername } from '../utils/userUtils.js';
+import { getUserBio, getUserByUsername, isValidUsername } from '../utils/userUtils.js';
 
 const router: express.Router = express.Router();
 
@@ -27,19 +27,28 @@ router.get(
       return;
     }
 
-    if (!await getUserByUsername(profileUserId)) {
+    if (!isValidUsername(profileUserId)) {
       next();
       return;
     }
 
-    const userBio = await getUserBio(profileUserId);
+    try {
+      if (!await getUserByUsername(profileUserId)) {
+        next();
+        return;
+      }
 
-    res.render('profile', {
-      title: profileUserId === req.user?.id ? 'Your Beliefs' : `${profileUserId}'s Beliefs`,
-      user: req.user || {},
-      profileUserId,
-      userBio,
-    });
+      const userBio = await getUserBio(profileUserId);
+
+      res.render('profile', {
+        title: profileUserId === req.user?.id ? 'Your Beliefs' : `${profileUserId}'s Beliefs`,
+        user: req.user || {},
+        profileUserId,
+        userBio,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 );
 

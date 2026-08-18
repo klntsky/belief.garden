@@ -118,6 +118,12 @@ app.use((_req: Request, res: Response) => {
   res.status(404).render('404', { title: 'Page Not Found' });
 });
 
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Unhandled request error:', err);
+  if (res.headersSent) return;
+  res.status(500).send('Internal server error');
+});
+
 runDataMigrations().then(() => {
   const port = process.env.PORT || '3000';
   const server = app.listen(port, () => {
