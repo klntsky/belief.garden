@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { createTestUser, loginUser, addAdmin, removeAdmin } from './testHelpers.js';
 import { deleteUserAccount } from '../src/utils/userUtils.js';
-import { getProposedBeliefs, removeProposedBelief } from '../src/utils/proposedBeliefsUtils.js';
+import { addProposedBelief, getProposedBeliefs, removeProposedBelief } from '../src/utils/proposedBeliefsUtils.js';
 import { readBeliefs, saveBeliefs } from '../src/readBeliefs.js';
 import fs from 'fs';
 import path from 'path';
@@ -124,6 +124,28 @@ test.describe('Admin Proposal Approval', () => {
     
     const beliefDescription = await beliefCard.locator('p span').textContent();
     expect(beliefDescription).toContain(newDescription);
+  });
+
+  test('escapes additional prompt text in the admin review page', async ({ page }) => {
+    const payload = '</textarea><script>window.__proposalXss = true</script>';
+    await addProposedBelief({
+      beliefName: `Safe proposal ${Date.now()}`,
+      category: 'Software',
+      proposedBy: regularUser.username,
+      description: 'Safe description',
+      additionalPrompt: payload,
+    });
+
+    await page.addInitScript(() => {
+      (globalThis as { __proposalXss?: boolean }).__proposalXss = false;
+    });
+    await loginUser(page, adminUser.username, adminUser.password);
+    await page.goto(`${SITE_DEPLOYMENT_PATH}/admin/proposed`);
+
+    expect(await page.evaluate(() => (
+      globalThis as { __proposalXss?: boolean }
+    ).__proposalXss)).toBe(false);
+    await expect(page.locator('textarea[id^="additional-prompt-"]').first()).toHaveValue(payload);
   });
 
   test('Update image for existing belief', async ({ page }) => {
