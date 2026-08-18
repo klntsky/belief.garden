@@ -1,7 +1,7 @@
 // tests/accountDeletion.spec.ts
 
 import { test, expect } from '@playwright/test';
-import { addUser, deleteUserAccount } from '../src/utils/userUtils.js';
+import { addUser, deleteUserAccount, userExists } from '../src/utils/userUtils.js';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 
@@ -41,6 +41,7 @@ test.describe('Account Deletion', () => {
 
     // Verify that the user is redirected to the home page
     await expect(page).toHaveURL(`${SITE_DEPLOYMENT_PATH}/`);
+    expect(await userExists(testUsernameToDelete)).toBe(false);
 
     // Attempt to log in again
     await page.goto(`${SITE_DEPLOYMENT_PATH}/login`);
