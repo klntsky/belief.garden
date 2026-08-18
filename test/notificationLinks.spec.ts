@@ -30,6 +30,11 @@ test.describe('Notification links', () => {
 
   test('does not render external broadcast URLs', async ({ page }) => {
     await loginUser(page, testUsername, testPassword);
+    const response = await page.request.get(`${SITE_DEPLOYMENT_PATH}/api/notifications?since=0`);
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toContainEqual(expect.objectContaining({
+      message: 'Unsafe link test',
+    }));
     await page.goto(`${SITE_DEPLOYMENT_PATH}/notifications`);
 
     const notification = page.locator('.notification-item').filter({
