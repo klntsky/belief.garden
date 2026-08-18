@@ -119,7 +119,14 @@ function getNotificationURL(notification){
   } else if (notification.type === 'self_reply') {
     return `/${notification.profileName}#${notification.beliefName}`;
   } else if (notification.type === 'broadcast') {
-    return notification.url;
+    if (typeof notification.url !== 'string') return '/notifications';
+    try {
+      const url = new URL(notification.url, window.location.origin);
+      if (url.origin !== window.location.origin) return '/notifications';
+      return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      return '/notifications';
+    }
   } else if (notification.type === 'welcome') {
     return '/feed';
   } else if (notification.type === 'choice_changed') {
