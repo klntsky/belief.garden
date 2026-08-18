@@ -1,6 +1,7 @@
 // src/utils/updateUsers.ts
 import fs from 'fs';
 import path from 'path';
+import { resolveContainedFile, UnsafePathError } from './fileUtils.js';
 
 // Define directories and constants
 const userAccountsDir = path.join('data', 'accounts');
@@ -138,19 +139,29 @@ function processUserComments(): { debateRequests: Record<string, DebateRequest[]
 }
 
 function saveCommentFiles(debateRequests: Record<string, DebateRequest[]>, allComments: Record<string, Comment[]>): void {
-  // Save debate requests
-  Object.entries(debateRequests).forEach(([beliefName, debates]) => {
-    const fileName = `${beliefName}.json`;
-    const filePath = path.join(debatesDir, fileName);
-    fs.writeFileSync(filePath, JSON.stringify(debates, null, 2), 'utf8');
-  });
+  const replaceCache = <T>(directory: string, entries: Record<string, T[]>): void => {
+    const expectedFiles = new Set<string>();
+    Object.entries(entries).forEach(([beliefName, values]) => {
+      const fileName = `${beliefName}.json`;
+      try {
+        const filePath = resolveContainedFile(directory, fileName);
+        expectedFiles.add(fileName);
+        fs.writeFileSync(filePath, JSON.stringify(values, null, 2), 'utf8');
+      } catch (error) {
+        if (!(error instanceof UnsafePathError)) throw error;
+        console.error(`Skipping unsafe belief cache name: ${beliefName}`);
+      }
+    });
 
-  // Save all comments
-  Object.entries(allComments).forEach(([beliefName, comments]) => {
-    const fileName = `${beliefName}.json`;
-    const filePath = path.join(commentsDir, fileName);
-    fs.writeFileSync(filePath, JSON.stringify(comments, null, 2), 'utf8');
-  });
+    for (const fileName of fs.readdirSync(directory)) {
+      if (fileName.endsWith('.json') && !expectedFiles.has(fileName)) {
+        fs.unlinkSync(path.join(directory, fileName));
+      }
+    }
+  };
+
+  replaceCache(debatesDir, debateRequests);
+  replaceCache(commentsDir, allComments);
 }
 
 function calculateUserScores(): UserScore[] {
