@@ -53,18 +53,9 @@ importers:
       passport:
         specifier: ^0.6.0
         version: 0.6.0
-      passport-github2:
-        specifier: ^0.1.12
-        version: 0.1.12
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
-      passport-twitter:
-        specifier: ^1.0.4
-        version: 1.0.4
-      sanitize-filename:
-        specifier: ^1.6.3
-        version: 1.6.3
       session-file-store:
         specifier: ^1.5.0
         version: 1.5.0
@@ -96,18 +87,9 @@ importers:
       '@types/passport':
         specifier: ^1.0.16
         version: 1.0.17
-      '@types/passport-github2':
-        specifier: ^1.2.9
-        version: 1.2.9
       '@types/passport-local':
         specifier: ^1.0.38
         version: 1.0.38
-      '@types/passport-twitter':
-        specifier: ^1.0.7
-        version: 1.0.40
-      '@types/sanitize-filename':
-        specifier: ^1.6.3
-        version: 1.6.3
       '@types/session-file-store':
         specifier: ^1.2.4
         version: 1.2.6
@@ -636,23 +618,11 @@ packages:
   '@types/node@20.19.25':
     resolution: {integrity: sha512-ZsJzA5thDQMSQO788d7IocwwQbI8B5OPzmqNvpf3NY/+MHDAS759Wo0gd2WQeXYt5AAAQjzcrTVC6SKCuYgoCQ==}
 
-  '@types/oauth@0.9.6':
-    resolution: {integrity: sha512-H9TRCVKBNOhZZmyHLqFt9drPM9l+ShWiqqJijU1B8P3DX3ub84NjxDuy+Hjrz+fEca5Kwip3qPMKNyiLgNJtIA==}
-
-  '@types/passport-github2@1.2.9':
-    resolution: {integrity: sha512-/nMfiPK2E6GKttwBzwj0Wjaot8eHrM57hnWxu52o6becr5/kXlH/4yE2v2rh234WGvSgEEzIII02Nc5oC5xEHA==}
-
   '@types/passport-local@1.0.38':
     resolution: {integrity: sha512-nsrW4A963lYE7lNTv9cr5WmiUD1ibYJvWrpE13oxApFsRt77b0RdtZvKbCdNIY4v/QZ6TRQWaDDEwV1kCTmcXg==}
 
-  '@types/passport-oauth2@1.8.0':
-    resolution: {integrity: sha512-6//z+4orIOy/g3zx17HyQ71GSRK4bs7Sb+zFasRoc2xzlv7ZCJ+vkDBYFci8U6HY+or6Zy7ajf4mz4rK7nsWJQ==}
-
   '@types/passport-strategy@0.2.38':
     resolution: {integrity: sha512-GC6eMqqojOooq993Tmnmp7AUTbbQSgilyvpCYQjT+H6JfG/g6RGc7nXEniZlp0zyKJ0WUdOiZWLBZft9Yug1uA==}
-
-  '@types/passport-twitter@1.0.40':
-    resolution: {integrity: sha512-5Yxm+P/x6XEYvANANmjkVnRpMlRpORODZYYplBKH+BFTHQ8kGt3FgMm6eMgIzrGA4WvZo6TKH4IvYug+31mX4w==}
 
   '@types/passport@1.0.17':
     resolution: {integrity: sha512-aciLyx+wDwT2t2/kJGJR2AEeBz0nJU4WuRX04Wu9Dqc5lSUtwu0WERPHYsLhF9PtseiAMPBGNUOtFjxZ56prsg==}
@@ -662,10 +632,6 @@ packages:
 
   '@types/range-parser@1.2.7':
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
-
-  '@types/sanitize-filename@1.6.3':
-    resolution: {integrity: sha512-1dAV8Va7KsiXNAstV2JmF4CRVG3Fsyl+VnBw87C9cCMccekpOqJBezS7MUnHYPChNAFee1WakwBXdfn7QJxzVg==}
-    deprecated: This is a stub types definition. sanitize-filename provides its own type definitions, so you do not need this installed.
 
   '@types/send@0.17.6':
     resolution: {integrity: sha512-Uqt8rPBE8SY0RK8JB1EzVOIZ32uqy8HwdxCnoCOsYrvnswqmFZ/k+9Ikidlk/ImhsdvBsloHbAlewb2IEBV/Og==}
@@ -783,10 +749,6 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
-  base64url@3.0.1:
-    resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
-    engines: {node: '>=6.0.0'}
 
   baseline-browser-mapping@2.8.28:
     resolution: {integrity: sha512-gYjt7OIqdM0PcttNYP2aVrr2G0bMALkBaoehD4BuRGjAOtipg0b6wHg1yNL+s5zSnLZZrGHOw4IrND8CD+3oIQ==}
@@ -1685,12 +1647,6 @@ packages:
     resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
     deprecated: This package is no longer supported.
 
-  oauth@0.10.2:
-    resolution: {integrity: sha512-JtFnB+8nxDEXgNyniwz573xxbKSOu3R8D40xQKqcjwJ2CDkYqUDI53o6IuzDJBx60Z8VKCm271+t8iFjakrl8Q==}
-
-  oauth@0.9.15:
-    resolution: {integrity: sha512-a5ERWK1kh38ExDEfoO6qUHJb32rd7aYmPHuyCu3Fta/cnICvYmgd2uhuKXvPD+PXB+gCEYYEaQdIRAjCOwAKNA==}
-
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
@@ -1750,28 +1706,12 @@ packages:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
     engines: {node: '>= 0.8'}
 
-  passport-github2@0.1.12:
-    resolution: {integrity: sha512-3nPUCc7ttF/3HSP/k9sAXjz3SkGv5Nki84I05kSQPo01Jqq1NzJACgMblCK0fGcv9pKCG/KXU3AJRDGLqHLoIw==}
-    engines: {node: '>= 0.8.0'}
-
   passport-local@1.0.0:
     resolution: {integrity: sha512-9wCE6qKznvf9mQYYbgJ3sVOHmCWoUNMVFoZzNoznmISbhnNNPhN9xfY3sLmScHMetEJeoY7CXwfhCe7argfQow==}
     engines: {node: '>= 0.4.0'}
 
-  passport-oauth1@1.3.0:
-    resolution: {integrity: sha512-8T/nX4gwKTw0PjxP1xfD0QhrydQNakzeOpZ6M5Uqdgz9/a/Ag62RmJxnZQ4LkbdXGrRehQHIAHNAu11rCP46Sw==}
-    engines: {node: '>= 0.4.0'}
-
-  passport-oauth2@1.8.0:
-    resolution: {integrity: sha512-cjsQbOrXIDE4P8nNb3FQRCCmJJ/utnFKEz2NX209f7KOHPoX18gF7gBzBbLLsj2/je4KrgiwLLGjf0lm9rtTBA==}
-    engines: {node: '>= 0.4.0'}
-
   passport-strategy@1.0.0:
     resolution: {integrity: sha512-CB97UUvDKJde2V0KDWWB3lyf6PC3FaZP7YxZ2G8OAtn9p4HI9j9JLP9qjOGZFvyl8uwNT8qM+hGnz/n16NI7oA==}
-    engines: {node: '>= 0.4.0'}
-
-  passport-twitter@1.0.4:
-    resolution: {integrity: sha512-qvdauqCqCJJci82mJ9hZZQ6nAv7aSHV31svL8+9H7mRlDdXCdfU6AARQrmmJu3DRmv9fvIebM7zzxR7mVufN3A==}
     engines: {node: '>= 0.4.0'}
 
   passport@0.6.0:
@@ -1904,9 +1844,6 @@ packages:
 
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
-
-  sanitize-filename@1.6.3:
-    resolution: {integrity: sha512-y/52Mcy7aw3gRm7IrcGDFx/bCk4AhRh2eI9luHOQM86nZsqwiRkkq2GekHXBBD+SmPidc8i2PqtYZl+pWJ8Oeg==}
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -2057,9 +1994,6 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  truncate-utf8-bytes@1.0.2:
-    resolution: {integrity: sha512-95Pu1QXQvruGEhv62XCMO3Mm90GscOCClvrIUwCM0PYOXK3kaF3l3sIHxx71ThJfcbM2O5Au6SO3AWCSEfW4mQ==}
-
   ts-jest@29.4.5:
     resolution: {integrity: sha512-HO3GyiWn2qvTQA4kTgjDcXiMwYQt68a1Y8+JuLRVpdIzm+UOLSHgl/XqR4c6nzJkq5rOkjc02O2I7P7l/Yof0Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || ^18.0.0 || >=20.0.0}
@@ -2125,9 +2059,6 @@ packages:
     resolution: {integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==}
     engines: {node: '>= 0.8'}
 
-  uid2@0.0.4:
-    resolution: {integrity: sha512-IevTus0SbGwQzYh3+fRsAMTVVPOoIVufzacXcHPmdlle1jUpq7BRL+mw3dgeLanvGZdwwbWhRV6XrcFNdBmjWA==}
-
   uint8array-extras@1.5.0:
     resolution: {integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==}
     engines: {node: '>=18'}
@@ -2155,9 +2086,6 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
-
-  utf8-byte-length@1.0.5:
-    resolution: {integrity: sha512-Xn0w3MtiQ6zoz2vFyUVruaCL53O/DwUvkEeOvj+uulMm0BkUGYWmBYVyElqZaSLhY6ZD0ulfU3aBra2aVT4xfA==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -2211,15 +2139,6 @@ packages:
   write-file-atomic@4.0.2:
     resolution: {integrity: sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
-
-  xmldom@0.1.31:
-    resolution: {integrity: sha512-yS2uJflVQs6n+CyjHoaBmVSqIDevTAWrzMmjG1Gc7h1qQ7uVozNhEPJAwZXWyGQ/Gafo3fCwrcaokezLPupVyQ==}
-    engines: {node: '>=0.1'}
-    deprecated: Deprecated due to CVE-2021-21366 resolved in 0.5.0
-
-  xtraverse@0.1.0:
-    resolution: {integrity: sha512-MANQdlG2hl1nQobxz1Rv8hsS1RuBS0C1N6qTOupv+9vmfrReePdxhmB2ecYjvsp4stJ80HD7erjkoF1Hd/FK9A==}
-    engines: {node: '>= 0.4.0'}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -2835,34 +2754,13 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/oauth@0.9.6':
-    dependencies:
-      '@types/node': 20.19.25
-
-  '@types/passport-github2@1.2.9':
-    dependencies:
-      '@types/express': 4.17.25
-      '@types/passport': 1.0.17
-      '@types/passport-oauth2': 1.8.0
-
   '@types/passport-local@1.0.38':
     dependencies:
       '@types/express': 4.17.25
       '@types/passport': 1.0.17
       '@types/passport-strategy': 0.2.38
 
-  '@types/passport-oauth2@1.8.0':
-    dependencies:
-      '@types/express': 4.17.25
-      '@types/oauth': 0.9.6
-      '@types/passport': 1.0.17
-
   '@types/passport-strategy@0.2.38':
-    dependencies:
-      '@types/express': 4.17.25
-      '@types/passport': 1.0.17
-
-  '@types/passport-twitter@1.0.40':
     dependencies:
       '@types/express': 4.17.25
       '@types/passport': 1.0.17
@@ -2874,10 +2772,6 @@ snapshots:
   '@types/qs@6.14.0': {}
 
   '@types/range-parser@1.2.7': {}
-
-  '@types/sanitize-filename@1.6.3':
-    dependencies:
-      sanitize-filename: 1.6.3
 
   '@types/send@0.17.6':
     dependencies:
@@ -3029,8 +2923,6 @@ snapshots:
   bagpipe@0.3.5: {}
 
   balanced-match@1.0.2: {}
-
-  base64url@3.0.1: {}
 
   baseline-browser-mapping@2.8.28: {}
 
@@ -4113,10 +4005,6 @@ snapshots:
       gauge: 3.0.2
       set-blocking: 2.0.0
 
-  oauth@0.10.2: {}
-
-  oauth@0.9.15: {}
-
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
@@ -4170,34 +4058,11 @@ snapshots:
 
   parseurl@1.3.3: {}
 
-  passport-github2@0.1.12:
-    dependencies:
-      passport-oauth2: 1.8.0
-
   passport-local@1.0.0:
     dependencies:
       passport-strategy: 1.0.0
 
-  passport-oauth1@1.3.0:
-    dependencies:
-      oauth: 0.9.15
-      passport-strategy: 1.0.0
-      utils-merge: 1.0.1
-
-  passport-oauth2@1.8.0:
-    dependencies:
-      base64url: 3.0.1
-      oauth: 0.10.2
-      passport-strategy: 1.0.0
-      uid2: 0.0.4
-      utils-merge: 1.0.1
-
   passport-strategy@1.0.0: {}
-
-  passport-twitter@1.0.4:
-    dependencies:
-      passport-oauth1: 1.3.0
-      xtraverse: 0.1.0
 
   passport@0.6.0:
     dependencies:
@@ -4305,10 +4170,6 @@ snapshots:
   safe-buffer@5.2.1: {}
 
   safer-buffer@2.1.2: {}
-
-  sanitize-filename@1.6.3:
-    dependencies:
-      truncate-utf8-bytes: 1.0.2
 
   semver@6.3.1: {}
 
@@ -4480,10 +4341,6 @@ snapshots:
 
   tr46@0.0.3: {}
 
-  truncate-utf8-bytes@1.0.2:
-    dependencies:
-      utf8-byte-length: 1.0.5
-
   ts-jest@29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.25))(typescript@5.9.3):
     dependencies:
       bs-logger: 0.2.6
@@ -4535,8 +4392,6 @@ snapshots:
     dependencies:
       random-bytes: 1.0.0
 
-  uid2@0.0.4: {}
-
   uint8array-extras@1.5.0: {}
 
   undici-types@5.26.5: {}
@@ -4554,8 +4409,6 @@ snapshots:
       browserslist: 4.28.0
       escalade: 3.2.0
       picocolors: 1.1.1
-
-  utf8-byte-length@1.0.5: {}
 
   util-deprecate@1.0.2: {}
 
@@ -4611,12 +4464,6 @@ snapshots:
     dependencies:
       imurmurhash: 0.1.4
       signal-exit: 3.0.7
-
-  xmldom@0.1.31: {}
-
-  xtraverse@0.1.0:
-    dependencies:
-      xmldom: 0.1.31
 
   y18n@5.0.8: {}
 
