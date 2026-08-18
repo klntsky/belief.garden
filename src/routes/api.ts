@@ -43,7 +43,7 @@ import {
   updateProposedBelief
 } from '../utils/proposedBeliefsUtils.js';
 import { ellipsis } from '../utils/textUtils.js';
-import { resolveContainedFile, UnsafePathError } from '../utils/fileUtils.js';
+import { resolveContainedFile, UnsafePathError, writeFileAtomic } from '../utils/fileUtils.js';
 import type { UserBeliefs } from '../types/index.js';
 
 const debatesDir = path.join('data', 'debates');
@@ -676,7 +676,7 @@ router.post('/api/ban-user',
 
       if (!bans.some(ban => ban.username === bannedUser)) {
         bans.push({ username: bannedUser });
-        await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
+        await writeFileAtomic(banFilePath, JSON.stringify(bans, null, 2));
       }
 
       // Delete all replies by the banned user if requested
@@ -771,7 +771,7 @@ router.post('/api/unban-user',
       }
 
       bans = bans.filter(ban => ban.username !== bannedUser);
-      await fs.writeFile(banFilePath, JSON.stringify(bans, null, 2));
+      await writeFileAtomic(banFilePath, JSON.stringify(bans, null, 2));
 
       res.json({ success: true });
     } catch (error) {
