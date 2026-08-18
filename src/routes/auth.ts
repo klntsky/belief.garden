@@ -167,7 +167,7 @@ router.post('/api/change-password', ensureAuthenticated, express.json(), async (
 
 // Ensure authenticated middleware
 function ensureAuthenticated(req: Request, res: Response, next: NextFunction): void {
-  if (req.isAuthenticated() || req.user?.id === 'test') {
+  if (req.isAuthenticated()) {
     next();
     return;
   }
