@@ -40,6 +40,10 @@ if (process.env.NODE_ENV !== 'test' && !process.env.SESSION_SECRET) {
 }
 
 const app = express();
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET is required in production');
+}
 
 app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || '1'));
 app.set('view engine', 'ejs');
@@ -116,7 +120,7 @@ const FileStoreSession = FileStore(session);
 app.use(
   session({
     store: new FileStoreSession(fileStoreOptions),
-    secret: process.env.SESSION_SECRET || 'default-secret',
+    secret: sessionSecret || 'development-only-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
