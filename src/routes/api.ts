@@ -257,7 +257,7 @@ router.post(
   async (req: Request, res: Response) => {
     const userId = req.params.userId;
     const beliefName = req.params.beliefName;
-    const action = req.params.action as 'increase' | 'decrease';
+    const action = req.params.action;
     const authenticatedUserId = req.user?.id as string | undefined;
     if (!authenticatedUserId || !userId || !beliefName) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -266,6 +266,10 @@ router.post(
 
     if (authenticatedUserId !== userId) {
       res.status(403).json({ error: 'Unauthorized' });
+      return;
+    }
+    if (action !== 'increase' && action !== 'decrease') {
+      res.status(400).json({ error: 'Action must be increase or decrease.' });
       return;
     }
 
