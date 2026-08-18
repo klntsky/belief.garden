@@ -8,6 +8,7 @@ import { ensureAuthenticated, ensureAdminAuthenticatedPage } from '../utils/auth
 import { getUserByUsername, deleteUserAccount, getUserSettings } from '../utils/userUtils.js';
 import { readBeliefs } from '../readBeliefs.js';
 import { getProposedBeliefs } from '../utils/proposedBeliefsUtils.js';
+import { serializeJsonForHtml } from '../utils/textUtils.js';
 
 dotenv.config();
 
@@ -214,7 +215,7 @@ router.get('/admin/delete-belief', ensureAdminAuthenticatedPage, async (req: Req
       user: req.user,
       title: 'Delete Belief Card',
       categories: categories,
-      beliefsData: beliefsData
+      beliefsJson: serializeJsonForHtml(beliefsData)
     });
   } catch (error) {
     console.error('Error loading delete belief page:', error);

@@ -148,6 +148,34 @@ test.describe('Admin Proposal Approval', () => {
     await expect(page.locator('textarea[id^="additional-prompt-"]').first()).toHaveValue(payload);
   });
 
+  test('escapes beliefs JSON embedded in the admin delete page', async ({ page }) => {
+    const payload = '</script><script>globalThis.__beliefJsonXss = true</script>';
+    const beliefsData = readBeliefs();
+    const category = Object.keys(beliefsData)[0]!;
+    const originalBeliefs = [...(beliefsData[category] || [])];
+    beliefsData[category] = [
+      ...originalBeliefs,
+      { name: payload, description: 'Unsafe test belief' },
+    ];
+    await saveBeliefs(beliefsData);
+
+    try {
+      await page.addInitScript(() => {
+        (globalThis as { __beliefJsonXss?: boolean }).__beliefJsonXss = false;
+      });
+      await loginUser(page, adminUser.username, adminUser.password);
+      await page.goto(`${SITE_DEPLOYMENT_PATH}/admin/delete-belief`);
+
+      expect(await page.evaluate(() => (
+        globalThis as { __beliefJsonXss?: boolean }
+      ).__beliefJsonXss)).toBe(false);
+    } finally {
+      const currentBeliefs = readBeliefs();
+      currentBeliefs[category] = originalBeliefs;
+      await saveBeliefs(currentBeliefs);
+    }
+  });
+
   test('Update image for existing belief', async ({ page }) => {
     test.setTimeout(testTimeout);
 
