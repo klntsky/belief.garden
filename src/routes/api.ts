@@ -984,7 +984,9 @@ router.post(
       return;
     }
 
-    const mentionedUsernames = new Set(message.match(/[a-zA-Z0-9_-]{3,30}/g) || []);
+    const mentionedUsernames = new Set(
+      Array.from(message.matchAll(/@([a-zA-Z0-9_-]{3,30})\b/g), match => match[1]!)
+    );
 
     if (mentionedUsernames.size > MAX_CHAT_MENTION_USERNAMES) {
       res.status(400).json(
