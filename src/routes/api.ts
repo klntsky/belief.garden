@@ -27,7 +27,8 @@ import {
 import {
   perUserWriteLimiter,
   chatRateLimiter,
-  proposalRateLimiter
+  proposalRateLimiter,
+  serializeGlobalBeliefWrite,
 } from '../utils/rateLimiter.js';
 import fsSync from 'fs';
 import { promises as fs } from 'fs';
@@ -1168,6 +1169,7 @@ router.post(
 router.post(
   '/api/approve-belief',
   ensureAdminAuthenticated,
+  serializeGlobalBeliefWrite,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req: Request, res: Response) => {
     const { proposalId, name, category, description, additionalPrompt, imageUrl } = req.body as {
@@ -1396,6 +1398,7 @@ router.post(
 router.post(
   '/api/delete-belief',
   ensureAdminAuthenticated,
+  serializeGlobalBeliefWrite,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req: Request, res: Response) => {
     const { category, beliefName } = req.body as { category?: string; beliefName?: string };

@@ -79,6 +79,7 @@ interface LimiterWithTimestamp extends Bottleneck {
 
 // Map to store per-user limiters with last used timestamps
 const limiters: Record<string, LimiterWithTimestamp> = {};
+const globalBeliefWriteLimiter = new Bottleneck({ maxConcurrent: 1, minTime: 0 });
 
 // Cleanup inactive limiters periodically
 const LIMITER_CLEANUP_INTERVAL = 3600000; // 1 hour
@@ -176,6 +177,20 @@ export function perUserWriteLimiter(req: Request, res: Response, next: NextFunct
     .catch((err: unknown) => {
       console.error('Error in limiter schedule:', err);
       next(err as Error);
+    });
+}
+
+export function serializeGlobalBeliefWrite(_req: Request, res: Response, next: NextFunction): void {
+  globalBeliefWriteLimiter
+    .schedule(() => new Promise<void>((resolve, reject) => {
+      next();
+      res.on('finish', resolve);
+      res.on('close', resolve);
+      res.on('error', reject);
+    }))
+    .catch((error: unknown) => {
+      console.error('Error in global belief write limiter:', error);
+      next(error as Error);
     });
 }
 
