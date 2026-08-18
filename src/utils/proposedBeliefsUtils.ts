@@ -5,6 +5,13 @@ import { writeFileAtomic } from './fileUtils.js';
 import type { ProposedBelief } from '../types/index.js';
 
 const proposedBeliefsPath = path.join('data', 'proposed.json');
+let proposalWriteChain: Promise<void> = Promise.resolve();
+
+function serializeProposalWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const result = proposalWriteChain.then(operation, operation);
+  proposalWriteChain = result.then(() => undefined, () => undefined);
+  return result;
+}
 
 /**
  * Get all proposed beliefs
@@ -45,27 +52,27 @@ export async function saveProposedBeliefs(proposedBeliefs: ProposedBelief[]): Pr
  * @param proposal - The proposal object to add
  */
 export async function addProposedBelief(proposal: Omit<ProposedBelief, 'timestamp' | 'id'>): Promise<void> {
-  const proposedBeliefs = await getProposedBeliefs();
-  
-  // Check if a proposal with the same name already exists
-  if (proposedBeliefs.some(p => p.beliefName === proposal.beliefName)) {
-    throw new Error('A proposal with this name already exists');
-  }
-  
-  const newProposal: ProposedBelief = {
-    beliefName: typeof proposal.beliefName === 'string' ? proposal.beliefName : String(proposal.beliefName),
-    category: typeof proposal.category === 'string' ? proposal.category : String(proposal.category),
-    proposedBy: typeof proposal.proposedBy === 'string' ? proposal.proposedBy : String(proposal.proposedBy),
-    id: Date.now().toString(),
-    timestamp: Date.now(),
-    description: typeof (proposal as { description?: unknown }).description === 'string' ? (proposal as { description: string }).description : String((proposal as { description?: unknown }).description || ''),
-    additionalPrompt: (proposal as { additionalPrompt?: string | null }).additionalPrompt || null,
-    ...proposal
-  };
-  
-  proposedBeliefs.push(newProposal);
-  
-  await saveProposedBeliefs(proposedBeliefs);
+  await serializeProposalWrite(async () => {
+    const proposedBeliefs = await getProposedBeliefs();
+
+    if (proposedBeliefs.some(p => p.beliefName === proposal.beliefName)) {
+      throw new Error('A proposal with this name already exists');
+    }
+
+    const now = Date.now();
+    proposedBeliefs.push({
+      beliefName: typeof proposal.beliefName === 'string' ? proposal.beliefName : String(proposal.beliefName),
+      category: typeof proposal.category === 'string' ? proposal.category : String(proposal.category),
+      proposedBy: typeof proposal.proposedBy === 'string' ? proposal.proposedBy : String(proposal.proposedBy),
+      id: now.toString(),
+      timestamp: now,
+      description: typeof (proposal as { description?: unknown }).description === 'string' ? (proposal as { description: string }).description : String((proposal as { description?: unknown }).description || ''),
+      additionalPrompt: (proposal as { additionalPrompt?: string | null }).additionalPrompt || null,
+      ...proposal
+    });
+
+    await saveProposedBeliefs(proposedBeliefs);
+  });
 }
 
 /**
@@ -85,26 +92,16 @@ export async function findProposedBelief(timestamp: number): Promise<ProposedBel
  * @returns The updated proposal or null if not found
  */
 export async function updateProposedBelief(timestamp: number, updates: Partial<ProposedBelief>): Promise<ProposedBelief | null> {
-  const proposedBeliefs = await getProposedBeliefs();
-  const proposalIndex = proposedBeliefs.findIndex(p => p.timestamp === timestamp);
-  
-  if (proposalIndex === -1) {
-    return null;
-  }
-  
-  // Update the proposal
-  const existingProposal = proposedBeliefs[proposalIndex];
-  if (!existingProposal) {
-    return null;
-  }
-  proposedBeliefs[proposalIndex] = {
-    ...existingProposal,
-    ...updates
-  };
-  
-  await saveProposedBeliefs(proposedBeliefs);
-  const updatedProposal = proposedBeliefs[proposalIndex];
-  return updatedProposal || null;
+  return serializeProposalWrite(async () => {
+    const proposedBeliefs = await getProposedBeliefs();
+    const proposalIndex = proposedBeliefs.findIndex(p => p.timestamp === timestamp);
+    const existingProposal = proposedBeliefs[proposalIndex];
+    if (proposalIndex === -1 || !existingProposal) return null;
+
+    proposedBeliefs[proposalIndex] = { ...existingProposal, ...updates };
+    await saveProposedBeliefs(proposedBeliefs);
+    return proposedBeliefs[proposalIndex] || null;
+  });
 }
 
 /**
@@ -113,18 +110,15 @@ export async function updateProposedBelief(timestamp: number, updates: Partial<P
  * @returns The removed proposal or null if not found
  */
 export async function removeProposedBelief(timestamp: number): Promise<ProposedBelief | null> {
-  const proposedBeliefs = await getProposedBeliefs();
-  const proposalIndex = proposedBeliefs.findIndex(p => p.timestamp === timestamp);
-  
-  if (proposalIndex === -1) {
-    return null;
-  }
-  
-  const removedProposal = proposedBeliefs.splice(proposalIndex, 1)[0];
-  if (!removedProposal) {
-    return null;
-  }
-  await saveProposedBeliefs(proposedBeliefs);
-  return removedProposal;
+  return serializeProposalWrite(async () => {
+    const proposedBeliefs = await getProposedBeliefs();
+    const proposalIndex = proposedBeliefs.findIndex(p => p.timestamp === timestamp);
+    if (proposalIndex === -1) return null;
+
+    const removedProposal = proposedBeliefs.splice(proposalIndex, 1)[0];
+    if (!removedProposal) return null;
+    await saveProposedBeliefs(proposedBeliefs);
+    return removedProposal;
+  });
 }
 
