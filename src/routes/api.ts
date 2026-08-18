@@ -13,7 +13,6 @@ import {
   saveUserBio,
   getUserSettings,
   saveUserSettings,
-  getUserBeliefsFilePath,
   getUserNotifications,
   addFollower,
   removeFollower,
@@ -43,6 +42,7 @@ import {
   updateProposedBelief
 } from '../utils/proposedBeliefsUtils.js';
 import { ellipsis } from '../utils/textUtils.js';
+import { resolveContainedFile, UnsafePathError } from '../utils/fileUtils.js';
 import type { UserBeliefs } from '../types/index.js';
 
 const debatesDir = path.join('data', 'debates');
@@ -86,10 +86,16 @@ router.get('/api/user-beliefs/:userId', (req: Request, res: Response) => {
     res.status(400).json({ error: 'User ID is required' });
     return;
   }
-  const userBeliefsFilePath = getUserBeliefsFilePath(requestedUserId);
-
-  // Resolve the absolute path to prevent directory traversal attacks
-  const absolutePath = path.resolve(userBeliefsFilePath);
+  let absolutePath: string;
+  try {
+    absolutePath = resolveContainedFile(path.join('data', 'users'), `${requestedUserId}.json`);
+  } catch (error) {
+    if (error instanceof UnsafePathError) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+    throw error;
+  }
 
   // Send the file directly
   res.sendFile(absolutePath, (err?: Error | null) => {
@@ -377,12 +383,16 @@ router.get('/api/debates/:beliefName', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'Belief name is required' });
     return;
   }
-  const filePath = path.join(debatesDir, `${beliefName}.json`);
 
   try {
+    const filePath = resolveContainedFile(debatesDir, `${beliefName}.json`);
     const data = await fs.readFile(filePath, 'utf8');
     res.json(JSON.parse(data));
   } catch (error) {
+    if (error instanceof UnsafePathError) {
+      res.status(400).json({ error: 'Invalid belief name' });
+      return;
+    }
     const err = error as { code?: string };
     if (err.code === 'ENOENT') {
       res.json([]); // Return empty array if no debate file exists

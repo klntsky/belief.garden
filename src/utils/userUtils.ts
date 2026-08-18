@@ -32,6 +32,7 @@ const defaultSettings: UserSettings = {
  * @returns The file path to the user's beliefs JSON file.
  */
 export function getUserBeliefsFilePath(username: string): string {
+  assertUsername(username);
   return path.join(userBeliefsDir, `${username}.json`);
 }
 
