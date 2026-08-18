@@ -2,6 +2,15 @@
 
 window.isMobile = window.innerWidth < 800;
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 async function fetchBeliefs() {
   const beliefsResponse = await fetch('/static/beliefs.json');
   const beliefsData = await beliefsResponse.json();
@@ -890,7 +899,7 @@ function updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv) {
     content: `Beliefs with comments that include 'debate me'<br> are marked as debatable` +
       (debatableBeliefs.length > 0 ? ':<div class="tippy-beliefs-list">' : '') +
       debatableBeliefs.map(name =>
-        `<div class="tippy-belief-link" data-belief="${name}">${name}</div>`
+        `<div class="tippy-belief-link" data-belief="${escapeHtml(name)}">${escapeHtml(name)}</div>`
       ).join('') +
       (debatableBeliefs.length > 0 ? '</div>' : ''),
     allowHTML: true,
@@ -912,7 +921,7 @@ function updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv) {
     tippy(repliesSpan, {
       content: 'Comments from other users: <div class="tippy-beliefs-list">' +
         beliefsWithReplies.map(belief =>
-          `<div class="tippy-belief-link" data-belief="${belief.name}">${belief.name} (${belief.replyCount})</div>`
+        `<div class="tippy-belief-link" data-belief="${escapeHtml(belief.name)}">${escapeHtml(belief.name)} (${belief.replyCount})</div>`
         ).join('') +
         '</div>',
       allowHTML: true,
