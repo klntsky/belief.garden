@@ -923,7 +923,12 @@ router.post('/api/settings', ensureAuthenticatedApi, perUserWriteLimiter, expres
   }
   try {
     const settings = await getUserSettings(authenticatedUserId);
-    const updatedSettings = { ...settings, ...req.body };
+    const body = req.body as { allowAllDebates?: unknown };
+    const updatedSettings = {
+      allowAllDebates: typeof body.allowAllDebates === 'boolean'
+        ? body.allowAllDebates
+        : settings.allowAllDebates,
+    };
     await saveUserSettings(authenticatedUserId, updatedSettings);
     res.json(updatedSettings);
   } catch (error) {
