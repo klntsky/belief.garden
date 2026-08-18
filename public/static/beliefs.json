@@ -987,6 +987,10 @@
     {
       "name": "Technogaianism",
       "description": "Belief that emerging technologies can help restore Earth's environment."
+    },
+    {
+      "name": "Ecofascism",
+      "description": "Humanity should preserve nature through an authoritarian, ethnically rooted social order that strictly controls land, resources, migration, reproduction, and population."
     }
   ],
   "Software Development": [
@@ -2054,7 +2058,7 @@
       "name": "Prison Reform",
       "description": "Prisons should be reformed to provide humane living conditions, access to education, and rehabilitation programs for inmates."
     }
-   ],
+  ],
   "A Different Future": [
     {
       "name": "Effective Accelerationism",
