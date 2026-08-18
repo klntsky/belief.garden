@@ -842,6 +842,10 @@ router.put('/api/follow/:userId', ensureAuthenticatedApi, perUserWriteLimiter, a
   }
 
   try {
+    if (!await doesUserExist(userToFollow)) {
+      res.status(404).json({ error: 'User not found.' });
+      return;
+    }
     await addFollower(userToFollow, follower);
     await postFeed({
       actor: follower,
