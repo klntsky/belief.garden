@@ -7,8 +7,14 @@ const beliefsFilePath = './data/beliefs.json';
 
 // Read beliefs.json and return its content
 export function readBeliefs(): BeliefData {
-  const beliefsData = JSON.parse(fs.readFileSync(beliefsFilePath, 'utf8')) as BeliefData;
-  return beliefsData;
+  try {
+    return JSON.parse(fs.readFileSync(beliefsFilePath, 'utf8')) as BeliefData;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return {};
+    }
+    throw error;
+  }
 }
 
 // Save beliefs.json
