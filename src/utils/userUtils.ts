@@ -8,6 +8,7 @@ import { feedQueue, notificationQueue, userBeliefsManager } from './queueUtils.j
 import type { User, UserBeliefs, UserSettings, Notification, FeedEntry } from '../types/index.js';
 
 const userAccountsDir = path.join('data', 'accounts');
+let accountCreationChain: Promise<void> = Promise.resolve();
 const userBeliefsDir = path.join('data', 'users');
 const userBiosDir = path.join('data', 'bio');
 const userSettingsDir = path.join('data', 'settings');
@@ -96,29 +97,18 @@ export async function userExists(username: string): Promise<boolean> {
  */
 export async function addUser(user: User): Promise<void> {
   assertUsername(user.username);
-  const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
-  try {
-    await fs.access(userFilePath);
-    throw new Error('User already exists.');
-  } catch (err) {
-    const error = err as { code?: string };
-    if (error.code === 'ENOENT') {
-      const dirPath = userAccountsDir;
-      try {
-        await fs.access(dirPath);
-      } catch (dirErr) {
-        const dirError = dirErr as { code?: string };
-        if (dirError.code === 'ENOENT') {
-          await fs.mkdir(dirPath, { recursive: true });
-        } else {
-          throw dirErr;
-        }
-      }
-      await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
-    } else {
-      throw err;
+  const operation = accountCreationChain.then(async () => {
+    await fs.mkdir(userAccountsDir, { recursive: true });
+    const expectedFile = `${user.username}.json`.toLowerCase();
+    const files = await fs.readdir(userAccountsDir);
+    if (files.some(file => file.toLowerCase() === expectedFile)) {
+      throw new Error('User already exists.');
     }
-  }
+    const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
+    await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
+  });
+  accountCreationChain = operation.then(() => undefined, () => undefined);
+  return operation;
 }
 
 /**
