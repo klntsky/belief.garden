@@ -66,8 +66,7 @@ app.use(
     lastModified: true, // Enable Last-Modified header
     setHeaders: (res: Response, filePath: string) => {
       if (filePath.endsWith('.webp')) {
-        // For image files that rarely change, set a long cache duration
-        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days
+        res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
       } else {
         // For other static files, set must-revalidate to ensure updated files are fetched
         res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
