@@ -209,6 +209,10 @@ interface BeliefWithPreference {
  * @returns True if now a favorite, false otherwise.
  */
 export async function toggleUserFavorite(username: string, beliefName: string): Promise<boolean> {
+  return withUserBeliefs(username, () => toggleUserFavoriteUnlocked(username, beliefName));
+}
+
+async function toggleUserFavoriteUnlocked(username: string, beliefName: string): Promise<boolean> {
   assertUsername(username);
   const userBeliefs = await getUserBeliefs(username);
 
@@ -268,6 +272,13 @@ function calculateInitialPoints(userBeliefs: UserBeliefs): number {
  * @returns The updated user beliefs.
  */
 export async function adjustPieSlicePoints(username: string, beliefName: string, action: 'increase' | 'decrease'): Promise<UserBeliefs> {
+  return withUserBeliefs(
+    username,
+    () => adjustPieSlicePointsUnlocked(username, beliefName, action),
+  );
+}
+
+async function adjustPieSlicePointsUnlocked(username: string, beliefName: string, action: 'increase' | 'decrease'): Promise<UserBeliefs> {
   assertUsername(username);
   const userBeliefs = await getUserBeliefs(username);
 
