@@ -1353,6 +1353,7 @@ router.post(
 router.post(
   '/api/reject-belief',
   ensureAdminAuthenticated,
+  serializeGlobalBeliefWrite,
   express.json({ limit: JSON_SIZE_LIMIT }),
   async (req: Request, res: Response) => {
     const { proposalId } = req.body as { proposalId?: number };
