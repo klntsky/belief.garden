@@ -438,41 +438,88 @@ export async function saveUserBio(username: string, bioText: string): Promise<vo
  */
 export async function deleteUserAccount(username: string): Promise<void> {
   assertUsername(username);
-  // Delete account file
-  const userFilePath = path.join(userAccountsDir, `${username}.json`);
-  await fs.unlink(userFilePath).catch((err) => {
-    const error = err as { code?: string };
-    if (error.code !== 'ENOENT') {
+  const unlinkIfExists = async (filePath: string): Promise<void> => {
+    await fs.unlink(filePath).catch((err) => {
+      const error = err as { code?: string };
+      if (error.code !== 'ENOENT') throw err;
+    });
+  };
+
+  await Promise.all([
+    path.join(userAccountsDir, `${username}.json`),
+    path.join(userBeliefsDir, `${username}.json`),
+    path.join(userBiosDir, `${username}.md`),
+    path.join(userSettingsDir, `${username}.json`),
+    path.join(notificationsDir, `${username}.json`),
+    path.join(followersDir, `${username}.json`),
+    path.join(followsDir, `${username}.json`),
+    path.join('data', 'bans', `${username}.json`),
+  ].map(unlinkIfExists));
+
+  const removeFromStringLists = async (directory: string): Promise<void> => {
+    const files = await fs.readdir(directory).catch((err) => {
+      const error = err as { code?: string };
+      if (error.code === 'ENOENT') return [];
       throw err;
+    });
+    await Promise.all(files.filter(file => file.endsWith('.json')).map(async (file) => {
+      const filePath = path.join(directory, file);
+      const values = JSON.parse(await fs.readFile(filePath, 'utf8')) as string[];
+      const filtered = values.filter(value => value !== username);
+      if (filtered.length !== values.length) {
+        await writeFileAtomic(filePath, JSON.stringify(filtered, null, 2));
+      }
+    }));
+  };
+
+  await Promise.all([
+    removeFromStringLists(followersDir),
+    removeFromStringLists(followsDir),
+  ]);
+
+  const banFiles = await fs.readdir(path.join('data', 'bans')).catch((err) => {
+    const error = err as { code?: string };
+    if (error.code === 'ENOENT') return [];
+    throw err;
+  });
+  await Promise.all(banFiles.filter(file => file.endsWith('.json')).map(async (file) => {
+    const filePath = path.join('data', 'bans', file);
+    const bans = JSON.parse(await fs.readFile(filePath, 'utf8')) as Array<{ username: string }>;
+    const filtered = bans.filter(ban => ban.username !== username);
+    if (filtered.length !== bans.length) {
+      await writeFileAtomic(filePath, JSON.stringify(filtered, null, 2));
     }
+  }));
+
+  await feedQueue.add(async () => {
+    const feed = await getFeed();
+    const filtered = feed.filter(entry =>
+      entry.actor !== username
+      && entry.user !== username
+      && entry.profileName !== username
+    );
+    await writeFileAtomic(FEED_FILE, JSON.stringify(filtered, null, 2));
   });
 
-  // Delete beliefs file
-  const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
-  await fs.unlink(userBeliefsFilePath).catch((err) => {
+  const sessionDir = 'sessions';
+  const sessionFiles = await fs.readdir(sessionDir).catch((err) => {
     const error = err as { code?: string };
-    if (error.code !== 'ENOENT') {
-      throw err;
-    }
+    if (error.code === 'ENOENT') return [];
+    throw err;
   });
-
-  // Delete bio file
-  const bioFilePath = path.join(userBiosDir, `${username}.md`);
-  await fs.unlink(bioFilePath).catch((err) => {
-    const error = err as { code?: string };
-    if (error.code !== 'ENOENT') {
-      throw err;
+  await Promise.all(sessionFiles.map(async (file) => {
+    const filePath = path.join(sessionDir, file);
+    try {
+      const sessionData = JSON.parse(await fs.readFile(filePath, 'utf8')) as {
+        passport?: { user?: string };
+      };
+      if (sessionData.passport?.user === username) {
+        await unlinkIfExists(filePath);
+      }
+    } catch (error) {
+      console.error(`Failed to inspect session file ${filePath}:`, error);
     }
-  });
-
-  // Delete settings file
-  const userSettingsFilePath = path.join(userSettingsDir, `${username}.json`);
-  await fs.unlink(userSettingsFilePath).catch((err) => {
-    const error = err as { code?: string };
-    if (error.code !== 'ENOENT') {
-      throw err;
-    }
-  });
+  }));
 }
 
 /**
