@@ -738,7 +738,7 @@ export async function postFeed(entry: Omit<FeedEntry, 'timestamp'>): Promise<voi
       if (entry.type === 'new_comment') {
         feed = feed.filter(
           (feedEntry: FeedEntryWithTimestamp) => feedEntry.actor !== entry.actor
-            || feedEntry.type === entry.type
+            || feedEntry.type !== entry.type
             || feedEntry.beliefName !== entry.beliefName
         );
       } else if (entry.type === 'choice_changed') {
