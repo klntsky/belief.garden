@@ -42,7 +42,7 @@ test.describe('Add Belief Comment', () => {
     await page.waitForTimeout(3000);
 
     // Log out
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`);
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
 
     // Navigate to the user's profile as a guest
     await page.goto(`${SITE_DEPLOYMENT_PATH}/${testUsername}`);

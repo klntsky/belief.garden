@@ -94,6 +94,11 @@ app.use(
     secret: process.env.SESSION_SECRET || 'default-secret',
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    },
   })
 );
 

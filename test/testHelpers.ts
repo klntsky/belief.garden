@@ -58,7 +58,11 @@ export async function loginUser(page: Page, username: string, password: string):
 
 // Helper function to log out a user
 export async function logoutUser(page: Page): Promise<void> {
-  await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`);
+  const response = await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
+  if (!response.ok()) {
+    throw new Error(`Logout failed: ${response.status()}`);
+  }
+  await page.goto(`${SITE_DEPLOYMENT_PATH}/`);
 }
 
 // Helper function to navigate to a user's profile

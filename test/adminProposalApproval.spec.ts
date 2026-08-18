@@ -82,7 +82,7 @@ test.describe('Admin Proposal Approval', () => {
     await page.click('button[type="submit"]');
     await Promise.all([dialogPromise, responsePromise]);
     await page.waitForURL(`${SITE_DEPLOYMENT_PATH}/${regularUser.username}`, { timeout: 10000 });
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`);
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
     await page.waitForTimeout(500);
 
     await loginUser(page, adminUser.username, adminUser.password);
@@ -115,7 +115,7 @@ test.describe('Admin Proposal Approval', () => {
     await page.waitForURL(/\/admin\/proposed/, { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(1000);
 
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`, { waitUntil: 'networkidle' });
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
     await page.waitForTimeout(500);
     await loginUser(page, regularUser.username, regularUser.password);
     await page.goto(`${SITE_DEPLOYMENT_PATH}/${regularUser.username}`);
@@ -205,7 +205,7 @@ test.describe('Admin Proposal Approval', () => {
     await page.click('button[type="submit"]');
     await Promise.all([dialogPromise, responsePromise]);
     await page.waitForURL(`${SITE_DEPLOYMENT_PATH}/${regularUser.username}`, { timeout: 10000 });
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`);
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
     await page.waitForTimeout(500);
 
     await loginUser(page, adminUser.username, adminUser.password);
@@ -248,7 +248,7 @@ test.describe('Admin Proposal Approval', () => {
     await page.waitForURL(/\/admin\/proposed/, { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(1000);
 
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`, { waitUntil: 'networkidle' });
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
     await page.waitForTimeout(500);
     await loginUser(page, regularUser.username, regularUser.password);
     await page.goto(`${SITE_DEPLOYMENT_PATH}/${regularUser.username}`);
@@ -324,7 +324,7 @@ test.describe('Admin Proposal Approval', () => {
     await page.waitForURL(/\/admin\/proposed/, { timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(1000);
 
-    await page.goto(`${SITE_DEPLOYMENT_PATH}/logout`, { waitUntil: 'networkidle' });
+    await page.request.post(`${SITE_DEPLOYMENT_PATH}/logout`);
     await page.waitForTimeout(500);
     await loginUser(page, regularUser.username, regularUser.password);
     await page.goto(`${SITE_DEPLOYMENT_PATH}/${regularUser.username}`);

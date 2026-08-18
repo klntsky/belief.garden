@@ -93,10 +93,24 @@ router.post(
   }) as express.RequestHandler
 );
 
-// Logout route
-router.get('/logout', (req: Request, res: Response) => {
-  req.logout(() => {
-    res.redirect('/');
+router.get('/logout', (_req: Request, res: Response) => {
+  res.status(405).send('Use POST to log out.');
+});
+
+router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+  req.logout((logoutError) => {
+    if (logoutError) {
+      next(logoutError);
+      return;
+    }
+    req.session.destroy((sessionError) => {
+      if (sessionError) {
+        next(sessionError);
+        return;
+      }
+      res.clearCookie('connect.sid');
+      res.redirect('/');
+    });
   });
 });
 

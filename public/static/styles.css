@@ -257,12 +257,23 @@ h1.center {
     max-width: 70%;
 }
 
-.nav-links a {
+.nav-links a,
+.nav-links .link-button {
   font-weight: bold;
   text-decoration: none;
 }
 
-.nav-links a:hover {
+.nav-links .link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.nav-links a:hover,
+.nav-links .link-button:hover {
   text-decoration: underline;
 }
 
