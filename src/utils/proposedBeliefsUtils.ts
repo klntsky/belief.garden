@@ -1,6 +1,7 @@
 // src/utils/proposedBeliefsUtils.ts
 import fs from 'fs/promises';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { writeFileAtomic } from './fileUtils.js';
 import type { ProposedBelief } from '../types/index.js';
 
@@ -59,13 +60,16 @@ export async function addProposedBelief(proposal: Omit<ProposedBelief, 'timestam
       throw new Error('A proposal with this name already exists');
     }
 
-    const now = Date.now();
+    const timestamp = Math.max(
+      Date.now(),
+      ...proposedBeliefs.map(existing => existing.timestamp + 1),
+    );
     proposedBeliefs.push({
       beliefName: typeof proposal.beliefName === 'string' ? proposal.beliefName : String(proposal.beliefName),
       category: typeof proposal.category === 'string' ? proposal.category : String(proposal.category),
       proposedBy: typeof proposal.proposedBy === 'string' ? proposal.proposedBy : String(proposal.proposedBy),
-      id: now.toString(),
-      timestamp: now,
+      id: randomUUID(),
+      timestamp,
       description: typeof (proposal as { description?: unknown }).description === 'string' ? (proposal as { description: string }).description : String((proposal as { description?: unknown }).description || ''),
       additionalPrompt: (proposal as { additionalPrompt?: string | null }).additionalPrompt || null,
       ...proposal

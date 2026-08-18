@@ -19,8 +19,11 @@ test('concurrent proposals are serialized without lost updates', async () => {
       additionalPrompt: null,
     })));
 
-    const proposals = await getProposedBeliefs();
-    expect(proposals.filter(proposal => proposal.beliefName.startsWith(prefix))).toHaveLength(10);
+    const proposals = (await getProposedBeliefs())
+      .filter(proposal => proposal.beliefName.startsWith(prefix));
+    expect(proposals).toHaveLength(10);
+    expect(new Set(proposals.map(proposal => proposal.id)).size).toBe(10);
+    expect(new Set(proposals.map(proposal => proposal.timestamp)).size).toBe(10);
   } finally {
     await fs.writeFile(proposedPath, original);
   }
