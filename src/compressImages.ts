@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { ImageMagick, initializeImageMagick, MagickGeometry } from '@imagemagick/magick-wasm';
+import { ImageMagick, MagickGeometry } from '@imagemagick/magick-wasm';
+import { blurImage } from './utils/imageUtils.js';
 
 (async (): Promise<void> => {
   // Get the directory from command line arguments
@@ -12,9 +13,6 @@ import { ImageMagick, initializeImageMagick, MagickGeometry } from '@imagemagick
   }
 
   const directory = args[0]!;
-  const wasmLocation = './node_modules/@imagemagick/magick-wasm/dist/magick.wasm';
-  const wasmBytes = fs.readFileSync(wasmLocation);
-  await initializeImageMagick(wasmBytes);
 
   // Check if the directory exists
   if (!fs.existsSync(directory)) {
@@ -42,24 +40,42 @@ import { ImageMagick, initializeImageMagick, MagickGeometry } from '@imagemagick
     const filePath = path.join(directory, file);
     const filename = path.basename(file, '.webp');
 
-    // Read the image file
-    const inputData = fs.readFileSync(filePath);
+    try {
+      // First, apply blur to the image
+      const blurredImageData = await blurImage(filePath);
 
-    // Process the image
-    ImageMagick.read(inputData, (img) => {
-      // Resize the image to height 400px, maintaining aspect ratio
-      img.resize(new MagickGeometry(0, 400));
+      // Write blurred data to temp file and read it back (ImageMagick WASM may have issues reading PNG from buffer)
+      const tempPath = path.join(directory, `.temp_${filename}.png`);
+      fs.writeFileSync(tempPath, blurredImageData);
 
-      // Set the quality to 50
-      img.quality = 50;
+      try {
+        // Read from temp file
+        const tempData = fs.readFileSync(tempPath);
+        
+        // Process the blurred image
+        ImageMagick.read(tempData, (img) => {
+        // Resize the image to height 400px, maintaining aspect ratio
+        img.resize(new MagickGeometry(0, 400));
 
-      // Write the image to buffer in webp format
-      img.write('webp' as any, (data: Uint8Array) => {
-        const outputPath = path.join(minDir, `${filename}.webp`);
-        fs.writeFileSync(outputPath, data);
-        console.log(`Processed ${file} -> ${filename}.webp`);
-      });
-    });
+        // Set the quality to 50
+        img.quality = 50;
+
+          // Write the image to buffer in webp format
+          img.write('webp' as any, (data: Uint8Array) => {
+            const outputPath = path.join(minDir, `${filename}.webp`);
+            fs.writeFileSync(outputPath, data);
+            console.log(`Processed ${file} -> ${filename}.webp`);
+          });
+        });
+      } finally {
+        // Clean up temp file
+        if (fs.existsSync(tempPath)) {
+          fs.unlinkSync(tempPath);
+        }
+      }
+    } catch (error) {
+      console.error(`Error processing ${file}:`, error);
+    }
   }
 
   console.log('All images processed!');

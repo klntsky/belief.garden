@@ -130,7 +130,7 @@ h1.center {
 }
 
 .blur {
-    backdrop-filter: blur(2px);
+    /* backdrop-filter: blur(2px); */
 }
 
 .choice-buttons {
