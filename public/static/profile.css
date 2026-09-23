@@ -87,6 +87,33 @@
   margin-right: 6px;
 }
 
+.guess-beliefs-link {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  margin: 0 0 20px;
+  padding: 14px 20px;
+  color: #a55 !important;
+  background-color: #f9dddd;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  box-shadow: inset 0 0 20px rgba(100, 0, 0, 0.2),
+              0 0 20px rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.guess-beliefs-link:hover {
+  background-color: #fce5e5;
+  box-shadow: inset 0 0 14px rgba(100, 0, 0, 0.16),
+              0 4px 20px rgba(100, 0, 0, 0.14);
+}
+
 .belief.highlighted {
   outline: 3px solid yellow;
   animation: shake 0.6s infinite alternate,

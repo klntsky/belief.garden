@@ -215,9 +215,7 @@ async function addCorrelationBullets() {
       continue;
     }
 
-    if (authenticatedUserId) {
-      element.setAttribute('data-correlated', true);
-    }
+    element.setAttribute('data-correlated', true);
 
     const otherUserId = element.getAttribute('data-username');
 

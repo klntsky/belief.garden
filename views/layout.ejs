@@ -14,19 +14,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" type="image/svg+xml" sizes="any"        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘🏻‍♂️</text></svg>"/>
-  <title>
-    <% if (typeof title !== 'undefined') { %>
-      <%= title %>
-    <% } else { %>
-      belief.garden
-    <% } %>
-  </title>
+  <title><%= typeof title !== 'undefined' ? title : 'belief.garden' %></title>
+  <% if (typeof socialImageUrl !== 'undefined') {
+    const socialTitle = `How well do you know @${profileUserId}?`;
+    const description = `${socialTitle} Guess their position on beliefs.`;
+  %>
+    <meta name="description" content="<%= description %>" />
+    <link rel="canonical" href="<%= canonicalUrl %>" />
+    <meta name="robots" content="<%= robots %>" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="belief.garden" />
+    <meta property="og:title" content="<%= socialTitle %>" />
+    <meta property="og:description" content="<%= description %>" />
+    <meta property="og:url" content="<%= canonicalUrl %>" />
+    <meta property="og:image" content="<%= socialImageUrl %>" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Guess My Beliefs on belief.garden" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<%= socialTitle %>" />
+    <meta name="twitter:description" content="<%= description %>" />
+    <meta name="twitter:image" content="<%= socialImageUrl %>" />
+    <meta name="twitter:image:alt" content="Guess My Beliefs on belief.garden" />
+  <% } %>
   <link rel="stylesheet" href="/static/landing.css" />
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="/static/profile.css" />
   <link rel="stylesheet" href="/static/notifications.css" />
   <link rel="stylesheet" href="/static/indicator.css">
   <link rel="stylesheet" href="/static/feed.css">
+  <link rel="stylesheet" href="/static/guess.css">
   <link rel="stylesheet" href="/static/vendor/toastify.min.css">
   <script src="/static/vendor/popper.min.js"></script>
   <script src="/static/vendor/tippy-bundle.umd.min.js"></script>

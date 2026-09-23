@@ -25,7 +25,9 @@ async function ensureRequiredDirectories(): Promise<void> {
 }
 
 /**
- * Migration function: Move beliefs.json from public/static/ to data/ if needed
+ * Migration function: Seed data/beliefs.json from public/static/ if needed.
+ * Keep the source copy intact so starting the app does not dirty or break a
+ * concurrently used development checkout.
  */
 async function migrateBeliefsJson(): Promise<void> {
   const oldPath = path.join('public', 'static', 'beliefs.json');
@@ -40,11 +42,11 @@ async function migrateBeliefsJson(): Promise<void> {
     // data/beliefs.json doesn't exist, check if old location exists
     try {
       await fs.access(oldPath);
-      // Old file exists, move it to new location
-      console.log('Migrating beliefs.json from public/static/ to data/...');
+      // Old file exists, copy it to the writable data location.
+      console.log('Seeding beliefs.json from public/static/ to data/...');
       await fs.mkdir('data', { recursive: true });
-      await fs.rename(oldPath, newPath);
-      console.log('Successfully migrated beliefs.json to data/');
+      await fs.copyFile(oldPath, newPath);
+      console.log('Successfully seeded beliefs.json in data/');
     } catch (err) {
       const error = err as { code?: string };
       if (error.code === 'ENOENT') {
@@ -64,4 +66,3 @@ export async function runDataMigrations(): Promise<void> {
   await ensureRequiredDirectories();
   await migrateBeliefsJson();
 }
-

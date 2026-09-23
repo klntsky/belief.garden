@@ -1,0 +1,102 @@
+.guess-page {
+  width: min(420px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.guess-header {
+  margin: 18px 0 24px;
+}
+
+.guess-header h1 {
+  margin-bottom: 6px;
+}
+
+.guess-panel,
+.guess-scorebar {
+  background: #f9dddd;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 30px rgba(100, 0, 0, 0.12);
+  border-radius: 20px;
+}
+
+.guess-panel {
+  padding: 32px;
+}
+
+.guess-panel .reply-button,
+.guess-reveal .reply-button {
+  margin: 6px;
+}
+
+.guess-final-score {
+  font-size: 1.25rem;
+}
+
+.guess-scorebar {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  padding: 14px 8px;
+}
+
+.guess-progress {
+  height: 7px;
+  margin: 0 12px 16px;
+  overflow: hidden;
+  background: rgba(165, 85, 85, 0.18);
+  border-radius: 999px;
+}
+
+#guess-progress-fill {
+  width: 0;
+  height: 100%;
+  background: #a55;
+  transition: width 0.25s ease;
+}
+
+.guess-category {
+  margin: 24px 0 10px;
+}
+
+.guess-card {
+  width: 298px;
+  max-width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: left;
+}
+
+.guess-prompt .username {
+  margin-left: 0;
+}
+
+.guess-reveal {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.guess-reveal h3 {
+  margin: 0 0 6px;
+}
+
+.belief .guess-reveal p {
+  flex-grow: 0;
+}
+
+.guess-correct-answer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.guess-correct-answer .choice-button {
+  flex: none;
+}
+
+@media screen and (max-width: 600px) {
+  .guess-panel {
+    padding: 22px 16px;
+  }
+}

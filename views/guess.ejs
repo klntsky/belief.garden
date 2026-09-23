@@ -1,0 +1,77 @@
+<div class="guess-page" data-profile-user-id="<%= profileUserId %>">
+  <header class="guess-header">
+    <h1>Guess My Beliefs</h1>
+  </header>
+
+  <div id="guess-loading" class="guess-panel" hidden>
+    <p>Loading beliefs…</p>
+  </div>
+
+  <div id="guess-error" class="guess-panel"<% if (beliefCount > 0) { %> hidden<% } %>>
+    <h2>No beliefs to guess yet</h2>
+    <p id="guess-error-message"><%= profileUserId %> hasn’t answered any belief cards yet.</p>
+    <a href="/<%= profileUserId %>">Return to the profile</a>
+  </div>
+
+  <section id="guess-intro" class="guess-panel"<% if (beliefCount === 0) { %> hidden<% } %>>
+    <h2>
+      How well do you know
+      <a href="/<%= profileUserId %>" class="username feed-username-label" data-username="<%= profileUserId %>"><%= profileUserId %></a>?
+    </h2>
+    <p>
+      Guess
+      <a href="/<%= profileUserId %>" class="username feed-username-label" data-username="<%= profileUserId %>"><%= profileUserId %></a>'s
+      position on all <strong id="guess-total-count"><%= beliefCount %></strong> beliefs.
+    </p>
+    <button id="guess-start" class="reply-button" type="button">Start guessing</button>
+  </section>
+
+  <section id="guess-game" hidden>
+    <div class="guess-scorebar" aria-live="polite">
+      <span><strong id="guess-correct-count">0</strong> correct</span>
+      <span><strong id="guess-attempt-count">0</strong> answered</span>
+      <span><strong id="guess-remaining-count">0</strong> left</span>
+    </div>
+    <div class="guess-progress" aria-hidden="true">
+      <div id="guess-progress-fill"></div>
+    </div>
+
+    <h2 id="guess-category" class="guess-category"></h2>
+    <article id="guess-card" class="belief guess-card">
+      <div class="belief-overlay">
+        <p class="guess-prompt">
+          What is
+          <a href="/<%= profileUserId %>" class="username feed-username-label" data-username="<%= profileUserId %>"><%= profileUserId %></a>’s
+          position on this belief?
+        </p>
+        <h3 id="guess-belief-name"></h3>
+        <p><span id="guess-belief-description" class="blur"></span></p>
+
+        <div id="guess-choices" class="choice-buttons guess-choices" aria-label="Choose your guess">
+          <button class="choice-button reject" type="button" data-choice="reject">Reject</button>
+          <button class="choice-button neutral" type="button" data-choice="neutral">Neutral</button>
+          <button class="choice-button support" type="button" data-choice="support">Support</button>
+        </div>
+
+        <div id="guess-reveal" class="guess-reveal" aria-live="polite" hidden>
+          <h3 id="guess-result"></h3>
+          <p id="guess-answer" class="guess-correct-answer" hidden></p>
+          <div id="guess-comment" class="comment-display" hidden></div>
+          <button id="guess-next" class="reply-button" type="button">Next belief</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section id="guess-complete" class="guess-panel" hidden>
+    <h2>
+      You guessed all of
+      <a href="/<%= profileUserId %>" class="username feed-username-label" data-username="<%= profileUserId %>"><%= profileUserId %></a>’s beliefs
+    </h2>
+    <p class="guess-final-score"><strong id="guess-final-correct">0</strong> / <strong id="guess-final-total">0</strong> correct</p>
+    <p id="guess-final-message"></p>
+    <button id="guess-replay" class="reply-button" type="button">Play again</button>
+  </section>
+</div>
+
+<script src="/static/guess.js"></script>

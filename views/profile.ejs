@@ -33,6 +33,12 @@
   </div>
 </div>
 
+<a class="guess-beliefs-link" href="/<%= profileUserId %>/guess">
+  <%= user && user.id === profileUserId
+    ? 'Invite someone to guess your beliefs'
+    : `How well do you know @${profileUserId}? Guess their beliefs` %>
+</a>
+
 <div id="beliefs-container"></div>
 
 <script>
