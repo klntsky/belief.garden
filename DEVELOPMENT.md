@@ -35,3 +35,23 @@ pnpm test test/editBio.spec.ts     # one test file
 ```
 
 Tests start and stop their own server. `TEST_PORT` is the first port they try; if it is busy, the next free port is used.
+
+The feature lifecycle regression group covers follows, reply/comment notifications,
+bans and unbans, password changes, admin/proposal actions, comment limits,
+notification read state, chat mentions, correlation, and discovery statistics:
+
+```sh
+pnpm test \
+  test/socialLifecycle.spec.ts test/replyNotifications.spec.ts \
+  test/commentNotifications.spec.ts test/chatMentions.spec.ts \
+  test/passwordChangeValidation.spec.ts test/commentLifecycle.spec.ts \
+  test/adminLifecycle.spec.ts test/proposalValidation.spec.ts \
+  test/notificationLifecycle.spec.ts test/correlation.spec.ts \
+  test/statisticsDiscovery.spec.ts
+```
+
+Run against development data only. The API tests create and remove unique accounts;
+admin/proposal fixtures restore the files they change. Keep the configured single
+worker because the application uses shared JSON files. Statistics tests run the
+real updater in temporary directories, without replacing application data.
+These tests do not call image generation.
