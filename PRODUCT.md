@@ -14,3 +14,10 @@ sessions persist in SQLite. Existing JSON and Markdown records migrate without
 changing their contents. Migration is all-or-nothing and runs once; failures leave
 the source files untouched and allow a retry without a partial database cutover.
 Static site assets, including belief images, remain filesystem assets.
+
+## Feed usernames
+
+Usernames on `/feed`, including activity actors and chat authors, are ordinary
+links to the user's profile. Clicking a username does not insert a mention or
+change the chat draft. Keyboard activation and opening links in a new tab retain
+normal browser behavior. Mentions can still be typed explicitly in chat.

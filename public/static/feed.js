@@ -21,22 +21,6 @@ function createUserLink(username) {
   return link;
 }
 
-function createUserSpan(username) {
-  const link = document.createElement('span');
-  link.addEventListener('click', () => {
-    const chatInput = document.getElementById('chat-input');
-    chatInput.value = chatInput.value.trim();
-    chatInput.value += ' @' + username + ' ';
-    chatInput.value = chatInput.value.trim();
-  });
-  link.textContent = username;
-  link.classList.add('feed-username-label');
-  link.classList.add('username');
-  link.classList.add('chat-username');
-  link.setAttribute('data-username', username);
-  return link;
-}
-
 function createBeliefLink(username, beliefName) {
   const link = document.createElement('a');
   link.href = `/${username}#${beliefName}`;
@@ -96,7 +80,7 @@ function mkChoice(choice) {
 
 function getActionElements(entry) {
   const container = document.createElement('span');
-  const actor = createUserSpan(entry.actor);
+  const actor = createUserLink(entry.actor);
 
   switch (entry.type) {
     case 'choice_changed': {

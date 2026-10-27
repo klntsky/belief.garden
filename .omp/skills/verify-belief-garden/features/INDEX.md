@@ -33,7 +33,19 @@ This is the maintained source for user-facing verification. Read this index, the
 - [Belief positions and core beliefs](beliefs.md): support/reject/neutral, undo, favorites and chart.
 - [Belief explanations](explanations.md): autosaved per-card comments and public reading.
 - [Guess My Beliefs](guess-my-beliefs.md): invitation links, guessing, score, replay, empty state.
+- [Feed username navigation](#feed-username-navigation): native profile links without modifying chat drafts.
+
+## Feed username navigation
+
+- On an isolated instance, register and log in through the UI, then open `/feed`.
+  Registration supplies an activity row; send a chat message to cover its author too.
+- Type an unsent chat draft. Middle-click the actor/author username and require a
+  new tab at `/<username>`, with the original feed tab and draft unchanged.
+- Ordinary click and keyboard Enter on that username must navigate to the profile.
+- Type and send an explicit `@username` mention to confirm chat still accepts it.
+- Log out, reopen `/feed`, and click an actor link. Require the public profile;
+  anonymous feeds have no chat input. Capture the draft and destination screenshots.
 
 ## Known unmapped surfaces
 
-Settings/password/account deletion; feed/discussion replies/chat; follows/correlation; notifications; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the five starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.
+Settings/password/account deletion; feed/discussion replies/chat beyond username navigation; follows/correlation; notifications; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.
