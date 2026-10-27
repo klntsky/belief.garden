@@ -83,7 +83,7 @@ pnpm test \
   test/commentNotifications.spec.ts test/chatMentions.spec.ts \
   test/passwordChangeValidation.spec.ts test/commentLifecycle.spec.ts \
   test/adminLifecycle.spec.ts test/proposalValidation.spec.ts \
-  test/notificationLifecycle.spec.ts test/correlation.spec.ts \
+  test/notificationLifecycle.spec.ts test/correlation.spec.ts test/correlationApi.spec.ts \
   test/statisticsDiscovery.spec.ts
 ```
 
@@ -93,6 +93,25 @@ and fixtures use the same database. The API tests create and remove unique
 accounts; admin/proposal fixtures restore the records they change. Keep the
 configured single worker because tests share global records. Statistics tests use
 separate temporary databases. These tests do not call image generation.
+
+## Correlation verification
+
+Run the isolated cache proof without a web server:
+
+```sh
+pnpm run verify-correlations
+```
+
+The script creates and removes its own temporary SQLite database. V8 precise
+coverage counts calculations in the real server module. It checks cold and warm
+pairs, cached zero/unavailable results, lazy invalidation for either participant,
+external writes, rollback, deletion/recreation, and cache eviction limits.
+Fixture setup uses transactions without changing SQLite durability settings.
+
+The HTTP and profile regressions are `test/correlationApi.spec.ts` and
+`test/correlation.spec.ts`. Run them against the same disposable database as the
+test server. For browser proof, change each participant's choices through the UI,
+reload the other profile, and inspect the updated percentage and feed tooltip.
 
 ## Real-app verification skill
 
