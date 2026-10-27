@@ -1,5 +1,7 @@
 # Development
 
+Product requirements are documented in [product.md](product.md).
+
 ## Setup
 
 Requires Node.js and pnpm.
@@ -55,7 +57,3 @@ admin/proposal fixtures restore the files they change. Keep the configured singl
 worker because the application uses shared JSON files. Statistics tests run the
 real updater in temporary directories, without replacing application data.
 These tests do not call image generation.
-
-Proposal submissions require a category, name, and description containing
-non-whitespace text. Invalid submissions return HTTP 400 without changing pending
-proposals; the additional image prompt remains optional.
