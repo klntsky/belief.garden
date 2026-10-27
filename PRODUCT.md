@@ -21,3 +21,20 @@ Usernames on `/feed`, including activity actors and chat authors, are ordinary
 links to the user's profile. Clicking a username does not insert a mention or
 change the chat draft. Keyboard activation and opening links in a new tab retain
 normal browser behavior. Mentions can still be typed explicitly in chat.
+
+## Notification read cursors
+
+Existing browser read timestamps remain authoritative for that browser. Polling
+with a browser cursor also advances the account's SQLite cursor when it is newer;
+an older browser cursor never moves the server backward and is not overwritten
+by a newer server cursor.
+
+A browser without a local cursor uses the account's server cursor. If neither
+exists, the server initializes it once to the latest retained notification,
+suppressing the initial historical backlog. Subsequent arrivals remain unread.
+An explicit zero cursor is existing client state, not a missing cursor.
+
+Marking notifications read preserves the local behavior and immediately syncs the
+displayed latest timestamp to the server. Notifications arriving after that
+displayed timestamp remain unread. Notification records are retained; cursors do
+not delete history. Account deletion also removes its server cursor.

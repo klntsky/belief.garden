@@ -29,6 +29,8 @@ test.describe('Notification links', () => {
   });
 
   test('does not render external broadcast URLs', async ({ page }) => {
+    await page.goto(`${SITE_DEPLOYMENT_PATH}/`);
+    await page.evaluate(() => localStorage.setItem('lastNotificationRead', '0'));
     await loginUser(page, testUsername, testPassword);
     const response = await page.request.get(`${SITE_DEPLOYMENT_PATH}/api/notifications?since=0`);
     expect(response.status()).toBe(200);

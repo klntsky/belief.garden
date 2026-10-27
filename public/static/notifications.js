@@ -1,17 +1,18 @@
 // notifications.js - Client-side notification and following functionality
 
-let lastChecked = 0;
 let notifications = [];
 const checkInterval = 30000; // Check every 30 seconds
 let unreadCount = 0;
 const pageLoadTimestamp = Date.now();
 
-// Local storage key for last read timestamp
+// Preserve existing browser cursors; fresh clients initialize from the server.
 const LAST_READ_KEY = 'lastNotificationRead';
 
 function getLastReadTimestamp() {
   const stored = localStorage.getItem(LAST_READ_KEY);
-  return stored ? parseInt(stored, 10) : 0;
+  if (stored === null) return null;
+  const timestamp = Number(stored);
+  return Number.isSafeInteger(timestamp) && timestamp >= 0 ? timestamp : null;
 }
 
 function setLastReadTimestamp(timestamp) {
@@ -19,7 +20,7 @@ function setLastReadTimestamp(timestamp) {
 }
 
 function updateUnreadCount() {
-  const lastRead = getLastReadTimestamp();
+  const lastRead = getLastReadTimestamp() ?? 0;
   unreadCount = notifications.filter(n => n.timestamp > lastRead).length;
 }
 
@@ -305,13 +306,23 @@ function updateNotificationUI() {
       const markReadButton = document.createElement('button');
       markReadButton.className = 'mark-read-button';
       markReadButton.textContent = 'Mark all as read';
-      markReadButton.onclick = () => {
+      markReadButton.onclick = async () => {
         if (notifications.length > 0) {
           // Use the most recent notification's timestamp
           const latestTimestamp = notifications[0].timestamp;
           setLastReadTimestamp(latestTimestamp);
           unreadCount = 0;
           updateNotificationUI();
+          try {
+            const response = await fetch('/api/notifications/read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ timestamp: latestTimestamp }),
+            });
+            if (!response.ok) throw new Error('Failed to save notification read cursor');
+          } catch (error) {
+            console.error('Failed to sync notification read cursor:', error);
+          }
         }
       };
       header.appendChild(markReadButton);
@@ -385,12 +396,18 @@ async function checkNotifications() {
 
   try {
     const lastRead = getLastReadTimestamp();
-    const response = await fetch(`/api/notifications?since=${lastRead}`);
+    const query = lastRead === null ? '' : `?since=${lastRead}`;
+    const response = await fetch(`/api/notifications${query}`);
     if (!response.ok) {
       throw new Error('Failed to fetch notifications');
     }
 
     notifications = await response.json();
+    if (getLastReadTimestamp() === null) {
+      const cursorHeader = response.headers.get('X-Notification-Read-Cursor');
+      const cursor = cursorHeader === null ? NaN : Number(cursorHeader);
+      if (Number.isSafeInteger(cursor) && cursor >= 0) setLastReadTimestamp(cursor);
+    }
     notifications.sort((a, b) => b.timestamp - a.timestamp);
     updateUnreadCount();
     updateNotificationUI();

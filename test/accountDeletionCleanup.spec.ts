@@ -8,6 +8,7 @@ import {
   getUserFollowers,
   getUserFollowing,
   postFeed,
+  markUserNotificationsRead,
 } from '../src/utils/userUtils.js';
 import { createTestUser } from './testHelpers.js';
 
@@ -16,6 +17,7 @@ test('account deletion removes related records, references, feed entries, and se
   const otherUser = await createTestUser();
   const ownFiles = [
     path.join('data', 'notifications', `${deletedUser.username}.json`),
+    path.join('data', 'notification-read', `${deletedUser.username}.json`),
     path.join('data', 'followers', `${deletedUser.username}.json`),
     path.join('data', 'follows', `${deletedUser.username}.json`),
     path.join('data', 'bans', `${deletedUser.username}.json`),
@@ -26,6 +28,7 @@ test('account deletion removes related records, references, feed entries, and se
   try {
     await addFollower(otherUser.username, deletedUser.username);
     await addFollower(deletedUser.username, otherUser.username);
+    markUserNotificationsRead(deletedUser.username, 1700000000000);
     writeRecord(otherBanPath, JSON.stringify([{ username: deletedUser.username }]));
     writeRecord(sessionPath, JSON.stringify({
       passport: { user: deletedUser.username },

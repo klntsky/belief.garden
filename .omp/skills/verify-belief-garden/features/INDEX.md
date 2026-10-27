@@ -34,6 +34,7 @@ This is the maintained source for user-facing verification. Read this index, the
 - [Belief explanations](explanations.md): autosaved per-card comments and public reading.
 - [Guess My Beliefs](guess-my-beliefs.md): invitation links, guessing, score, replay, empty state.
 - [Feed username navigation](#feed-username-navigation): native profile links without modifying chat drafts.
+- [Hybrid notification cursors](#hybrid-notification-cursors): fresh-device fallback and legacy browser precedence.
 
 ## Feed username navigation
 
@@ -46,6 +47,20 @@ This is the maintained source for user-facing verification. Read this index, the
 - Log out, reopen `/feed`, and click an actor link. Require the public profile;
   anonymous feeds have no chat input. Capture the draft and destination screenshots.
 
+## Hybrid notification cursors
+
+- In a fresh isolated browser context, register and log in through the UI. Its
+  existing welcome notification should not appear unread when both cursors are absent.
+- Register a second account in another context and send `@<recipient>` through
+  `/feed`. Open the recipient's `/notifications`; the mention must be unread.
+- Click `Mark all as read`, await HTTP 204 from `/api/notifications/read`, then log
+  in as the recipient in a fresh browser context. Require no replayed backlog.
+- Send a second mention, mark it read on the fresh device, then reopen notifications
+  on the original device. Its older local cursor must still show the second mention,
+  without moving the server cursor backward. Stay within two chat messages/minute.
+- Query only the relevant `data/notification-read/<username>.json` SQLite records
+  for corroboration. Retain screenshots and the effective read timestamps.
+
 ## Known unmapped surfaces
 
-Settings/password/account deletion; feed/discussion replies/chat beyond username navigation; follows/correlation; notifications; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.
+Settings/password/account deletion; feed/discussion replies/chat beyond username navigation and the cursor-smoke mention flow; follows/correlation; notification behavior beyond hybrid cursors; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.

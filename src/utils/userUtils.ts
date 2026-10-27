@@ -12,6 +12,7 @@ const userBeliefsDir = path.join('data', 'users');
 const userBiosDir = path.join('data', 'bio');
 const userSettingsDir = path.join('data', 'settings');
 const notificationsDir = path.join('data', 'notifications');
+const notificationReadDir = path.join('data', 'notification-read');
 const followersDir = path.join('data', 'followers');
 const followsDir = path.join('data', 'follows');
 let followWriteChain: Promise<void> = Promise.resolve();
@@ -459,6 +460,7 @@ export async function deleteUserAccount(username: string): Promise<void> {
     path.join(userBiosDir, `${username}.md`),
     path.join(userSettingsDir, `${username}.json`),
     path.join(notificationsDir, `${username}.json`),
+    path.join(notificationReadDir, `${username}.json`),
     path.join(followersDir, `${username}.json`),
     path.join(followsDir, `${username}.json`),
     path.join('data', 'bans', `${username}.json`),
@@ -524,6 +526,36 @@ export async function getUserNotifications(username: string): Promise<Notificati
     }
     throw err;
   }
+}
+
+function resolveNotificationReadCursor(username: string, latestTimestamp: number, clientCursor?: number): number {
+  assertUsername(username);
+  return transaction(() => {
+    const key = path.join(notificationReadDir, `${username}.json`);
+    const stored = hasRecord(key) ? JSON.parse(readRecord(key)) as number : undefined;
+    const cursor = clientCursor ?? stored ?? latestTimestamp;
+    if (stored === undefined || cursor > stored) {
+      writeRecord(key, JSON.stringify(cursor));
+    }
+    return cursor;
+  });
+}
+
+export async function getUnreadUserNotifications(username: string, clientCursor?: number): Promise<{
+  notifications: Notification[];
+  readCursor: number;
+}> {
+  const notifications = await getUserNotifications(username);
+  const latestTimestamp = notifications.reduce((latest, notification) => Math.max(latest, notification.timestamp || 0), 0);
+  const readCursor = resolveNotificationReadCursor(username, latestTimestamp, clientCursor);
+  return {
+    notifications: notifications.filter(notification => (notification.timestamp || 0) > readCursor),
+    readCursor,
+  };
+}
+
+export function markUserNotificationsRead(username: string, timestamp: number): void {
+  resolveNotificationReadCursor(username, 0, timestamp);
 }
 
 /**

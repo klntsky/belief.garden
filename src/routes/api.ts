@@ -13,7 +13,8 @@ import {
   saveUserBio,
   getUserSettings,
   saveUserSettings,
-  getUserNotifications,
+  getUnreadUserNotifications,
+  markUserNotificationsRead,
   addFollower,
   removeFollower,
   pushNotificationToUser,
@@ -787,23 +788,53 @@ router.post('/api/unban-user',
   }
 );
 
-// Get notifications since timestamp
+function isNotificationCursor(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
 router.get('/api/notifications', ensureAuthenticatedApi, async (req: Request, res: Response) => {
   const authenticatedUserId = req.user?.id as string | undefined;
   if (!authenticatedUserId) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
+  res.set('Cache-Control', 'no-store');
+  if (req.get('sec-fetch-site') === 'cross-site') {
+    res.status(403).json({ error: 'Cross-site request rejected' });
+    return;
+  }
+  const queryCursor = req.query.since;
+  const since = typeof queryCursor === 'string' && /^\d+$/.test(queryCursor) ? Number(queryCursor) : undefined;
+  if (queryCursor !== undefined && !isNotificationCursor(since)) {
+    res.status(400).json({ error: 'since must be a non-negative integer timestamp' });
+    return;
+  }
   try {
-    const since = parseInt((req.query.since as string) || '0', 10);
-    const notifications = await getUserNotifications(authenticatedUserId);
-
-    // Filter notifications newer than the given timestamp
-    const recentNotifications = notifications.filter(n => (n.timestamp || 0) > since);
-
-    res.json(recentNotifications);
+    const { notifications, readCursor } = await getUnreadUserNotifications(authenticatedUserId, since);
+    res.set('X-Notification-Read-Cursor', String(readCursor));
+    res.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+router.post('/api/notifications/read', ensureAuthenticatedApi, express.json(), (req: Request, res: Response) => {
+  const authenticatedUserId = req.user?.id;
+  if (!authenticatedUserId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const timestamp: unknown = req.body?.timestamp;
+  if (!isNotificationCursor(timestamp)) {
+    res.status(400).json({ error: 'timestamp must be a non-negative integer timestamp' });
+    return;
+  }
+  try {
+    markUserNotificationsRead(authenticatedUserId, timestamp);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error marking notifications read:', error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
