@@ -1058,6 +1058,11 @@ router.post(
       return;
     }
 
+    if (typeof category !== 'string' || category.trim().length === 0) {
+      res.status(400).json({ error: 'category must be a non-empty string' });
+      return;
+    }
+
     if (typeof name !== 'string' || name.trim().length === 0 || name.length > PROPOSAL_NAME_MAX_LENGTH) {
       res.status(400).json({ error: `name must be a non-empty string with max ${PROPOSAL_NAME_MAX_LENGTH} characters` });
       return;
