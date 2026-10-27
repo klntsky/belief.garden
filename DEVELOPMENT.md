@@ -57,3 +57,14 @@ admin/proposal fixtures restore the files they change. Keep the configured singl
 worker because the application uses shared JSON files. Statistics tests run the
 real updater in temporary directories, without replacing application data.
 These tests do not call image generation.
+
+## Real-app verification skill
+
+Use the project-local [verify-belief-garden skill](.omp/skills/verify-belief-garden/SKILL.md)
+for isolated browser verification and retained proof artifacts. Its
+[feature map](.omp/skills/verify-belief-garden/features/INDEX.md) covers accounts,
+public bios, belief positions/core beliefs, explanations, and Guess My Beliefs.
+The executable lifecycle helper creates a disposable app copy with separate data,
+sessions, port, logs, and evidence; it does not drive an existing development server.
+Launch, doctor, browser proof, teardown, and post-cleanup evidence checks are in the
+skill. Use `maintain-verification-skill` when routes or user entry points change.

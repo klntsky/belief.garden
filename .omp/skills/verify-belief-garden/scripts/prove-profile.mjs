@@ -1,0 +1,77 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { chromium, expect } from '@playwright/test';
+
+const manifest = resolve(process.argv[2] || 'instance.json');
+const state = JSON.parse(await readFile(manifest, 'utf8'));
+const evidence = dirname(manifest);
+const doctor = spawnSync(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'instance.mjs'), 'doctor', manifest], { encoding: 'utf8' });
+if (doctor.status !== 0) throw new Error(doctor.stderr || doctor.stdout);
+await writeFile(join(evidence, 'doctor.json'), doctor.stdout);
+const actions = [];
+const username = 'verify_gardener';
+const password = 'SecuI&SD*^tgsdreP@ssw0rd';
+const bio = 'Verification gardener: **public profile persisted**.';
+const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_PATH ? { executablePath: process.env.BROWSER_PATH } : {}) });
+const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+const page = await context.newPage();
+const problems = [];
+page.on('pageerror', error => problems.push(error.message));
+const action = text => { actions.push({ at: new Date().toISOString(), action: text, url: page.url() }); console.log(text); };
+try {
+  action('account-register: open home and choose Register');
+  await page.goto(state.url);
+  await page.locator('.nav-links-right a[href="/register"]').click();
+  await page.locator('input[name="username"]').fill(username);
+  await page.locator('input[name="password"]').fill(password);
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(`${state.url}/login`);
+  const account = JSON.parse(await readFile(join(state.scratch, `data/accounts/${username}.json`), 'utf8'));
+  assert.equal(account.username, username);
+  action('account-login: submit credentials through Login');
+  await page.locator('input[name="username"]').fill(username);
+  await page.locator('input[name="password"]').fill(password);
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(`${state.url}/${username}`);
+  await expect(page.locator('#login-username')).toHaveText(username);
+  await expect(page.locator('.user-bio-textarea')).toBeVisible();
+  await page.screenshot({ path: join(evidence, 'profile-before.png') });
+  action('profile-bio: fill .user-bio-textarea and observe POST /api/user-bio/verify_gardener');
+  const saved = page.waitForResponse(response => response.url() === `${state.url}/api/user-bio/${username}` && response.request().method() === 'POST');
+  await page.locator('.user-bio-textarea').fill(bio);
+  const response = await saved;
+  assert.equal(response.status(), 200);
+  await writeFile(join(evidence, 'bio-response.json'), JSON.stringify({ status: response.status(), body: await response.text() }, null, 2));
+  action('profile-bio: reload and assert editor value persisted');
+  await page.reload();
+  await expect(page.locator('.user-bio-textarea')).toHaveValue(bio);
+  const stored = await readFile(join(state.scratch, `data/bio/${username}.md`), 'utf8');
+  assert.equal(stored, bio);
+  await writeFile(join(evidence, 'stored-bio.md'), stored);
+  await page.screenshot({ path: join(evidence, 'profile-saved.png') });
+  action('account-logout: submit visible Logout form; revisit public profile');
+  await page.locator('form[action="/logout"] input[type="submit"]').click();
+  await expect(page).toHaveURL(`${state.url}/`);
+  await page.goto(`${state.url}/${username}`);
+  await expect(page.locator('.user-bio-text strong')).toHaveText('public profile persisted');
+  await expect(page.locator('.user-bio-textarea')).toHaveCount(0);
+  await expect(page.locator('.nav-links-right a[href="/login"]')).toBeVisible();
+  await page.screenshot({ path: join(evidence, 'profile-public.png') });
+  await writeFile(join(evidence, 'profile-public.aria.txt'), await page.locator('body').ariaSnapshot());
+  assert.deepEqual(problems, []);
+  await writeFile(join(evidence, 'result.json'), JSON.stringify({ passed: true, features: ['account-register', 'account-login', 'account-logout', 'profile-bio'], entry: 'home header Register → Login → own profile → Logout → public URL', username, storedBio: stored, pageErrors: problems }, null, 2));
+} catch (error) {
+  await page.screenshot({ path: join(evidence, 'failure.png') }).catch(() => {});
+  await writeFile(join(evidence, 'failure.txt'), String(error));
+  throw error;
+} finally {
+  await writeFile(join(evidence, 'actions.json'), JSON.stringify(actions, null, 2));
+  await context.tracing.stop({ path: join(evidence, 'trace.zip') });
+  await browser.close();
+  console.log(`Evidence retained at ${evidence}; run instance.mjs cleanup ${manifest} even after failure.`);
+}
