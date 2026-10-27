@@ -35,6 +35,7 @@ This is the maintained source for user-facing verification. Read this index, the
 - [Guess My Beliefs](guess-my-beliefs.md): invitation links, guessing, score, replay, empty state.
 - [Feed username navigation](#feed-username-navigation): native profile links without modifying chat drafts.
 - [Hybrid notification cursors](#hybrid-notification-cursors): fresh-device fallback and legacy browser precedence.
+- [Belief correlations](#belief-correlations). Profile values, feed indicators, and lazy cache invalidation.
 
 ## Feed username navigation
 
@@ -61,6 +62,28 @@ This is the maintained source for user-facing verification. Read this index, the
 - Query only the relevant `data/notification-read/<username>.json` SQLite records
   for corroboration. Retain screenshots and the effective read timestamps.
 
+## Belief correlations
+
+- Register two accounts through the UI. Give both Existentialism, Absurdism,
+  Nihilism, Stoicism, and Hedonism the positions support, neutral, reject, support,
+  and reject. Await each PUT response. Star the target's Existentialism card.
+- Log in as the viewer and open the target's profile. Require 100% correlation.
+  Change the target's Existentialism to reject, then revisit as the viewer and
+  require 56%. Change the viewer's Existentialism to reject and require 100%.
+  Undo a selected position before choosing another; unselected buttons are hidden.
+- Clear the target's Existentialism choice. Require the insufficient-data message
+  and a null result from `/api/correlation/<target>`. Inspect the changed choice
+  records in SQLite read-only and retain them without account credentials.
+- On `/feed`, wait for `.correlation-bullet` on the relevant `[data-username]`.
+  Require one bullet per processed label, a gray insufficient-data indicator,
+  and a white self indicator with `(You)`. Before clearing the choice, hover the
+  target's label and capture its percentage plus Core Beliefs tooltip.
+- Log out. Require the profile's sign-in prompt, hidden feed bullets, and no
+  `/api/correlation/` requests. Wait for asynchronous page initialization rather
+  than treating navigation completion as a rendered result.
+- Run `pnpm run verify-correlations` for calculation counts, external-write and
+  rollback invalidation, deletion/recreation, and bounded cache eviction.
+
 ## Known unmapped surfaces
 
-Settings/password/account deletion; feed/discussion replies/chat beyond username navigation and the cursor-smoke mention flow; follows/correlation; notification behavior beyond hybrid cursors; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.
+Settings/password/account deletion; feed/discussion replies/chat beyond username navigation and the cursor-smoke mention flow; follows; notification behavior beyond hybrid cursors; user discovery/gallery/FAQ; proposing cards; admin approval/deletion and bans. Map these when touched rather than asserting they are covered by the starter areas. Image generation can call OpenAI and write image assets; it needs its own boundary-aware recipe and real prerequisites.

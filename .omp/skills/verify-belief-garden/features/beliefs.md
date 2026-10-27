@@ -31,7 +31,7 @@ Preconditions:
 
 ## Gotchas
 
-- Clicking a selected choice toggles it off; inspect state before testing a transition.
+- Clicking a selected choice toggles it off. Clear it before choosing another position; unselected buttons are hidden while a choice is selected.
 - Guest profiles omit untouched cards. A new profile is not evidence of a missing catalog.
 - A star can exist without a choice. Chart visibility alone does not prove the correct belief was added; show the card, reload state, and stored numeric preference alongside the chart.
 - Chart labels use bold Unicode letters. Do not compare raw ASCII text to the chart internals or set chart state as a shortcut.

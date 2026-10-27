@@ -767,9 +767,7 @@ function createCategorySection(category, beliefs, userBeliefs, readOnly, profile
           }
         }
 
-        // Save belief data and wait for it to complete before refreshing the pie chart
         await saveUserBelief(profileUserId, belief.name, beliefData);
-        flushBeliefsCache();
         refreshPieChart();
       },
       readOnly,
@@ -836,17 +834,18 @@ async function initializeCorrelation(beliefsData, userBeliefs, profileUserId) {
   if (profileUserId === window.authenticatedUserId) {
     await updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
   } else if (window.authenticatedUserId) {
-    // Compute correlation coefficient for other users
-    const correlationResult = await computeCorrelation(profileUserId, window.authenticatedUserId);
-
-    if (correlationResult === null) {
-      correlationDiv.textContent = `Not enough shared beliefs with ${profileUserId} to compute correlation. `;
-      updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
-    } else {
-      const percentage = (correlationResult * 100).toFixed();
-      correlationDiv.textContent = `Belief correlation with you: ${percentage}%, `;
-      updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
+    try {
+      const correlationResult = await fetchCorrelation(profileUserId);
+      if (correlationResult === null) {
+        correlationDiv.textContent = `Not enough shared beliefs with ${profileUserId} to compute correlation. `;
+      } else {
+        const percentage = (correlationResult * 100).toFixed();
+        correlationDiv.textContent = `Belief correlation with you: ${percentage}%, `;
+      }
+    } catch {
+      correlationDiv.textContent = 'Unable to load belief correlation. ';
     }
+    updateOwnBeliefsStats(userBeliefs, beliefsData, correlationDiv);
   }
 }
 
