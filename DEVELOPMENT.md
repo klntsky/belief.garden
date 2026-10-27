@@ -1,6 +1,6 @@
 # Development
 
-Product requirements are documented in [product.md](product.md).
+Product requirements are documented in [PRODUCT.md](PRODUCT.md).
 
 ## Setup
 

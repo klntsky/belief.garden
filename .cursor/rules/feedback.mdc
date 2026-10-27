@@ -13,7 +13,7 @@ pnpm test test/adminProposalApproval.spec.ts
 
 ## Documentation
 
-- Put product requirements and user-facing behavior in `product.md`.
-- Keep `DEVELOPMENT.md` limited to development setup, tooling, workflows, and verification instructions. Link to `product.md` rather than duplicating product requirements.
+- Put product requirements and user-facing behavior in `PRODUCT.md`.
+- Keep `DEVELOPMENT.md` limited to development setup, tooling, workflows, and verification instructions. Link to `PRODUCT.md` rather than duplicating product requirements.
 - Never modify README files (`README.md` or `readme.md`, regardless of filename casing).
 - Commit each completed requested change.
