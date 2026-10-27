@@ -24,6 +24,7 @@ import {
   getFeed,
   postFeed,
   withUserBeliefs,
+  isValidUsername,
 } from '../utils/userUtils.js';
 import {
   perUserWriteLimiter,
@@ -46,6 +47,7 @@ import { ellipsis } from '../utils/textUtils.js';
 import { resolveContainedFile, UnsafePathError } from '../utils/fileUtils.js';
 import { readRecord, writeRecord } from '../storage.js';
 import type { UserBeliefs } from '../types/index.js';
+import { getCorrelation } from '../utils/correlationUtils.js';
 
 const debatesDir = path.join('data', 'debates');
 const bansDir = path.join('data', 'bans');
@@ -81,6 +83,33 @@ interface BeliefWithReplies {
   replies?: Reply[];
   [key: string]: unknown;
 }
+
+router.get(
+  '/api/correlation/:userId',
+  (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  },
+  ensureAuthenticatedApi,
+  (req: Request, res: Response) => {
+    const viewer = req.user?.id;
+    if (typeof viewer !== 'string') {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const target = req.params.userId;
+    if (!target || !isValidUsername(target)) {
+      res.status(400).json({ error: 'Invalid username' });
+      return;
+    }
+    try {
+      res.json({ correlation: getCorrelation(viewer, target) });
+    } catch (error) {
+      console.error('Error computing correlation:', error);
+      res.status(500).json({ error: 'Unable to compute correlation' });
+    }
+  },
+);
 
 // Route to get user beliefs
 router.get('/api/user-beliefs/:userId', (req: Request, res: Response) => {

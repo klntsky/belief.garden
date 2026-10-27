@@ -14,6 +14,7 @@
     "migrate": "tsx scripts/migrate.ts",
     "update-users": "tsx scripts/updateUsers.ts",
     "test": "./scripts/test-with-server.sh",
+    "verify-correlations": "tsx scripts/verifyCorrelations.ts",
     "generate-images": "tsx src/generateImages.ts",
     "compress-images": "tsx src/compressImages.ts ./public/img/",
     "broadcast": "tsx scripts/broadcast.ts"
