@@ -31,7 +31,6 @@ import {
   serializeGlobalBeliefWrite,
 } from '../utils/rateLimiter.js';
 import fsSync from 'fs';
-import { promises as fs } from 'fs';
 import { generateImageUrlForBelief, downloadImageFromUrl } from '../generateImage.js';
 import { readBeliefs, saveBeliefs } from '../readBeliefs.js';
 import { compressSingleImage } from '../utils/imageUtils.js';
@@ -43,7 +42,8 @@ import {
   updateProposedBelief
 } from '../utils/proposedBeliefsUtils.js';
 import { ellipsis } from '../utils/textUtils.js';
-import { resolveContainedFile, UnsafePathError, writeFileAtomic } from '../utils/fileUtils.js';
+import { resolveContainedFile, UnsafePathError } from '../utils/fileUtils.js';
+import { readRecord, writeRecord } from '../storage.js';
 import type { UserBeliefs } from '../types/index.js';
 
 const debatesDir = path.join('data', 'debates');
@@ -99,16 +99,18 @@ router.get('/api/user-beliefs/:userId', (req: Request, res: Response) => {
     throw error;
   }
 
-  // Send the file directly
-  res.sendFile(absolutePath, (err?: Error | null) => {
-    if (err) {
-      console.error('Error sending user beliefs file:', err);
-      const status = (err as { status?: number }).status || 500;
-      res
-        .status(status)
-        .json({ error: 'User beliefs not found.' });
+  try {
+    if (path.basename(absolutePath).startsWith('.')) {
+      res.status(404).json({ error: 'User beliefs not found.' });
+      return;
     }
-  });
+    res.type('json').send(readRecord(absolutePath));
+  } catch (err) {
+    console.error('Error sending user beliefs:', err);
+    const error = err as { code?: string };
+    res.status(error.code === 'ENOENT' ? 404 : 500)
+      .json({ error: 'User beliefs not found.' });
+  }
 });
 
 // Only authenticated users can edit their own beliefs
@@ -397,7 +399,7 @@ router.get('/api/debates/:beliefName', async (req: Request, res: Response) => {
 
   try {
     const filePath = resolveContainedFile(debatesDir, `${beliefName}.json`);
-    const data = await fs.readFile(filePath, 'utf8');
+    const data = readRecord(filePath);
     res.json(JSON.parse(data));
   } catch (error) {
     if (error instanceof UnsafePathError) {
@@ -446,7 +448,7 @@ router.post(
       const banFilePath = path.join(bansDir, `${userId}.json`);
       let bans: Ban[] = [];
       try {
-        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8')) as Ban[];
+        bans = JSON.parse(readRecord(banFilePath)) as Ban[];
         if (bans.some(ban => ban.username === authenticatedUserId)) {
           res.status(403).json({ error: 'You are banned from replying to this profile' });
           return;
@@ -672,7 +674,7 @@ router.post('/api/ban-user',
     try {
       let bans: Ban[] = [];
       try {
-        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8')) as Ban[];
+        bans = JSON.parse(readRecord(banFilePath)) as Ban[];
       } catch (err) {
         const error = err as { code?: string };
         if (error.code !== 'ENOENT') throw err;
@@ -680,7 +682,7 @@ router.post('/api/ban-user',
 
       if (!bans.some(ban => ban.username === bannedUser)) {
         bans.push({ username: bannedUser });
-        await writeFileAtomic(banFilePath, JSON.stringify(bans, null, 2));
+        writeRecord(banFilePath, JSON.stringify(bans, null, 2));
       }
 
       // Delete all replies by the banned user if requested
@@ -728,7 +730,7 @@ router.get('/api/bans',
     try {
       let bans: Ban[] = [];
       try {
-        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8')) as Ban[];
+        bans = JSON.parse(readRecord(banFilePath)) as Ban[];
       } catch (err) {
         const error = err as { code?: string };
         if (error.code !== 'ENOENT') throw err;
@@ -764,7 +766,7 @@ router.post('/api/unban-user',
     try {
       let bans: Ban[] = [];
       try {
-        bans = JSON.parse(await fs.readFile(banFilePath, 'utf8')) as Ban[];
+        bans = JSON.parse(readRecord(banFilePath)) as Ban[];
       } catch (err) {
         const error = err as { code?: string };
         if (error.code !== 'ENOENT') {
@@ -775,7 +777,7 @@ router.post('/api/unban-user',
       }
 
       bans = bans.filter(ban => ban.username !== bannedUser);
-      await writeFileAtomic(banFilePath, JSON.stringify(bans, null, 2));
+      writeRecord(banFilePath, JSON.stringify(bans, null, 2));
 
       res.json({ success: true });
     } catch (error) {

@@ -1,7 +1,7 @@
 // src/routes/index.ts
 import express, { type Request, type Response } from 'express';
 import path from 'path';
-import fs from 'fs';
+import { hasRecord, listRecords, readRecord } from '../storage.js';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import { ensureAuthenticated, ensureAdminAuthenticatedPage } from '../utils/authUtils.js';
@@ -20,8 +20,8 @@ router.get('/', async (_req: Request, res: Response) => {
   const usersFilePath = path.join('public', 'users.json');
   let usernames: string[] = [];
 
-  if (fs.existsSync(usersFilePath)) {
-    const data = await fs.promises.readFile(usersFilePath, 'utf8');
+  if (hasRecord(usersFilePath)) {
+    const data = readRecord(usersFilePath);
     const usersData = JSON.parse(data) as Array<{ username: string }>;
     usernames = usersData.map(user => user.username)
       .sort(() => Math.random() - 0.5);
@@ -49,7 +49,7 @@ router.get('/users', async (req: Request, res: Response) => {
 
   try {
     const userBeliefsDir = path.join('data', 'users');
-    const files = await fs.promises.readdir(userBeliefsDir);
+    const files = listRecords(userBeliefsDir);
     const usernames = files
       .filter((file) => file.endsWith('.json'))
       .map((file) => path.basename(file, '.json'));
@@ -142,7 +142,7 @@ router.get('/ban', ensureAuthenticated, (req: Request, res: Response) => {
 router.get('/feed', async (req: Request, res: Response) => {
   try {
     const usersFile = path.join('public', 'users.json');
-    const usersData = JSON.parse(await fs.promises.readFile(usersFile, 'utf8')) as Array<{ username: string }>;
+    const usersData = JSON.parse(readRecord(usersFile)) as Array<{ username: string }>;
     const usernames = usersData.map(user => user.username).slice(0, 5);
     res.render('feed', { user: req.user, usernames });
   } catch (error) {

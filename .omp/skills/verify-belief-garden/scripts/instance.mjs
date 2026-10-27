@@ -119,7 +119,6 @@ async function launch() {
     }
     await symlink(join(root, 'node_modules'), join(scratch, 'node_modules'), 'dir');
     await mkdir(join(scratch, 'data'));
-    await writeFile(join(scratch, 'public/users.json'), '[]\n');
     await writeFile(join(scratch, 'pnpm-workspace.yaml'), await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8') + '\nverifyDepsBeforeRun: false\n');
     const socket = createServer();
     await new Promise((done, reject) => { socket.once('error', reject); socket.listen(0, '127.0.0.1', done); });
@@ -130,7 +129,8 @@ async function launch() {
       cwd: scratch, detached: true, stdio: ['ignore', log.fd, log.fd],
       env: { ...process.env, NODE_ENV: 'development', PORT: String(port), OPENAI_API_KEY: 'verification-no-network',
         SESSION_SECRET: randomBytes(32).toString('hex'), PUBLIC_SITE_URL: `http://127.0.0.1:${port}`,
-        SITE_DEPLOYMENT_PATH: `http://127.0.0.1:${port}`, UPDATE_USERS_INTERVAL_MS: '3600000' },
+        SITE_DEPLOYMENT_PATH: `http://127.0.0.1:${port}`, UPDATE_USERS_INTERVAL_MS: '3600000',
+        DATABASE_PATH: join(scratch, 'data/belief-garden.sqlite') },
     });
     await new Promise((done, reject) => { child.once('spawn', done); child.once('error', reject); });
     await log.close();
@@ -138,6 +138,7 @@ async function launch() {
     const info = await processInfo(child.pid);
     if (!info) throw new Error('Launcher exited before recording ownership');
     state = { pid: child.pid, born: info.born, port, url: `http://127.0.0.1:${port}`, scratch,
+      databasePath: join(scratch, 'data/belief-garden.sqlite'),
       source: root, appSha256: await digest(join(scratch, 'src/app.ts')), command: 'corepack pnpm run start', cleaned: false };
     await save(manifest, state);
     let lastError;

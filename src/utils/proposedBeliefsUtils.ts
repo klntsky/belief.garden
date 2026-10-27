@@ -1,8 +1,7 @@
 // src/utils/proposedBeliefsUtils.ts
-import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { writeFileAtomic } from './fileUtils.js';
+import { readRecord, writeRecord } from '../storage.js';
 import type { ProposedBelief } from '../types/index.js';
 
 const proposedBeliefsPath = path.join('data', 'proposed.json');
@@ -20,8 +19,7 @@ function serializeProposalWrite<T>(operation: () => Promise<T>): Promise<T> {
  */
 export async function getProposedBeliefs(): Promise<ProposedBelief[]> {
   try {
-    await fs.access(proposedBeliefsPath);
-    const data = await fs.readFile(proposedBeliefsPath, 'utf8');
+    const data = readRecord(proposedBeliefsPath);
     return JSON.parse(data) as ProposedBelief[];
   } catch (err) {
     const error = err as { code?: string };
@@ -37,15 +35,7 @@ export async function getProposedBeliefs(): Promise<ProposedBelief[]> {
  * @param proposedBeliefs - Array of proposed beliefs to save
  */
 export async function saveProposedBeliefs(proposedBeliefs: ProposedBelief[]): Promise<void> {
-  // Ensure data directory exists
-  const dataDir = path.dirname(proposedBeliefsPath);
-  try {
-    await fs.mkdir(dataDir, { recursive: true });
-  } catch (err) {
-    // Directory might already exist, ignore error
-  }
-  
-  await writeFileAtomic(proposedBeliefsPath, JSON.stringify(proposedBeliefs, null, 2));
+  writeRecord(proposedBeliefsPath, JSON.stringify(proposedBeliefs, null, 2));
 }
 
 /**

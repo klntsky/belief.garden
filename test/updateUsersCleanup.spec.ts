@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord } from '../src/storage.js';
 import path from 'path';
 import { createTestUser } from './testHelpers.js';
 import { deleteUserAccount, saveUserBeliefs } from '../src/utils/userUtils.js';
 import { updateUsersJson } from '../src/utils/updateUsers.js';
 
-test('statistics update removes stale debate and comment cache files', async () => {
+test('statistics update removes stale debate and comment cache records', async () => {
   const user = await createTestUser();
   const beliefName = `Cache Cleanup ${Date.now()}`;
   const debatePath = path.join('data', 'debates', `${beliefName}.json`);
@@ -16,16 +16,16 @@ test('statistics update removes stale debate and comment cache files', async () 
       [beliefName]: { comment: 'debate me about this' },
     });
     updateUsersJson();
-    await expect(fs.access(debatePath)).resolves.toBeUndefined();
-    await expect(fs.access(commentPath)).resolves.toBeUndefined();
+    expect(hasRecord(debatePath)).toBe(true);
+    expect(hasRecord(commentPath)).toBe(true);
 
     await saveUserBeliefs(user.username, {});
     updateUsersJson();
-    await expect(fs.access(debatePath)).rejects.toThrow();
-    await expect(fs.access(commentPath)).rejects.toThrow();
+    expect(hasRecord(debatePath)).toBe(false);
+    expect(hasRecord(commentPath)).toBe(false);
   } finally {
     await deleteUserAccount(user.username);
-    await fs.unlink(debatePath).catch(() => undefined);
-    await fs.unlink(commentPath).catch(() => undefined);
+    if (hasRecord(debatePath)) deleteRecord(debatePath);
+    if (hasRecord(commentPath)) deleteRecord(commentPath);
   }
 });

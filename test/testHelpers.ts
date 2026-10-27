@@ -5,7 +5,7 @@ import { addUser, deleteUserAccount } from '../src/utils/userUtils.js';
 import { getAdmins } from '../src/utils/adminUtils.js';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import fs from 'fs/promises';
+import { writeRecord } from '../src/storage.js';
 import path from 'path';
 
 dotenv.config();
@@ -111,7 +111,7 @@ interface Admin {
  */
 async function setAdmins(usernames: string[]): Promise<void> {
   const adminList: Admin[] = usernames.map(username => ({ username }));
-  await fs.writeFile(adminsFilePath, JSON.stringify(adminList, null, 2), 'utf8');
+  writeRecord(adminsFilePath, JSON.stringify(adminList, null, 2));
 }
 
 /**

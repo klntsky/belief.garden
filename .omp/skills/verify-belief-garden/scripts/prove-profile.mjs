@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { chromium, expect } from '@playwright/test';
 
 const manifest = resolve(process.argv[2] || 'instance.json');
@@ -13,6 +14,17 @@ const doctor = spawnSync(process.execPath, [join(dirname(fileURLToPath(import.me
 if (doctor.status !== 0) throw new Error(doctor.stderr || doctor.stdout);
 await writeFile(join(evidence, 'doctor.json'), doctor.stdout);
 const actions = [];
+const readStoredRecord = key => {
+  const database = new DatabaseSync(state.databasePath, { readOnly: true });
+  try {
+    database.exec('PRAGMA busy_timeout = 30000');
+    const row = database.prepare('SELECT value FROM records WHERE key = ?').get(key);
+    assert.equal(typeof row?.value, 'string', `Missing SQLite record: ${key}`);
+    return row.value;
+  } finally {
+    database.close();
+  }
+};
 const username = 'verify_gardener';
 const password = 'SecuI&SD*^tgsdreP@ssw0rd';
 const bio = 'Verification gardener: **public profile persisted**.';
@@ -31,7 +43,7 @@ try {
   await page.locator('input[name="password"]').fill(password);
   await page.locator('button[type="submit"]').click();
   await expect(page).toHaveURL(`${state.url}/login`);
-  const account = JSON.parse(await readFile(join(state.scratch, `data/accounts/${username}.json`), 'utf8'));
+  const account = JSON.parse(readStoredRecord(`data/accounts/${username}.json`));
   assert.equal(account.username, username);
   action('account-login: submit credentials through Login');
   await page.locator('input[name="username"]').fill(username);
@@ -50,7 +62,7 @@ try {
   action('profile-bio: reload and assert editor value persisted');
   await page.reload();
   await expect(page.locator('.user-bio-textarea')).toHaveValue(bio);
-  const stored = await readFile(join(state.scratch, `data/bio/${username}.md`), 'utf8');
+  const stored = readStoredRecord(`data/bio/${username}.md`);
   assert.equal(stored, bio);
   await writeFile(join(evidence, 'stored-bio.md'), stored);
   await page.screenshot({ path: join(evidence, 'profile-saved.png') });

@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord, readRecord, writeRecord } from '../src/storage.js';
 import dotenv from 'dotenv';
 import { createTestUser, loginUser } from './testHelpers.js';
 import { deleteUserAccount } from '../src/utils/userUtils.js';
@@ -13,13 +13,8 @@ interface TestUser {
   password: string;
 }
 
-async function readRaw(filePath: string): Promise<Buffer | null> {
-  try {
-    return await fs.readFile(filePath);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
-    throw error;
-  }
+async function readRaw(filePath: string): Promise<string | null> {
+  return hasRecord(filePath) ? readRecord(filePath) : null;
 }
 
 const test = base.extend<{ proposalUser: TestUser }>({
@@ -28,7 +23,7 @@ const test = base.extend<{ proposalUser: TestUser }>({
     let user: TestUser | undefined;
     try {
       // Keep successful submissions, including validation regressions, from notifying real admins.
-      await fs.writeFile('data/admins.json', '[]');
+      writeRecord('data/admins.json', '[]');
       user = await createTestUser();
       await loginUser(page, user.username, user.password);
       await use(user);
@@ -36,9 +31,11 @@ const test = base.extend<{ proposalUser: TestUser }>({
       await Promise.all([
         ...globalFiles.map((filePath, index) => {
           const original = originals[index]!;
-          return original === null
-            ? fs.rm(filePath, { force: true })
-            : fs.writeFile(filePath, original);
+          if (original === null) {
+            if (hasRecord(filePath)) deleteRecord(filePath);
+          } else {
+            writeRecord(filePath, original);
+          }
         }),
         ...(user ? [deleteUserAccount(user.username)] : []),
       ]);

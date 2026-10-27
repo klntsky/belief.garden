@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord, readRecord, writeRecord } from '../src/storage.js';
 import path from 'path';
 import {
   addFollower,
@@ -11,7 +11,7 @@ import {
 } from '../src/utils/userUtils.js';
 import { createTestUser } from './testHelpers.js';
 
-test('account deletion removes related files, references, feed entries, and sessions', async () => {
+test('account deletion removes related records, references, feed entries, and sessions', async () => {
   const deletedUser = await createTestUser();
   const otherUser = await createTestUser();
   const ownFiles = [
@@ -26,10 +26,8 @@ test('account deletion removes related files, references, feed entries, and sess
   try {
     await addFollower(otherUser.username, deletedUser.username);
     await addFollower(deletedUser.username, otherUser.username);
-    await fs.mkdir(path.dirname(otherBanPath), { recursive: true });
-    await fs.writeFile(otherBanPath, JSON.stringify([{ username: deletedUser.username }]));
-    await fs.mkdir(path.dirname(sessionPath), { recursive: true });
-    await fs.writeFile(sessionPath, JSON.stringify({
+    writeRecord(otherBanPath, JSON.stringify([{ username: deletedUser.username }]));
+    writeRecord(sessionPath, JSON.stringify({
       passport: { user: deletedUser.username },
     }));
     await postFeed({
@@ -40,21 +38,21 @@ test('account deletion removes related files, references, feed entries, and sess
     await deleteUserAccount(deletedUser.username);
 
     for (const filePath of ownFiles) {
-      await expect(fs.access(filePath)).rejects.toThrow();
+      expect(hasRecord(filePath)).toBe(false);
     }
     expect(await getUserFollowers(otherUser.username)).not.toContain(deletedUser.username);
     expect(await getUserFollowing(otherUser.username)).not.toContain(deletedUser.username);
-    expect(JSON.parse(await fs.readFile(otherBanPath, 'utf8'))).not.toContainEqual({
+    expect(JSON.parse(readRecord(otherBanPath))).not.toContainEqual({
       username: deletedUser.username,
     });
     expect(await getFeed()).not.toContainEqual(expect.objectContaining({
       actor: deletedUser.username,
     }));
-    await expect(fs.access(sessionPath)).rejects.toThrow();
+    expect(hasRecord(sessionPath)).toBe(false);
   } finally {
     await deleteUserAccount(deletedUser.username);
     await deleteUserAccount(otherUser.username);
-    await fs.unlink(sessionPath).catch(() => undefined);
-    await fs.unlink(otherBanPath).catch(() => undefined);
+    if (hasRecord(sessionPath)) deleteRecord(sessionPath);
+    if (hasRecord(otherBanPath)) deleteRecord(otherBanPath);
   }
 });

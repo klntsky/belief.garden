@@ -6,9 +6,9 @@ This is the maintained source for user-facing verification. Read this index, the
 
 - Launch through `../scripts/instance.mjs launch` from the repository root using the full path in [SKILL.md](../SKILL.md). Retain its absolute manifest path in `MANIFEST`.
 - Doctor must identify the owned listener, source snapshot, scratch cwd, and Welcome home page. Never drive an unowned instance.
-- Empty accounts, sessions, and generated statistics; beliefs seeded from the tracked catalog. Do not copy development accounts.
-- `prove-profile.mjs "$MANIFEST"` creates `verify_gardener`, proves the bio, and leaves it logged out. No other account setup is needed for the initial five areas.
-- For each additional feature, use the Playwright setup in SKILL.md: `state`, `evidence`, `page`, `expect`, `readFile`, `writeFile`, `join`, `username`, and `password` are defined there. Use a fresh context and the account map's Login recipe for authenticated actions.
+- Empty SQLite accounts, sessions, and generated statistics; beliefs seeded from the tracked catalog. Do not copy development accounts or databases.
+- `prove-profile.mjs "$MANIFEST"` creates `verify_gardener`, proves the bio from SQLite, and leaves it logged out. No other account setup is needed for the initial five areas.
+- For each additional feature, use the Playwright setup in SKILL.md: `state`, `evidence`, `page`, `expect`, `readFile`, `writeFile`, `readStoredRecord`, `join`, `username`, and `password` are defined there. `readStoredRecord(key)` queries scratch's SQLite database read-only. Use a fresh context and the account map's Login recipe for authenticated actions.
 
 ## Driving conventions
 
@@ -22,7 +22,7 @@ This is the maintained source for user-facing verification. Read this index, the
 
 - Record feature ID, entry point, action, response/outcome, and unmet preconditions.
 - UI proof includes before/action trace, resulting screenshot, and ARIA snapshot with app identity visible.
-- Mutation proof includes a reload/public second view and the relevant persisted file copied to evidence, excluding credentials and session data.
+- Mutation proof includes a reload/public second view and the relevant SQLite record value copied to evidence, excluding credentials and session data.
 - Preserve artifacts through cleanup. Failed runs also require cleanup; keep their failure evidence.
 - No internal user creation/setters or test-only endpoints as feature proof. No undeclared external mocks.
 

@@ -12,7 +12,7 @@ import {
   waitForAutoSave
 } from './testHelpers.js';
 import { deleteUserAccount } from '../src/utils/userUtils.js';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord } from '../src/storage.js';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -22,12 +22,7 @@ const { SITE_DEPLOYMENT_PATH } = process.env;
 // Function to clear bans for a user
 async function clearBans(userId: string): Promise<void> {
   const banFilePath = path.join('data', 'bans', `${userId}.json`);
-  try {
-    await fs.unlink(banFilePath);
-  } catch (err) {
-    const error = err as { code?: string };
-    if (error.code !== 'ENOENT') throw err;
-  }
+  if (hasRecord(banFilePath)) deleteRecord(banFilePath);
 }
 
 test.describe('Ban System', () => {
@@ -51,14 +46,6 @@ test.describe('Ban System', () => {
     // Clear bans for both users after each test
     await clearBans(testUsername);
     await clearBans(user2.username);
-
-    // Clean up any ban files
-    try {
-      await fs.unlink(path.join('data', 'bans', `${testUsername}.json`));
-    } catch (err) {
-      const error = err as { code?: string };
-      if (error.code !== 'ENOENT') throw err;
-    }
   });
 
   test('should show ban link for profile owner', async ({ page }) => {

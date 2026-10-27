@@ -3,8 +3,10 @@
 // Note: The server now runs this automatically on startup and periodically
 
 import { updateUsersJson } from '../src/utils/updateUsers.js';
+import { getDatabase } from '../src/storage.js';
 
 console.log('Running manual user statistics update...');
+getDatabase();
 updateUsersJson();
 console.log('Done!');
 

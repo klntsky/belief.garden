@@ -1,7 +1,7 @@
 // src/utils/updateUsers.ts
-import fs from 'fs';
 import path from 'path';
 import { resolveContainedFile, UnsafePathError } from './fileUtils.js';
+import { deleteRecord, hasRecord, listRecords, readRecord, transaction, writeRecord } from '../storage.js';
 
 // Define directories and constants
 const userAccountsDir = path.join('data', 'accounts');
@@ -45,29 +45,14 @@ interface UserScore {
   score: number;
 }
 
-// Function to ensure directory exists
-function ensureDir(dir: string): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-// Initialize required directories
-ensureDir(debatesDir);
-ensureDir(commentsDir);
-
 function loadUsers(): User[] {
   const users: User[] = [];
-  if (!fs.existsSync(userAccountsDir)) {
-    return users;
-  }
-
-  const files = fs.readdirSync(userAccountsDir);
+  const files = listRecords(userAccountsDir);
   files.forEach((file) => {
     try {
       if (file.endsWith('.json')) {
         const filePath = path.join(userAccountsDir, file);
-        const data = fs.readFileSync(filePath, 'utf8');
+        const data = readRecord(filePath);
         const user = JSON.parse(data) as User;
         users.push(user);
       }
@@ -89,11 +74,11 @@ function processUserComments(): { debateRequests: Record<string, DebateRequest[]
       const username = user.username;
       const beliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
 
-      if (!fs.existsSync(beliefsFilePath)) {
+      if (!hasRecord(beliefsFilePath)) {
         return;
       }
 
-      const beliefsData = JSON.parse(fs.readFileSync(beliefsFilePath, 'utf8')) as UserBeliefs;
+      const beliefsData = JSON.parse(readRecord(beliefsFilePath)) as UserBeliefs;
 
       Object.entries(beliefsData).forEach(([beliefName, belief]) => {
         if (belief.comment) {
@@ -146,16 +131,16 @@ function saveCommentFiles(debateRequests: Record<string, DebateRequest[]>, allCo
       try {
         const filePath = resolveContainedFile(directory, fileName);
         expectedFiles.add(fileName);
-        fs.writeFileSync(filePath, JSON.stringify(values, null, 2), 'utf8');
+        writeRecord(filePath, JSON.stringify(values, null, 2));
       } catch (error) {
         if (!(error instanceof UnsafePathError)) throw error;
         console.error(`Skipping unsafe belief cache name: ${beliefName}`);
       }
     });
 
-    for (const fileName of fs.readdirSync(directory)) {
+    for (const fileName of listRecords(directory)) {
       if (fileName.endsWith('.json') && !expectedFiles.has(fileName)) {
-        fs.unlinkSync(path.join(directory, fileName));
+        deleteRecord(path.join(directory, fileName));
       }
     }
   };
@@ -173,11 +158,11 @@ function calculateUserScores(): UserScore[] {
       const username = user.username;
       const beliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
 
-      if (!fs.existsSync(beliefsFilePath)) {
+      if (!hasRecord(beliefsFilePath)) {
         return;
       }
 
-      const beliefsData = JSON.parse(fs.readFileSync(beliefsFilePath, 'utf8')) as UserBeliefs;
+      const beliefsData = JSON.parse(readRecord(beliefsFilePath)) as UserBeliefs;
       let score = 0;
 
       Object.values(beliefsData).forEach((belief) => {
@@ -203,18 +188,14 @@ function calculateUserScores(): UserScore[] {
  */
 export function updateUsersJson(): void {
   try {
-    // Process comments and debate requests
-    const { debateRequests, allComments } = processUserComments();
-    saveCommentFiles(debateRequests, allComments);
+    transaction(() => {
+      const { debateRequests, allComments } = processUserComments();
+      saveCommentFiles(debateRequests, allComments);
 
-    // Calculate and save user scores
-    const userScores = calculateUserScores();
-
-    // Sort users by score in descending order
-    userScores.sort((a, b) => b.score - a.score);
-
-    // Write to public/users.json
-    fs.writeFileSync(outputFilePath, JSON.stringify(userScores.slice(0, 12), null, 2), 'utf8');
+      const userScores = calculateUserScores();
+      userScores.sort((a, b) => b.score - a.score);
+      writeRecord(outputFilePath, JSON.stringify(userScores.slice(0, 12), null, 2));
+    });
     console.log('Updated user statistics');
   } catch (error) {
     console.error('Error updating user statistics:', error);

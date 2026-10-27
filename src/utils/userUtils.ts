@@ -1,9 +1,8 @@
 // src/utils/userUtils.ts
 
-import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { writeFileAtomic } from './fileUtils.js';
+import { deleteRecord, hasRecord, listRecords, readRecord, transaction, writeRecord } from '../storage.js';
 import { feedQueue, notificationQueue, userBeliefsManager } from './queueUtils.js';
 import type { User, UserBeliefs, UserSettings, Notification, FeedEntry } from '../types/index.js';
 
@@ -52,12 +51,7 @@ export function assertUsername(username: string): asserts username is string {
 export async function doesUserExist(username: string): Promise<boolean> {
   assertUsername(username);
   const userFilePath = path.join(userAccountsDir, `${username}.json`);
-  try {
-    await fs.access(userFilePath);
-    return true;
-  } catch {
-    return false;
-  }
+  return hasRecord(userFilePath);
 }
 
 /**
@@ -69,7 +63,7 @@ export async function getUserByUsername(username: string): Promise<User | null> 
   assertUsername(username);
   const userFilePath = path.join(userAccountsDir, `${username}.json`);
   try {
-    const data = await fs.readFile(userFilePath, 'utf8');
+    const data = readRecord(userFilePath);
     return JSON.parse(data) as User;
   } catch (err) {
     const error = err as { code?: string };
@@ -84,7 +78,7 @@ export async function getUserByUsername(username: string): Promise<User | null> 
 export async function userExists(username: string): Promise<boolean> {
   assertUsername(username);
   try {
-    const filesInDirectory = await fs.readdir(userAccountsDir);
+    const filesInDirectory = listRecords(userAccountsDir);
     return filesInDirectory.some(file => file.toLowerCase() === `${username.toLowerCase()}.json`);
   } catch {
     return false;
@@ -97,16 +91,15 @@ export async function userExists(username: string): Promise<boolean> {
  */
 export async function addUser(user: User): Promise<void> {
   assertUsername(user.username);
-  const operation = accountCreationChain.then(async () => {
-    await fs.mkdir(userAccountsDir, { recursive: true });
+  const operation = accountCreationChain.then(() => transaction(() => {
     const expectedFile = `${user.username}.json`.toLowerCase();
-    const files = await fs.readdir(userAccountsDir);
+    const files = listRecords(userAccountsDir);
     if (files.some(file => file.toLowerCase() === expectedFile)) {
       throw new Error('User already exists.');
     }
     const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
-    await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
-  });
+    writeRecord(userFilePath, JSON.stringify(user, null, 2));
+  }));
   accountCreationChain = operation.then(() => undefined, () => undefined);
   return operation;
 }
@@ -135,7 +128,7 @@ export async function updateUserPassword(username: string, newPasswordHash: stri
 async function saveUser(user: User): Promise<void> {
   assertUsername(user.username);
   const userFilePath = path.join(userAccountsDir, `${user.username}.json`);
-  await writeFileAtomic(userFilePath, JSON.stringify(user, null, 2));
+  writeRecord(userFilePath, JSON.stringify(user, null, 2));
 }
 
 /**
@@ -144,7 +137,7 @@ async function saveUser(user: User): Promise<void> {
  */
 export async function getAllUsernames(): Promise<string[]> {
   try {
-    const files = await fs.readdir(userAccountsDir);
+    const files = listRecords(userAccountsDir);
     return files
       .filter((file) => file.endsWith('.json'))
       .map((file) => path.basename(file, '.json'));
@@ -167,7 +160,7 @@ export async function getUserBeliefs(username: string): Promise<UserBeliefs> {
   assertUsername(username);
   const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
   try {
-    const data = await fs.readFile(userBeliefsFilePath, 'utf8');
+    const data = readRecord(userBeliefsFilePath);
     return JSON.parse(data) as UserBeliefs;
   } catch (err) {
     const error = err as { code?: string };
@@ -187,7 +180,7 @@ export async function getUserBeliefs(username: string): Promise<UserBeliefs> {
 export async function saveUserBeliefs(username: string, data: UserBeliefs): Promise<void> {
   assertUsername(username);
   const userBeliefsFilePath = path.join(userBeliefsDir, `${username}.json`);
-  await writeFileAtomic(userBeliefsFilePath, JSON.stringify(data, null, 2));
+  writeRecord(userBeliefsFilePath, JSON.stringify(data, null, 2));
 }
 
 interface BeliefWithPreference {
@@ -361,7 +354,7 @@ export async function getUserSettings(username: string): Promise<UserSettings> {
   assertUsername(username);
   const settingsPath = path.join(userSettingsDir, `${username}.json`);
   try {
-    const data = await fs.readFile(settingsPath, 'utf8');
+    const data = readRecord(settingsPath);
     return { ...defaultSettings, ...JSON.parse(data) as UserSettings };
   } catch (err) {
     const error = err as { code?: string };
@@ -380,12 +373,7 @@ export async function getUserSettings(username: string): Promise<UserSettings> {
 export async function saveUserSettings(username: string, settings: UserSettings): Promise<void> {
   assertUsername(username);
   const settingsPath = path.join(userSettingsDir, `${username}.json`);
-  try {
-    await fs.mkdir(userSettingsDir, { recursive: true });
-    await writeFileAtomic(settingsPath, JSON.stringify(settings, null, 2));
-  } catch (err) {
-    throw err;
-  }
+  writeRecord(settingsPath, JSON.stringify(settings, null, 2));
 }
 
 /**
@@ -397,7 +385,7 @@ export async function getUserBio(username: string): Promise<string> {
   assertUsername(username);
   const bioFilePath = path.join(userBiosDir, `${username}.md`);
   try {
-    const data = await fs.readFile(bioFilePath, 'utf8');
+    const data = readRecord(bioFilePath);
     return data;
   } catch (err) {
     const error = err as { code?: string };
@@ -420,42 +408,29 @@ export async function saveUserBio(username: string, bioText: string): Promise<vo
     throw new Error('Bio cannot exceed 1500 characters.');
   }
 
-  const dirPath = userBiosDir;
-  try {
-    await fs.access(dirPath);
-  } catch (err) {
-    const error = err as { code?: string };
-    if (error.code === 'ENOENT') {
-      await fs.mkdir(dirPath, { recursive: true });
-    } else {
-      throw err;
-    }
-  }
-
-  const bioFilePath = path.join(dirPath, `${username}.md`);
-  await writeFileAtomic(bioFilePath, bioText);
+  const bioFilePath = path.join(userBiosDir, `${username}.md`);
+  writeRecord(bioFilePath, bioText);
 }
 
 export async function invalidateUserSessions(username: string): Promise<void> {
   assertUsername(username);
   const sessionDir = 'sessions';
-  const sessionFiles = await fs.readdir(sessionDir).catch((err) => {
-    if ((err as { code?: string }).code === 'ENOENT') return [];
-    throw err;
-  });
+  const sessionFiles = listRecords(sessionDir).filter(file => file.endsWith('.json'));
 
   await Promise.all(sessionFiles.map(async (file) => {
     const filePath = path.join(sessionDir, file);
     try {
-      const sessionData = JSON.parse(await fs.readFile(filePath, 'utf8')) as {
+      const sessionData = JSON.parse(readRecord(filePath)) as {
         passport?: { user?: string | { id?: string } };
       };
       const storedUser = sessionData.passport?.user;
       const storedUsername = typeof storedUser === 'string' ? storedUser : storedUser?.id;
       if (storedUsername === username) {
-        await fs.unlink(filePath).catch((err) => {
-          if ((err as { code?: string }).code !== 'ENOENT') throw err;
-        });
+        try {
+          deleteRecord(filePath);
+        } catch (err) {
+          if (!(err instanceof Error && 'code' in err && err.code === 'ENOENT')) throw err;
+        }
       }
     } catch (error) {
       console.error(`Failed to inspect session file ${filePath}:`, error);
@@ -469,11 +444,13 @@ export async function invalidateUserSessions(username: string): Promise<void> {
  */
 export async function deleteUserAccount(username: string): Promise<void> {
   assertUsername(username);
-  const unlinkIfExists = async (filePath: string): Promise<void> => {
-    await fs.unlink(filePath).catch((err) => {
+  const deleteIfExists = async (filePath: string): Promise<void> => {
+    try {
+      deleteRecord(filePath);
+    } catch (err) {
       const error = err as { code?: string };
       if (error.code !== 'ENOENT') throw err;
-    });
+    }
   };
 
   await Promise.all([
@@ -485,20 +462,16 @@ export async function deleteUserAccount(username: string): Promise<void> {
     path.join(followersDir, `${username}.json`),
     path.join(followsDir, `${username}.json`),
     path.join('data', 'bans', `${username}.json`),
-  ].map(unlinkIfExists));
+  ].map(deleteIfExists));
 
   const removeFromStringLists = async (directory: string): Promise<void> => {
-    const files = await fs.readdir(directory).catch((err) => {
-      const error = err as { code?: string };
-      if (error.code === 'ENOENT') return [];
-      throw err;
-    });
+    const files = listRecords(directory);
     await Promise.all(files.filter(file => file.endsWith('.json')).map(async (file) => {
       const filePath = path.join(directory, file);
-      const values = JSON.parse(await fs.readFile(filePath, 'utf8')) as string[];
+      const values = JSON.parse(readRecord(filePath)) as string[];
       const filtered = values.filter(value => value !== username);
       if (filtered.length !== values.length) {
-        await writeFileAtomic(filePath, JSON.stringify(filtered, null, 2));
+        writeRecord(filePath, JSON.stringify(filtered, null, 2));
       }
     }));
   };
@@ -508,17 +481,13 @@ export async function deleteUserAccount(username: string): Promise<void> {
     removeFromStringLists(followsDir),
   ]);
 
-  const banFiles = await fs.readdir(path.join('data', 'bans')).catch((err) => {
-    const error = err as { code?: string };
-    if (error.code === 'ENOENT') return [];
-    throw err;
-  });
+  const banFiles = listRecords(path.join('data', 'bans'));
   await Promise.all(banFiles.filter(file => file.endsWith('.json')).map(async (file) => {
     const filePath = path.join('data', 'bans', file);
-    const bans = JSON.parse(await fs.readFile(filePath, 'utf8')) as Array<{ username: string }>;
+    const bans = JSON.parse(readRecord(filePath)) as Array<{ username: string }>;
     const filtered = bans.filter(ban => ban.username !== username);
     if (filtered.length !== bans.length) {
-      await writeFileAtomic(filePath, JSON.stringify(filtered, null, 2));
+      writeRecord(filePath, JSON.stringify(filtered, null, 2));
     }
   }));
 
@@ -529,7 +498,7 @@ export async function deleteUserAccount(username: string): Promise<void> {
       && entry.user !== username
       && entry.profileName !== username
     );
-    await writeFileAtomic(FEED_FILE, JSON.stringify(filtered, null, 2));
+    writeRecord(FEED_FILE, JSON.stringify(filtered, null, 2));
   });
 
   await invalidateUserSessions(username);
@@ -544,15 +513,13 @@ export async function getUserNotifications(username: string): Promise<Notificati
   assertUsername(username);
   const notificationPath = path.join(notificationsDir, `${username}.json`);
   try {
-    await fs.access(notificationPath);
-    const data = await fs.readFile(notificationPath, 'utf8');
+    const data = readRecord(notificationPath);
     return JSON.parse(data) as Notification[];
   } catch (err) {
     const error = err as { code?: string };
     if (error.code === 'ENOENT') {
-      // If file doesn't exist, create it with empty array
-      await fs.mkdir(notificationsDir, { recursive: true });
-      await fs.writeFile(notificationPath, '[]', 'utf8');
+      // If the record doesn't exist, create it with an empty array.
+      writeRecord(notificationPath, '[]');
       return [];
     }
     throw err;
@@ -578,7 +545,7 @@ export async function pushNotificationToUser(username: string, notification: Omi
       if (notifications.length > MAX_NOTIFICATIONS) {
         notifications.length = MAX_NOTIFICATIONS;
       }
-      await writeFileAtomic(notificationPath, JSON.stringify(notifications, null, 2));
+      writeRecord(notificationPath, JSON.stringify(notifications, null, 2));
     });
   } catch (err) {
     console.error(`Failed to push notification to ${username}:`, err);
@@ -614,15 +581,13 @@ export async function getUserFollowers(username: string): Promise<string[]> {
   assertUsername(username);
   const followersPath = path.join(followersDir, `${username}.json`);
   try {
-    await fs.access(followersPath);
-    const data = await fs.readFile(followersPath, 'utf8');
+    const data = readRecord(followersPath);
     return JSON.parse(data) as string[];
   } catch (err) {
     const error = err as { code?: string };
     if (error.code === 'ENOENT') {
-      // If file doesn't exist, create it with empty array
-      await fs.mkdir(followersDir, { recursive: true });
-      await fs.writeFile(followersPath, '[]', 'utf8');
+      // If the record doesn't exist, create it with an empty array.
+      writeRecord(followersPath, '[]');
       return [];
     }
     throw err;
@@ -638,7 +603,7 @@ export async function getUserFollowing(username: string): Promise<string[]> {
   assertUsername(username);
   const followingPath = path.join(followsDir, `${username}.json`);
   try {
-    const following = JSON.parse(await fs.readFile(followingPath, 'utf8')) as string[];
+    const following = JSON.parse(readRecord(followingPath)) as string[];
     return following;
   } catch (err) {
     const error = err as { code?: string };
@@ -696,11 +661,10 @@ async function updateFollowRelationshipUnlocked(targetUser: string, follower: st
     following.splice(followingIndex, 1);
   }
 
-  // Save both files atomically
-  await Promise.all([
-    writeFileAtomic(followersPath, JSON.stringify(followers, null, 2)),
-    writeFileAtomic(followingPath, JSON.stringify(following, null, 2))
-  ]);
+  transaction(() => {
+    writeRecord(followersPath, JSON.stringify(followers, null, 2));
+    writeRecord(followingPath, JSON.stringify(following, null, 2));
+  });
 
   // Send notification
   if (isFollowing !== isCurrentlyFollowing) {
@@ -793,7 +757,7 @@ export async function postFeed(entry: Omit<FeedEntry, 'timestamp'>): Promise<voi
       feed.unshift(feedEntry);
       feed = feed.slice(0, MAX_FEED_ENTRIES);
 
-      await writeFileAtomic(FEED_FILE, JSON.stringify(feed, null, 2));
+      writeRecord(FEED_FILE, JSON.stringify(feed, null, 2));
     });
   } catch (error) {
     console.error('Error writing feed file:', error);
@@ -807,7 +771,7 @@ export async function postFeed(entry: Omit<FeedEntry, 'timestamp'>): Promise<voi
  */
 export async function getFeed(): Promise<FeedEntryWithTimestamp[]> {
   try {
-    const feed = JSON.parse(await fs.readFile(FEED_FILE, 'utf8')) as FeedEntryWithTimestamp[];
+    const feed = JSON.parse(readRecord(FEED_FILE)) as FeedEntryWithTimestamp[];
     return feed;
   } catch (error) {
     console.error('Error reading feed file:', error);

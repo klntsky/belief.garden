@@ -1,5 +1,5 @@
 // src/utils/adminUtils.ts
-import fs from 'fs/promises';
+import { hasRecord, readRecord, writeRecord } from '../storage.js';
 import path from 'path';
 
 const adminsFilePath = path.join('data', 'admins.json');
@@ -14,16 +14,13 @@ interface Admin {
  */
 export async function getAdmins(): Promise<string[]> {
   try {
-    try {
-      await fs.access(adminsFilePath);
-    } catch {
-      // File doesn't exist, initialize with klntsky
+    if (!hasRecord(adminsFilePath)) {
       const defaultAdmins: Admin[] = [{ username: 'klntsky' }];
-      await fs.writeFile(adminsFilePath, JSON.stringify(defaultAdmins, null, 2), 'utf8');
+      writeRecord(adminsFilePath, JSON.stringify(defaultAdmins, null, 2));
       return ['klntsky'];
     }
 
-    const data = await fs.readFile(adminsFilePath, 'utf8');
+    const data = readRecord(adminsFilePath);
     const admins = JSON.parse(data) as Admin[];
     
     // Expect array of objects with username property

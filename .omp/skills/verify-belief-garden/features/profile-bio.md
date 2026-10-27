@@ -22,7 +22,7 @@ Preconditions:
 
 - **Own-profile link.** `await page.locator('.nav-links-right a.user-notifications').click(); await expect(page).toHaveURL(state.url + '/' + username); await expect(page.locator('.user-bio-textarea')).toBeVisible();` Direct entry is a separate `page.goto(state.url + '/' + username)`.
 - **Edit and await save.** Define `const bio = 'Verification gardener: **public profile persisted**.'; const saved = page.waitForResponse(r => r.url() === state.url + '/api/user-bio/' + username && r.request().method() === 'POST'); await page.locator('.user-bio-textarea').fill(bio); expect((await saved).status()).toBe(200);` Start the response wait BEFORE editing.
-- **Persistence.** `await page.reload(); await expect(page.locator('.user-bio-textarea')).toHaveValue(bio); expect(await readFile(join(state.scratch, 'data/bio/' + username + '.md'), 'utf8')).toBe(bio);` Copy that Markdown to `join(evidence, 'stored-bio.md')`.
+- **Persistence.** `await page.reload(); await expect(page.locator('.user-bio-textarea')).toHaveValue(bio); const stored = readStoredRecord('data/bio/' + username + '.md'); expect(stored).toBe(bio);` Query SQLite read-only and copy that Markdown to `join(evidence, 'stored-bio.md')`.
 - **Anonymous view.** Submit visible Logout using the account map, then `await page.goto(state.url + '/' + username); await expect(page.locator('.user-bio-text strong')).toHaveText('public profile persisted'); await expect(page.locator('.user-bio-textarea')).toHaveCount(0);` Trace the action and capture `page.screenshot({path: join(evidence, 'profile-public.png')})` plus `writeFile(join(evidence, 'profile-public.aria.txt'), await page.locator('body').ariaSnapshot())`.
 - **Users entry.** If that link is affected, first save a position through the beliefs map, navigate to `/users`, click `page.getByRole('link', {name: username, exact: true})`, and require the same public bio. Record this as separate entry-point coverage.
 
@@ -31,4 +31,4 @@ Preconditions:
 - Autosave waits 1.5 seconds of inactivity. A reload before the successful POST loses the unsaved draft; a fixed sleep is not proof of completion.
 - Maximum bio is 1,500 characters. Anonymous view renders Markdown through sanitization; owners see raw Markdown in a textarea.
 - The profile initially fetches the bio asynchronously. Wait for `.user-bio-textarea` or the rendered public value.
-- Only the relevant Markdown file belongs in evidence. Sessions and account password hashes do not.
+- Only the relevant Markdown value queried from SQLite belongs in evidence. Sessions and account password hashes do not.

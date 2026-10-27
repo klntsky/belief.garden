@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { writeRecord } from '../src/storage.js';
 import { createTestUser, loginUser } from './testHelpers.js';
 import { deleteUserAccount } from '../src/utils/userUtils.js';
 
@@ -15,7 +15,7 @@ test('notification polling excludes timestamps at or before since', async ({ pag
   ];
 
   try {
-    await fs.writeFile(`data/notifications/${user.username}.json`, JSON.stringify(notifications));
+    writeRecord(`data/notifications/${user.username}.json`, JSON.stringify(notifications));
     await loginUser(page, user.username, user.password);
     const response = await page.request.get(`${SITE_DEPLOYMENT_PATH}/api/notifications?since=${since}`);
     expect(response.status()).toBe(200);
@@ -35,7 +35,7 @@ test('marking notifications read persists across reload and later arrivals becom
   ];
 
   try {
-    await fs.writeFile(`data/notifications/${user.username}.json`, JSON.stringify(notifications));
+    writeRecord(`data/notifications/${user.username}.json`, JSON.stringify(notifications));
     await loginUser(page, user.username, user.password);
     await page.evaluate(`localStorage.setItem('lastNotificationRead', '${since}')`);
     await page.goto(`${SITE_DEPLOYMENT_PATH}/faq`);
@@ -57,7 +57,7 @@ test('marking notifications read persists across reload and later arrivals becom
     await expect(counter).toBeHidden();
 
     const later = { type: 'broadcast', actor: 'system', message: 'Arrived after reading', timestamp: since + 3 };
-    await fs.writeFile(`data/notifications/${user.username}.json`, JSON.stringify([...notifications, later]));
+    writeRecord(`data/notifications/${user.username}.json`, JSON.stringify([...notifications, later]));
     const polling = page.waitForResponse(response => response.url().includes('/api/notifications?since=') && response.ok());
     await page.evaluate("window.dispatchEvent(new Event('focus'))");
     await polling;
@@ -75,7 +75,7 @@ test('the notification popup mark-read button clears the badge and persists the 
   const timestamp = 1700000000000;
 
   try {
-    await fs.writeFile(`data/notifications/${user.username}.json`, JSON.stringify([
+    writeRecord(`data/notifications/${user.username}.json`, JSON.stringify([
       { type: 'broadcast', actor: 'system', message: 'Unread popup notification', timestamp },
     ]));
     await loginUser(page, user.username, user.password);

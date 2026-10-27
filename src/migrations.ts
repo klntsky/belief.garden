@@ -1,68 +1,74 @@
-// src/migrations.ts
-import { promises as fs } from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import type { DatabaseSync } from 'node:sqlite';
+import { getDatabase } from './storage.js';
 
-/**
- * Migration function: Ensure all required data directories exist
- */
-async function ensureRequiredDirectories(): Promise<void> {
-  const requiredDirs = [
-    'data/accounts',
-    'data/bans',
-    'data/bio',
-    'data/comments',
-    'data/debates',
-    'data/users',
-    'data/settings',
-    'data/notifications',
-    'data/followers',
-    'data/follows'
-  ];
-
-  await Promise.all(
-    requiredDirs.map(dir => fs.mkdir(dir, { recursive: true }))
-  );
-}
-
-/**
- * Migration function: Seed data/beliefs.json from public/static/ if needed.
- * Keep the source copy intact so starting the app does not dirty or break a
- * concurrently used development checkout.
- */
-async function migrateBeliefsJson(): Promise<void> {
-  const oldPath = path.join('public', 'static', 'beliefs.json');
-  const newPath = path.join('data', 'beliefs.json');
-  
+export function migrateDatabase(database: DatabaseSync, root: string): void {
+  database.exec('BEGIN IMMEDIATE');
   try {
-    // Check if data/beliefs.json already exists
-    await fs.access(newPath);
-    console.log('data/beliefs.json already exists, skipping migration');
-    return;
-  } catch {
-    // data/beliefs.json doesn't exist, check if old location exists
-    try {
-      await fs.access(oldPath);
-      // Old file exists, copy it to the writable data location.
-      console.log('Seeding beliefs.json from public/static/ to data/...');
-      await fs.mkdir('data', { recursive: true });
-      await fs.copyFile(oldPath, newPath);
-      console.log('Successfully seeded beliefs.json in data/');
-    } catch (err) {
-      const error = err as { code?: string };
-      if (error.code === 'ENOENT') {
-        console.log('No beliefs.json found in old location, skipping migration');
-      } else {
-        console.error('Error during beliefs.json migration:', err);
-        throw err;
+    database.exec(`
+      CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY) STRICT;
+      CREATE TABLE IF NOT EXISTS records (key TEXT PRIMARY KEY, value TEXT NOT NULL) STRICT;
+    `);
+    if (!database.prepare('SELECT 1 FROM schema_migrations WHERE version = 1').get()) {
+      const insert = database.prepare('INSERT INTO records (key, value) VALUES (?, ?)');
+      const databaseFiles = new Set(database.prepare('PRAGMA database_list').all().flatMap(row => {
+        const filename = row.file as string;
+        return filename ? ['', '-journal', '-wal', '-shm'].map(suffix => path.resolve(filename + suffix)) : [];
+      }));
+      const importFile = (key: string): void => {
+        const value = fs.readFileSync(path.join(root, key), 'utf8');
+        if (key.endsWith('.json')) {
+          try {
+            JSON.parse(value);
+          } catch (cause) {
+            throw new Error(`Cannot migrate invalid JSON: ${key}`, { cause });
+          }
+        }
+        insert.run(key, value);
+      };
+      const importDirectory = (directory: string): void => {
+        let entries: fs.Dirent[];
+        try {
+          entries = fs.readdirSync(path.join(root, directory), { withFileTypes: true });
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+          throw error;
+        }
+        for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+          const key = `${directory}/${entry.name}`;
+          if (databaseFiles.has(path.resolve(root, key))) continue;
+          if (entry.isDirectory()) {
+            importDirectory(key);
+          } else if (entry.isFile() && (entry.name.endsWith('.json') || entry.name.endsWith('.md'))) {
+            importFile(key);
+          } else if (entry.isSymbolicLink()) {
+            throw new Error(`Cannot migrate symbolic link: ${key}`);
+          } else {
+            throw new Error(`Unsupported legacy data file: ${key}`);
+          }
+        }
+      };
+      importDirectory('data');
+      importDirectory('sessions');
+      if (fs.existsSync(path.join(root, 'public/users.json'))) importFile('public/users.json');
+      if (!database.prepare('SELECT 1 FROM records WHERE key = ?').get('data/beliefs.json')) {
+        const seed = path.join(root, 'public/static/beliefs.json');
+        if (fs.existsSync(seed)) {
+          const value = fs.readFileSync(seed, 'utf8');
+          JSON.parse(value);
+          insert.run('data/beliefs.json', value);
+        }
       }
+      database.prepare('INSERT INTO schema_migrations (version) VALUES (1)').run();
     }
+    database.exec('COMMIT');
+  } catch (error) {
+    database.exec('ROLLBACK');
+    throw error;
   }
 }
 
-/**
- * Run all data migrations
- */
 export async function runDataMigrations(): Promise<void> {
-  await ensureRequiredDirectories();
-  await migrateBeliefsJson();
+  getDatabase();
 }

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord, readRecord, writeRecord } from '../src/storage.js';
 import {
   addProposedBelief,
   getProposedBeliefs,
@@ -7,7 +7,7 @@ import {
 
 test('concurrent proposals are serialized without lost updates', async () => {
   const proposedPath = 'data/proposed.json';
-  const original = await fs.readFile(proposedPath, 'utf8').catch(() => '[]');
+  const original = hasRecord(proposedPath) ? readRecord(proposedPath) : null;
   const prefix = `Concurrent ${Date.now()}`;
 
   try {
@@ -25,6 +25,10 @@ test('concurrent proposals are serialized without lost updates', async () => {
     expect(new Set(proposals.map(proposal => proposal.id)).size).toBe(10);
     expect(new Set(proposals.map(proposal => proposal.timestamp)).size).toBe(10);
   } finally {
-    await fs.writeFile(proposedPath, original);
+    if (original === null) {
+      if (hasRecord(proposedPath)) deleteRecord(proposedPath);
+    } else {
+      writeRecord(proposedPath, original);
+    }
   }
 });

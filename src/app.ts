@@ -10,9 +10,9 @@ import indexRouter from './routes/index.js';
 import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import apiRouter from './routes/api.js';
-import FileStore from 'session-file-store';
+import { SQLiteSessionStore } from './sessionStore.js';
 import { updateUsersJson } from './utils/updateUsers.js';
-import path from 'path';
+import { readRecord } from './storage.js';
 import { runDataMigrations } from './migrations.js';
 
 dotenv.config();
@@ -50,17 +50,14 @@ app.set('view engine', 'ejs');
 app.set('layout', 'layout'); // Set default layout
 app.use(expressLayouts);
 
-// Route to serve beliefs.json from data/ for frontend compatibility
-// This must be before the static middleware to take precedence
-app.get('/static/beliefs.json', (_req: Request, res: Response) => {
-  const beliefsFilePath = path.join('data', 'beliefs.json');
-  res.sendFile(path.resolve(beliefsFilePath), (err?: Error | null) => {
-    if (err) {
-      console.error('Error serving beliefs.json:', err);
-      const status = (err as { status?: number }).status || 500;
-      res.status(status).json({ error: 'Failed to load beliefs data' });
-    }
-  });
+app.get(['/static/beliefs.json', '/users.json'], (req: Request, res: Response) => {
+  const key = req.path === '/users.json' ? 'public/users.json' : 'data/beliefs.json';
+  try {
+    res.type('json').send(readRecord(key));
+  } catch (error) {
+    const status = (error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 500;
+    res.status(status).json({ error: 'Failed to load data' });
+  }
 });
 
 // Serve static files with appropriate caching
@@ -107,19 +104,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// app.use((req, res, next) => {
-//   if (req.headers['cf-connecting-ip']) {
-//     req.ip = req.headers['cf-connecting-ip'];
-//   }
-//   next();
-// });
-// Configure session store
-const fileStoreOptions = {};
-const FileStoreSession = FileStore(session);
-
 app.use(
   session({
-    store: new FileStoreSession(fileStoreOptions),
+    store: new SQLiteSessionStore(),
     secret: sessionSecret || 'development-only-secret',
     resave: false,
     saveUninitialized: false,
@@ -199,7 +186,7 @@ runDataMigrations().then(() => {
     process.on('SIGINT', shutdown);
   });
 }).catch((err: unknown) => {
-  console.error('Error creating data directories:', err);
+  console.error('Error migrating application data:', err);
   process.exit(1);
 });
 

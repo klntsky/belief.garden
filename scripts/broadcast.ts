@@ -3,6 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { pushNotificationToUser } from '../src/utils/userUtils.js';
+import { getDatabase, listRecords } from '../src/storage.js';
 
 const usersDir = path.join('data', 'accounts');
 
@@ -14,6 +15,7 @@ interface BroadcastData {
 
 async function broadcast(): Promise<void> {
   try {
+    getDatabase();
     // Read broadcast message
     const broadcastPath = './broadcast.json';
     const broadcastData = JSON.parse(await fs.readFile(broadcastPath, 'utf8')) as BroadcastData;
@@ -24,8 +26,8 @@ async function broadcast(): Promise<void> {
     }
 
     // Get all users
-    const users = await fs.readdir(usersDir);
-    const usernames = users.map(file => path.basename(file, '.json'));
+    const users = listRecords(usersDir);
+    const usernames = users.filter(file => file.endsWith('.json')).map(file => path.basename(file, '.json'));
 
     // Create broadcast notification
     const notification = {

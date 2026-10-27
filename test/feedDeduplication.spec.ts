@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs/promises';
+import { deleteRecord, hasRecord, readRecord, writeRecord } from '../src/storage.js';
 import { getFeed, postFeed } from '../src/utils/userUtils.js';
 
 test('new comment feed entries replace only the previous comment entry', async () => {
   const feedPath = 'data/feed.json';
-  const originalFeed = await fs.readFile(feedPath, 'utf8').catch(() => '[]');
+  const originalFeed = hasRecord(feedPath) ? readRecord(feedPath) : null;
   const actor = `feed_test_${Date.now()}`;
   const beliefName = `Feed belief ${Date.now()}`;
 
@@ -25,6 +25,10 @@ test('new comment feed entries replace only the previous comment entry', async (
     expect(relevant.filter(entry => entry.type === 'new_comment')).toHaveLength(1);
     expect(relevant).toContainEqual(expect.objectContaining({ type: 'choice_changed' }));
   } finally {
-    await fs.writeFile(feedPath, originalFeed);
+    if (originalFeed === null) {
+      if (hasRecord(feedPath)) deleteRecord(feedPath);
+    } else {
+      writeRecord(feedPath, originalFeed);
+    }
   }
 });

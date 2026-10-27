@@ -30,7 +30,7 @@ Preconditions:
 - **Larger deck.** When multiple UI-created positions are relevant, read `#guess-belief-name` each turn; choose based on the recorded setup actions, then click `Next belief`, finally `See my score`. Do not assume deck order. Prove every card was answered and the exact expected score.
 - **Empty state.** On a fresh account before any position is saved, open its guess URL and require the heading `No beliefs to guess yet`; `Start guessing` must be absent. An account with existing Budgeting support is not an empty-state fixture.
 - **Profile backlink.** Click `page.getByRole('link', {name: username, exact: true}).first()` on the game and require `state.url + '/' + username`.
-- **Proof.** Keep trace, card/reveal/final/replay screenshots and ARIA. Copy relevant user beliefs before and after the game and require unchanged contents: playing guesses must not edit the gardener's positions.
+- **Proof.** Keep trace, card/reveal/final/replay screenshots and ARIA. Query `readStoredRecord('data/users/' + username + '.json')` from SQLite before and after the game, copy only the relevant beliefs to evidence, and require unchanged contents: playing guesses must not edit the gardener's positions.
 
 ## Gotchas
 

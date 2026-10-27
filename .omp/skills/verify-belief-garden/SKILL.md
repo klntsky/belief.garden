@@ -9,7 +9,7 @@ Primary surface: server-rendered web UI plus browser JavaScript. The same Expres
 
 ## Launch
 
-Run from the repository root on Linux (the ownership doctor uses `/proc`). Requires Node, Corepack/pnpm, installed `node_modules`, and Playwright Chromium. Setup uses `corepack pnpm install` and `corepack pnpm exec playwright install chromium`. Respect this repo's `pnpm-workspace.yaml` build allowlist for bcrypt/esbuild. `corepack pnpm run build` checks compilation. The direct pnpm shim on the generating host was broken; Corepack successfully runs the same package scripts.
+Run from the repository root on Linux (the ownership doctor uses `/proc`). Requires Node >=22.13 with `node:sqlite`, Corepack/pnpm, installed `node_modules`, and Playwright Chromium. Setup uses `corepack pnpm install` and `corepack pnpm exec playwright install chromium`. Respect this repo's `pnpm-workspace.yaml` build allowlist for bcrypt/esbuild. `corepack pnpm run build` checks compilation. The direct pnpm shim on the generating host was broken; Corepack successfully runs the same package scripts.
 
 ```sh
 LAUNCH="$(./.omp/skills/verify-belief-garden/scripts/instance.mjs launch)" || exit 1
@@ -18,13 +18,13 @@ export MANIFEST
 printf '%s\n' "$MANIFEST"
 ```
 
-The executable copies current `src`, `views`, `public`, `package.json`, and `tsconfig.json` into a unique `/tmp/belief-garden-app-*` directory, excluding generated public user content. It links installed dependencies, never application data. Scratch-only scaffolding: empty `public/users.json`, copied workspace settings with `verifyDepsBeforeRun: false` (prevent a package manager from reinstalling through the shared dependency symlink). Migrations create directories and seed beliefs from `public/static/beliefs.json`. Existing `data`, `sessions`, and `.env` are NOT copied.
+The executable copies current `src`, `views`, `public`, `package.json`, and `tsconfig.json` into a unique `/tmp/belief-garden-app-*` directory, excluding generated public user content. It links installed dependencies, never application data. Scratch-only scaffolding: an empty `data` directory and copied workspace settings with `verifyDepsBeforeRun: false` (prevent a package manager from reinstalling through the shared dependency symlink). Migrations initialize SQLite and seed beliefs from `public/static/beliefs.json`. Existing `data`, `sessions`, and `.env` are NOT copied.
 
-Exact server command inside that copy: `corepack pnpm run start` (`tsx src/app.ts`). It sets a fresh free `PORT`, random `SESSION_SECRET`, `NODE_ENV=development`, local `PUBLIC_SITE_URL`/`SITE_DEPLOYMENT_PATH`, an hour-long statistics interval, and dummy `OPENAI_API_KEY=verification-no-network`. No real OpenAI key is needed for these paths. This is NOT a dry-run: registration, sessions, autosaves, feed entries, notifications, and statistics really write files in scratch. Never approve proposals or run image generation with the dummy key.
+Exact server command inside that copy: `corepack pnpm run start` (`tsx src/app.ts`). It sets a fresh free `PORT`, random `SESSION_SECRET`, `NODE_ENV=development`, local `PUBLIC_SITE_URL`/`SITE_DEPLOYMENT_PATH`, an hour-long statistics interval, dummy `OPENAI_API_KEY=verification-no-network`, and `DATABASE_PATH` pointing to scratch's `data/belief-garden.sqlite`. The manifest records that database path; an inherited database override cannot point the isolated app at live data. No real OpenAI key is needed for these paths. This is NOT a dry-run: registration, sessions, autosaves, feed entries, notifications, and statistics really write SQLite records in scratch. Never approve proposals or run image generation with the dummy key.
 
 Ready: `server.log` contains `Server running on port N`, and doctor establishes listener ownership plus a real HTTP 200 Welcome home page. Launch returns only after doctor passes. Logs, `instance.json`, and `doctor.json` are in a separate `/tmp/belief-garden-evidence-*` directory. Launch failure automatically runs cleanup and prints the retained evidence directory to stderr. Do not ignore a nonzero launch exit or reuse a failed manifest.
 
-Parallel runs require separate helper launches: each gets its own working directory, process group, port, and evidence directory. Different ports in the SAME checkout are NOT isolated: paths for data, sessions, and generated public statistics are relative to cwd. Never double-drive a shared developer instance or run `pnpm test` alongside a live-data server; the existing test wrapper shares checkout data and `/tmp/server.log`. Port selection has a small close-to-bind race; doctor rejects a port not owned by this run. On collision, clean up and launch again.
+Parallel runs require separate helper launches: each gets its own working directory, SQLite database, process group, port, and evidence directory. Different ports in the SAME checkout are NOT isolated: the default database path and generated static assets are relative to cwd. Never double-drive a shared developer instance or run `pnpm test` alongside a live-data server. Port selection has a small close-to-bind race; doctor rejects a port not owned by this run. On collision, clean up and launch again.
 
 Teardown is the Cleanup command below, including after failed drives.
 
@@ -40,7 +40,7 @@ Requires the recorded launcher identity and owned descendants (including childre
 
 ## Drive
 
-Existing harness: Playwright (`@playwright/test`, Chromium), with selectors established by `test/userRegistrationAndLogin.spec.ts`, `editBio.spec.ts`, `supportBelief.spec.ts`, `addBeliefToCore.spec.ts`, `addBeliefComment.spec.ts`, and `guessMyBeliefs.spec.ts`. Existing suite uses one worker because JSON files are shared. Do not use its internal user setters as feature proof.
+Existing harness: Playwright (`@playwright/test`, Chromium), with selectors established by `test/userRegistrationAndLogin.spec.ts`, `editBio.spec.ts`, `supportBelief.spec.ts`, `addBeliefToCore.spec.ts`, `addBeliefComment.spec.ts`, and `guessMyBeliefs.spec.ts`. Keep drives against a shared database sequential. Do not use internal user setters as feature proof.
 
 Run the shipped complete browser recipe once on a fresh instance:
 
@@ -48,7 +48,7 @@ Run the shipped complete browser recipe once on a fresh instance:
 ./.omp/skills/verify-belief-garden/scripts/prove-profile.mjs "$MANIFEST"
 ```
 
-It starts a fresh browser context, clicks header Register, creates `verify_gardener` with a strong verification-only password, logs in, edits the bio, observes the autosave response, reloads, checks the persisted Markdown, submits visible Logout, and views the public profile. It captures a trace, action transcript, before/saved/public screenshots, ARIA snapshot, response, stored value, and result. Optional `BROWSER_PATH` selects an installed Chromium. Re-running on the same instance hits a duplicate account; clean up and launch fresh instead.
+It starts a fresh browser context, clicks header Register, creates `verify_gardener` with a strong verification-only password, logs in, edits the bio, observes the autosave response, reloads, checks the persisted Markdown using a read-only SQLite query, submits visible Logout, and views the public profile. It captures a trace, action transcript, before/saved/public screenshots, ARIA snapshot, response, stored value, and result. Optional `BROWSER_PATH` selects an installed Chromium. Re-running on the same instance hits a duplicate account; clean up and launch fresh instead.
 
 For another mapped feature after the baseline, use this working scratch-local Login driver (pass `"$MANIFEST"` as its first argument). Append the relevant map's literal actions after the named-header assertion, inside `try`; retain `finally` so failures close the browser. The Login setup alone does not verify the other features:
 
@@ -56,9 +56,20 @@ For another mapped feature after the baseline, use this working scratch-local Lo
 import { chromium, expect } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 const manifest = process.argv[2];
 const state = JSON.parse(await readFile(manifest, 'utf8'));
 const evidence = dirname(manifest);
+const readStoredRecord = key => {
+  const database = new DatabaseSync(state.databasePath, { readOnly: true });
+  try {
+    const row = database.prepare('SELECT value FROM records WHERE key = ?').get(key);
+    if (typeof row?.value !== 'string') throw new Error(`Missing SQLite record: ${key}`);
+    return row.value;
+  } finally {
+    database.close();
+  }
+};
 const username = 'verify_gardener';
 const password = 'SecuI&SD*^tgsdreP@ssw0rd';
 const browser = await chromium.launch({ headless: true,
@@ -88,10 +99,10 @@ Keep evidence in the directory containing `instance.json`, never in app scratch.
 
 - `actions.json` and `trace.zip`: navigation and interactions, including the autosave-triggering edit.
 - `profile-before.png`, `profile-saved.png`, `profile-public.png`, `profile-public.aria.txt`: editor, reload persistence, and anonymous rendered Markdown with app identity visible.
-- `bio-response.json` (HTTP 200) and `stored-bio.md`: response AND on-disk side effect.
+- `bio-response.json` (HTTP 200) and `stored-bio.md`: response AND the exact Markdown queried from SQLite.
 - `result.json`, `doctor.json`, `server.log`, `cleanup.json`: outcome, instance identity, diagnostics, teardown proof.
 
-Exercise real user paths, never internal setters, DOM state mutation, or test-only endpoints. Capture actions AND resulting state, not only the final screen. Verify side effects (written files, rows, notifications/messages) in addition to visible feedback. Copy only the relevant stored value; do not publish password hashes, session cookies, full session files, or browser storage. Trace artifacts can contain the disposable credentials; keep them local.
+Exercise real user paths, never internal setters, DOM state mutation, or test-only endpoints. Capture actions AND resulting state, not only the final screen. Verify side effects (SQLite records, notifications/messages, generated static assets) in addition to visible feedback. Query the `records` table by its logical key, such as `data/bio/verify_gardener.md`; these keys are not runtime files. Copy only the relevant stored value; do not publish password hashes, session cookies, full session records, or browser storage. Trace artifacts can contain the disposable credentials; keep them local.
 
 Do not mock application behavior. Mocks are appropriate only at an already-isolated production external boundary and must be disclosed. These mapped paths require no external API. The layout includes Google analytics; the default real browser may contact it. The dummy OpenAI key is not network isolation. If offline verification is required, block/report external browser requests and observe the blocked requests; do not claim the name `verification-no-network` prevents network traffic. A future dry-run/test-mode path needs actual observation of files, network, or git refs to establish what it skips.
 
